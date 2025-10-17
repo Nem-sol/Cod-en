@@ -3,6 +3,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { NewDropSets } from './pageParts'
 import styles from '../app/main.module.css'
+import ChatInput from '../components/ChatBox'
 import React, { useEffect, useState } from 'react'
 import { useSocket } from '../context/SocketContext'
 import { useUserContext } from '../context/UserProvider'
@@ -105,7 +106,7 @@ export default function Navbar() {
               <p className='text-[var(--error)] text-end font-medium px-2.5 self-end mt-auto'>{error}</p>
             </section>
             {viewInbox && <div className="input mx-2.5 bar">
-              <input type="text" placeholder='' value={msg} onChange={ e => setMsg(e.target.value)}/>
+              <ChatInput value={msg} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMsg(e.target.value)}/>
               <button disabled={loading} className='bg-[var(--success)!important] text-[white!important]' onClick={()=> msg.trim() !== '' && handleSendMessage()}>{ loading ? loaderCircleSvg() : Leftsvg('BIG')}</button>
             </div>}
           </div>

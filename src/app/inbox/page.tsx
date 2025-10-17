@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import React, { useState } from 'react'
 import styles from './../main.module.css'
+import ChatInput from '@/src/components/ChatBox'
 import { Defaultbg } from '@/src/components/pageParts'
 import { classToggle } from '@/src/components/functions'
 import { useSocket } from '@/src/context/SocketContext'
@@ -86,7 +87,7 @@ const Inbox = () => {
             <p className='text-[var(--error)] text-end font-medium px-2.5 self-end mt-auto'>{error}</p>
           </section>
           {active && <div className={`${styles.input} ${styles.bar}`}>
-            <input type="text" placeholder='' value={msg} onChange={ e => setMsg(e.target.value)}/>
+            <ChatInput value={msg} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMsg(e.target.value)}/>
             <button disabled={loading} className='bg-[var(--success)!important] text-[white!important]' onClick={()=> msg.trim() !== '' && handleSendMessage()}>{ loading ? loaderCircleSvg() : Rocketsvg('BIG')}</button>
           </div>}
         </div>
