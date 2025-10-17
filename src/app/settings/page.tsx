@@ -7,14 +7,16 @@ import styles from '../main.module.css'
 import { signOut } from 'next-auth/react'
 import { CheckIncludes, FirstCase } from '@/src/components/functions'
 import { useUserContext } from '@/src/context/UserProvider'
-import { Editsvg, EyeClosedSvg, Eyesvg, Githubsvg, LogoutSvg, Padlocksvg, Refreshsvg, SettingSvg, Packssvg, GoogleG, Cloudsvg, AddSvg, Rocketsvg, Leftsvg, loaderCircleSvg } from '@/src/components/svgPack'
+import { Editsvg, EyeClosedSvg, Eyesvg, Githubsvg, LogoutSvg, Padlocksvg, Refreshsvg, SettingSvg, Packssvg, GoogleG, Cloudsvg, AddSvg, Rocketsvg, Leftsvg, loaderCircleSvg, checkmarkSvg } from '@/src/components/svgPack'
 
 const Settings = () => {
+  const [ er , setEr ] = useState('')
   const [ err , setErr ] = useState('')
   const [ pass , setPass ] = useState('')
   const [ name , setName ] = useState('')
   const [ email , setEmail ] = useState('')
   const [ backup , setBackup ] = useState('')
+  const [ ready , setReady ] = useState(false)
   const [ update , setUpdate ] = useState(false)
   const [ verify , setVerify ] = useState(false)
   const [ loading, setLoading ] = useState(false)
@@ -22,11 +24,50 @@ const Settings = () => {
   const [ disclose , setDisclose ] = useState(false)
   const [ recovery , setRecovery ]: any[] = useState([])
   const [ changeArr , setChangeArr ]: any[] = useState([])
-  const { userDetails: user, error , setRefresh ,setUserDetails } = useUserContext()
+  const { userDetails: user, error , setRefresh , setUserDetails } = useUserContext()
   const stringArr = changeArr.map((k: string, i: number) => i < changeArr.length - 1 ? k : '').filter((k: any)=> k !== '')
 
   const handleClick = (e: any)=>{!CheckIncludes(e, `.${style.updator} menu`) && !CheckIncludes(e, `.${style.updator} input`) &&!CheckIncludes(e, `.${style.updator} menu span`) && setRecovery(( prev: any )=> [...prev.filter((f: any)=> f.question.trim() !== '' && f.answer.trim() !== '')])}
 
+  const handleRecovery = async () => {
+    if (recovery.length < 1 || !user) return
+    setRecovery(( prev: any[] )=> [...prev.filter((f: any)=> f.question.trim() !== '' && f.answer.trim() !== '')])
+    if (recovery.length < 1 || !user) return
+    if (ready){
+      if (!password.trim()){
+        setEr('Password is required for updates')
+        return
+      }
+      setEr('')
+      setLoading(true)
+      const res = await fetch('/api/users',{
+        method: 'POST',
+        headers: {
+          'Cntent-Type': 'application/json',
+          'authorization': `Bearer ${user.id}`
+        },
+        body: JSON.stringify({ recoveryQuestions: recovery , password})
+      })
+      const contentType = res.headers.get('content-type')
+
+      if (!contentType || !contentType.includes('application/json')) {
+        setLoading(false)
+        setEr('Unexpected server error. Try again later')
+        return
+      }
+      const prev = user
+      res.ok && setRecovery([])
+      const result = await res.json()
+      !res.ok && setErr(result.error)
+      res.ok && setUserDetails({ ...prev , ...result })
+      setReady(false)
+      setPassword('')
+      setLoading(false)
+      return
+    }
+    if (!recovery.find((f: any)=> f.question.trim() !== '' && f.answer.trim() !== '')) setEr('Recovery questions and answers must contain non-empty fields')
+    if (!ready && recovery.find((f: any)=> f.question.trim() !== '' && f.answer.trim() !== '')) setReady(true)
+  }
   const handleSubmit = async (e: React.FormEvent) => {
     setChangeArr([])
     e.preventDefault()
@@ -71,14 +112,22 @@ const Settings = () => {
         setErr('Unexpected server error. Try again later')
         return
       }
+      const prev = user
       const result = await res.json()
       !res.ok && setErr(result.error)
-      res.ok && setUserDetails({ ...user , ...result})
+      res.ok && setUserDetails({ ...prev , ...result })
       setLoading(false)
+      setPass('')
+      setName('')
+      setEmail('')
+      setBackup('')
+      setPassword('')
+      setTimeout(()=>setVerify(false), 1500)
     }
   }
   return (
-    <main id={styles.main}>
+    <main id={styles.main} onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>)=>{
+      !CheckIncludes(e, `.${style.button}`) &&!CheckIncludes(e, `.${style.responses}`) &&!CheckIncludes(e, `.${style.responses} input`) && setRecovery(( prev: any[] )=> [...prev.filter((f: any)=> f.question.trim() !== '' || f.answer.trim() !== '')])}}>
       <div className={styles.main}>
         <h2 className={styles.title}>{SettingSvg()} Settings</h2>
         <div className={styles.quick}>
@@ -107,30 +156,38 @@ const Settings = () => {
           <div className={style.setts}>
             <span>Recovery questions</span>
             <p>Slots - {user ? user.recoveryQuestions.length : 0}/3</p>
-            {user && user.recoveryQuestions && user.recoveryQuestions.map((ques: string, i: number)=><div className={style.reco} key={i}>{ disclose ? ques : '****'}</div>)}
+            {user && user.recoveryQuestions.map((ques: string, i: number)=><div className={style.reco} key={i}>{ disclose ? ques.question || ques : '****'}</div>)}
             
-            {recovery.map((inp: any, i: number)=>(<>
-              <div className={style.responses} key={i}>
-                <input type="text" name='questions' placeholder='Enter new question' value={inp.question} onChange={(e: any)=>
+            {recovery.map((inp: any, i: number)=>{
+              return <>
+                <div className={style.responses}>
+                  <input type="text" name={'questions' + i} placeholder='Enter new question' value={inp.question} onChange={(e: React.ChangeEvent<HTMLInputElement>)=>
+                      setRecovery(
+                        (prev: any) =>[...prev.map((f: any, n: number)=>  n === i ? {...f, question: e.target.value} : f)]
+                    )}
+                    onClick={() => setRecovery(( prev: any )=> [...prev.filter((f: any)=> f === inp || (f.question.trim() !== '' && f.answer.trim() !== ''))])}
+                  />
+                </div>
+                <menu className={`${style.responses} ${style.answer}`}>
+                  <input type="text" name={'answers'+ i} placeholder='Enter corresponding answer' value={inp.answer} onChange={(e: React.ChangeEvent<HTMLInputElement>)=>
                     setRecovery(
-                      (prev: any) =>[...prev.map((f: any, n: any)=>  n === i ? {...f, question: e.target.value} : f)]
-                  )}
-                  onClick={() => setRecovery(( prev: any )=> [...prev.filter((f: any)=> f === inp || (f.question.trim() !== '' && f.answer.trim() !== ''))])}
-                />
-              </div>
-              <menu className={`${style.responses} ${style.answer}`} key={i + 3}>
-                <input type="text" name='answers' placeholder='Enter corresponding answer' value={inp.answer} onChange={(e: any)=>
-                  setRecovery(
-                    (prev: any) =>[...prev.map((f: any, n: any)=>  n === i ? {...f, answer: e.target.value} : f)]
-                  )}
-                  onClick={() => setRecovery(( prev: any )=> [...prev.filter((f: any)=> f === inp || (f.question.trim() !== '' && f.answer.trim() !== ''))])}
-                />
-              </menu>
-            </>
-            ))}
-            {user && user.recoveryQuestions.length < 3 && user.provider === 'custom' && <p className='flex justify-end'><button className={style.button} onClick={()=> user.recoveryQuestions.length + recovery.length < 3 && setRecovery(( prev: any[] )=> [...prev.filter((f: any)=> f.question.trim() !== '' || f.answer.trim() !== ''), {question: '', answer: ''}])}>{Editsvg('isBig')} Add </button></p>}
+                      (prev: any) =>[...prev.map((f: any, n: number)=>  n === i ? {...f, answer: e.target.value} : f)]
+                    )}
+                    onClick={() => setRecovery(( prev: any )=> [...prev.filter((f: any)=> f === inp || (f.question.trim() !== '' && f.answer.trim() !== ''))])}
+                  />
+                </menu>
+              </>
+            })}
+            {ready && <div className={style.password}>
+                <input type="text" value={password} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value.trim())} placeholder="Enter current password"/>
+              </div>}
+            {recovery.length > 0 && <p className='text-[var(--sweetPurple)] self-center items-center flex gap-1'>{Padlocksvg('big min-w-7')} Recovery answers cannot be displayed after creation</p>}
+            {user && user.recoveryQuestions.length < 3 && user.provider === 'custom' && <h3 className='flex-wrap flex justify-end items-center gap-2.5'>
+              <p className='text-[var(--error)] max-w-2xl w-full'>{er}</p>
+              <p className='min-w-fit flex gap-2.5'>{recovery.length > 0 && <button className={style.button} onClick={handleRecovery}>{loading ? loaderCircleSvg() : checkmarkSvg('isBig')} { loading ?  'Saving...' : 'Save' }</button>}
+              <button className={style.button} onClick={()=> {setEr(''); user.recoveryQuestions.length + recovery.length < 3 && setRecovery(( prev: any[] )=> [...prev.filter((f: any)=> f.question.trim() !== '' || f.answer.trim() !== ''), {question: '', answer: ''}])}}>{AddSvg('isBig')} Add </button></p></h3>}
           </div>
-          <p className='flex gap-4 flex-wrap'>
+          <p className='flex gap-4'>
             {error && <button className={style.button} onClick={()=>setRefresh((prev : any)=> !prev)}>{Refreshsvg()} Refresh details</button>}
             {user && <button className={style.button + ' text-[var(--error)!important]'} onClick={()=>signOut()}>{LogoutSvg()} Log out</button>}
             {user && user.provider === 'custom' && <button className={style. button} onClick={()=> setUpdate(true)}>{Editsvg()} Update credentials</button>}
@@ -160,33 +217,6 @@ const Settings = () => {
                   <p>Back-up email</p>
                   <input type="email" name='backup' value={backup} onChange={(e: any)=>setBackup(e.target.value)}/>
                 </div>
-                
-                {/* <menu className={style.recovery}>
-                  <p>Recovery qusetions</p>
-                  {recovery.map((inp: any, i: any)=>(<>
-                    <menu className={`${style.input} mt-4`} key={i}>
-                      <input type="text" name='questions' placeholder='Enter new question' value={inp.question} onChange={(e: any)=>
-                          setRecovery(
-                            (prev: any) =>[...prev.map((f: any, n: any)=>  n === i ? {...f, question: e.target.value} : f)]
-                        )} 
-                        onClick={() => setRecovery(( prev: any )=> [...prev.filter((f: any)=> f === inp || (f.question.trim() !== '' && f.answer.trim() !== ''))])}
-                      />
-                    </menu>
-                    <menu className={`${style.input} ${style.answer}`}>
-                      <input type="text" name='answers' placeholder='Enter corresponding answer' value={inp.answer} onChange={(e: any)=>
-                        setRecovery(
-                          (prev: any) =>[...prev.map((f: any, n: any)=>  n === i ? {...f, answer: e.target.value} : f)]
-                        )}
-                        onClick={() => setRecovery(( prev: any )=> [...prev.filter((f: any)=> f === inp || (f.question.trim() !== '' && f.answer.trim() !== ''))])}
-                      />
-                    </menu>
-                  </>
-                  ))}
-                  <h3 className='flex items-center'>
-                    <span style={{padding: '5px 10px', position: 'relative', inset: 'auto',maxWidth: 'fit-content', width: 'fit-content'}} onClick={()=> recovery.length < 3 - user.recoveryQuestions.length && setRecovery(( prev: any )=> [...prev.filter((f: any)=> f.question.trim() !== '' || f.answer.trim() !== ''), {question: '', answer: ''}])}>{AddSvg('isBig')}</span>
-                    <p style={{position: 'relative', inset: 'auto', fontSize: '0.9em', flex: 1, fontWeight: 400, color: 'var(--error)', backgroundColor: 'transparent'}}>Recovery answers cannot be displayed after creation</p>
-                  </h3>
-                </menu> */}
               </section>
               <section>
                 <span>Confirm updates</span>

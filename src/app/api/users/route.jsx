@@ -26,8 +26,8 @@ export const GET = async (req) => {
       email: userDetails.email,
       created: userDetails.createdAt,
       provider: userDetails.provider,
-      backup: userDetails.backupEmail,
       exclusive: userDetails.exclusive,
+      backupEmail: userDetails.backupEmail,
       recoveryQuestions: [...userDetails.recoveryQuestions.map((set) => set.question)],
     }, { status: 200 })
   } catch (err) {
@@ -36,16 +36,18 @@ export const GET = async (req) => {
 }
 
 export const POST = async (req) => {
-  const { name , email , password , backup , pass: newPassword } = await req.json()
+  const { name , email , password , backup , newPassword , recoveryQuestions } = await req.json()
   await connect()
 
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+
+  if (!password) return NextResponse.json({ error: 'Password required to update changes' }, { status: 400 })
 
   if (!token) return NextResponse.json({ error: 'Unauthorized request declined' }, { status: 401 })
 
   const user = await User.findById( token.id )
 
-  if (!user) return NextResponse.json({ error: 'Could not find user' }, { status: 400 })
+  if (!user) return NextResponse.json({ error: 'Could not find user account' }, { status: 400 })
 
   const passCorrect = await bcrypt.compare(
     password,
@@ -55,7 +57,7 @@ export const POST = async (req) => {
   if (!passCorrect) return NextResponse.json({ error: 'Incorrect password'}, { status: 400 })
 
   // Validate
-  if (!email && !newPassword && !name && !backup ) return NextResponse.json({ error: 'Please include a property for changes' }, { status: 400 })
+  if (!email && !newPassword && !name && !backup && !recoveryQuestions ) return NextResponse.json({ error: 'Please include a property for changes' }, { status: 400 })
 
   if (email && !validator.isEmail(email)) {
     return NextResponse.json({ error: 'Invalid email address' }, { status: 400 })
@@ -72,6 +74,10 @@ export const POST = async (req) => {
       message: `Backup-email change for ${updatedUser.name} failed due to invalid address`})
     return NextResponse.json({ error: 'Invalid backup-email address' }, { status: 400 })
   }
+  if (email && backup && (User.find({email}) || User.find({backupEmail: backup}) || user.find({email: backup}) || User.find({backupEmail: email}))) return NextResponse.json(
+      { error: 'Email address already in use' },
+      { status: 400 }
+    )
   if ( name && (name.trim().length < 4 || name.length > 40)) {
     return NextResponse.json(
       { error: 'Username must be between 4–40 characters' },
@@ -79,7 +85,7 @@ export const POST = async (req) => {
     )
   }
 
-  if (newPassword.trim().length < 6) {
+  if (newPassword && newPassword.trim().length < 6) {
     await Notification.create({
       read: false,
       important: true,
@@ -95,22 +101,36 @@ export const POST = async (req) => {
     )
   }
 
-  // Hash password
-  const hashedPassword = await bcrypt.hash(newPassword.trim(), 10)
-
   let updateArr = []
   name && updateArr.push('name')
   email && updateArr.push('email')
   backup && updateArr.push('backup-email')
   newPassword && updateArr.push('password')
+  recoveryQuestions && recoveryQuestions.length > 0 && updateArr.push('recovery questions')
   const n = name ? name : user.name
   const e = email ? email : user.email
   const b = backup ? backup : user.backupEmail
-  const p = newPassword ? hashedPassword : user.password
+  const p = newPassword ? await bcrypt.hash(newPassword.trim(), 10) : user.password
+  const r = recoveryQuestions ? [ ...user.recoveryQuestions,
+    ...(await Promise.all(
+      recoveryQuestions
+        .filter((set) => set.question?.trim() && set.answer?.trim())
+        .filter((set, i, self) => i === self.findIndex((s) =>
+          s.question.trim().toLowerCase() === set.question.trim().toLowerCase())
+        )
+        .map(async (set) => {
+          const hashedAnswer = await bcrypt.hash(set.answer.trim(), 10);
+          return {
+            question: set.question.trim(),
+            answer: hashedAnswer
+          }
+        })
+      ))
+    ] : user.recoveryQuestions
 
 
   try {
-    const updatedUser = await User.findByIdAndUpdate( token.id , { name: n , email: e, password: p , backupEmail: b})
+    const updatedUser = await User.findByIdAndUpdate( token.id , { name: n , email: e, password: p , backupEmail: b, recoveryQuestions: r})
     const history = await History.create({
       type: 'Profile',
       class: 'update',
@@ -129,9 +149,14 @@ export const POST = async (req) => {
       link: `/history/${history._id.toString()}`,
       title: `Successful credential updates for ${updatedUser.name}`,
       message: `Successful credential updates. User updated ${updateArr.join(', ')} successfully`})
-    return NextResponse.json(
-      { name: updatedUser.name, email: updatedUser.email, backupEmail: updatedUser.backupEmail , provider: updatedUser.provider},
-      { status: 201 }
+    return NextResponse.json({ 
+      name: updatedUser.name,
+      email: updatedUser.email,
+      provider: updatedUser.provider,
+      backupEmail: updatedUser.backupEmail,
+      recoveryQuestions: [...updatedUser.recoveryQuestions.map((set) => set.question)],
+    },
+    { status: 201 }
     )
   } catch (error) {
     await Notification.create({

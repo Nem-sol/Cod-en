@@ -17,6 +17,10 @@ export default function LoadingBar() {
   const pathname = usePathname();
   const { status } = useSession()
 
+  useEffect(()=>{
+    NProgress.start()
+  }, [])
+
   useEffect(() => {
     const done = () => NProgress.done();
     const start = () => NProgress.start();
@@ -45,7 +49,7 @@ export default function LoadingBar() {
       window.removeEventListener("beforeunload", start);
       window.removeEventListener("click", handleLinkClick);
     };
-  });
+  }, [ status ]);
 
   // Stop progress when new route actually renders
   useEffect(() => {

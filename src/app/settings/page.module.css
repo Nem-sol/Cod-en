@@ -70,15 +70,23 @@
 .updator section div:focus{
   scale: 1.03;
 }
+.responses input:focus{
+  transition: 0.5s;
+  color: rgb( 50, 50, 50);
+  background-color: rgb(227 239 244);
+}
 .responses,
 .updator .input{
   padding: 0;
   width: 100%;
   column-gap: 2px;
+  max-width: 750px;
+  align-self: center;
   border-radius: 25px;
   border-bottom-left-radius: 10px;
 }
 .responses{
+  margin-top: 20px;
   border-radius: 20px;
   color: rgb( 50, 50, 50);
   border-top-right-radius: 5px;
@@ -86,21 +94,26 @@
   box-shadow: 0 3px 10px rgb(0, 0, 0 ,0.15);
 }
 .responses.answer{
+  margin-top: 0;
   border-top-left-radius: 5px;
   border-top-right-radius: 20px;
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 5px;
 }
+.password,
 .updator .password{
   width: 95%;
   padding: 3px;
   margin: auto;
   column-gap: 2px;
+  max-width: 700px;
   border-radius: 30px;
   align-self: flex-end;
   border-bottom-right-radius: 7px;
+  border: solid var(--sweetPurple) 2px;
   box-shadow: 0 3px 10px rgb(0, 0, 0 ,0.15);
 }
+.password input,
 .responses input,
 .updator .input input,
 .updator .password input,
@@ -141,6 +154,7 @@
   display: grid;
   overflow: hidden;
   padding: 7px 15px;
+  align-items: center;
   white-space: nowrap;
   border-radius: 15px;
   max-width: fit-content;
@@ -250,8 +264,12 @@
 .reco{
   padding: 15px;
   transition: 0.5s;
-  border-radius: 10px;
+  border-radius: 20px;
+  color: rgb(50, 50, 50);
+  border-top-right-radius: 5px;
+  border-bottom-left-radius: 5px;
   border: solid var(--sweetPurple) 2px;
+  box-shadow: 0 3px 10px rgb(0, 0, 0 ,0.15);
   background-color: rgba(217, 167, 221, 0.36);
 }
 @media screen and (max-width: 650px) {

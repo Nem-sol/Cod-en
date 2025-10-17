@@ -71,8 +71,9 @@ const HistoryPack = () => {
     )
   }
   useEffect(()=>{
+    console.log(id)
     history.length > 0 && history.forEach((h: any)=>{ h._id === id && setContent(h)})
-    !content && history.forEach((h: any, i: number | ParamValue)=> i === id && setContent(h))
+    !history.find((h: any)=> h._id === id ) && history.forEach((h: any) => { history[id] && setContent(h)})
   }, [ history ])
   return (
     <main id={styles.main} onClick={( e: any)=> !CheckIncludes(e, 'menu') && !CheckIncludes(e, 'menu div') && !CheckIncludes(e, 'menu button') && !CheckIncludes(e, 'menu span') && RemoveAllClass( styles.inView , 'menu' )}>
