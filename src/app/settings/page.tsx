@@ -156,7 +156,7 @@ const Settings = () => {
           <div className={style.setts}>
             <span>Recovery questions</span>
             <p>Slots - {user ? user.recoveryQuestions.length : 0}/3</p>
-            {user && user.recoveryQuestions.map((ques: string, i: number)=><div className={style.reco} key={i}>{ disclose ? ques.question || ques : '****'}</div>)}
+            {user && user.recoveryQuestions.map((ques: string, i: number)=><div className={style.reco} key={i}>{ disclose ? ques : '****'}</div>)}
             
             {recovery.map((inp: any, i: number)=>{
               return <>
