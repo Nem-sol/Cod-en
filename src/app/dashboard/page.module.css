@@ -1,0 +1,169 @@
+.summary{
+  flex: 1.25;
+  border: none;
+  display: flex;
+  min-height: 350px; 
+  border-radius: 15px;
+  flex-direction: column;
+  box-shadow: 0 3px 5px rgb(0, 0, 0 ,0.15);
+  background-color: rgba(253, 245, 221, 0.847);
+}
+.moderator{
+  row-gap: 3px;
+  padding: 5px;
+  display: flex;
+  font-weight: 600;
+  transition: 0.5s;
+  border-radius: 15px;
+  flex-direction: column;
+  color: rgb(50, 50, 50);
+  background-color: var(--input);
+  border: solid rgba(230, 227, 218, 0.9) 2px;
+}
+.moderatortitle{
+  display: flex;
+  font-size: 17px;
+  transition: 0.5s;
+  font-weight: 600;
+  column-gap: 20px; 
+  color: var(--translucent);
+}
+.moderatortitle svg{
+  width: 23px;
+  height: 23px;
+}
+.moderator section{
+  row-gap: 5px;
+  display: flex;
+  cursor: pointer;
+  overflow: hidden;
+  transition: 0.3s;
+  padding: 10px 15px;
+  border-radius: 10px;
+  flex-direction: column;
+}
+.moderator section:hover{
+  background-color: rgba(239, 212, 203, 0.4);
+}
+.moderator section.active{
+  cursor: default;
+  background-color: rgb(0, 0, 0 ,0.08);
+}
+.moderator div{
+  height: 0;
+  padding: 0;
+  display: flex;
+  color: inherit;
+  overflow: hidden;
+  transition: 0.5s;
+  font-weight: 600;
+  transition-delay: 0.2s;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.moderator .active div{
+  height: 100px;
+  padding: 12px 20px;
+  padding-top: 10px;
+}
+.moderator section div a{
+  min-width: 125px;
+  transition: 0.3s;
+  padding: 5px 7px;
+  text-align: center;
+  border-radius: 5px;
+  width: fit-content;
+  justify-self: flex-end;
+  background-color: rgb(109, 190, 55);
+}
+.moderator p{
+  display: flex;
+  row-gap: 10px;
+  column-gap: 10px;
+  align-items: center;
+  pointer-events: none;
+}
+.moderator section svg{
+  width: 15px;
+  height: 15px;
+  border-radius: 100%;
+  background-color: rgb(250, 241, 225);
+  border: solid rgb(220, 215, 200) 2px;
+}
+.packs{
+  flex: 1;
+  display: flex;
+  row-gap: 20px;
+  padding: 15px;
+  flex-wrap: wrap;
+  column-gap: 20px;
+  min-height: 300px;
+  max-height: fit-content;
+  justify-content: space-around;
+  border-left: solid rgb(181, 158, 114);
+}
+.packs section{
+  flex: 1;
+  display: flex;
+  height: 200px;
+  row-gap: 10px;
+  padding: 15px;
+  font-size: 18px;
+  max-width: 300px;
+  font-weight: 600;
+  transition: 0.2s;
+  min-width: 225px;
+  border-radius: 15px;
+  justify-self: center;
+  flex-direction: column;
+  color: rgb(55, 45, 34);
+  background-color: rgba(255, 247, 242, 0.9);
+  box-shadow: 0 1px 4px rgb(163, 146, 128), 0 0 3px rgb(163, 146, 128);
+}
+.packs section a{
+  opacity: 0.75;
+  font-size: 15px;
+  font-weight: 600;
+  padding-top: 5px;
+}
+.packs section:hover{
+  background-color: rgba(248, 232, 221, 0.95);
+}
+.packs section a:hover{
+  opacity: 0.9;
+  color: var(--deepSweetPurple);
+}
+.packs section svg{
+  width: 27px;
+  height: 27px;
+}
+
+@media screen and (min-width: 1100px){
+ .packs section{
+   min-width: 250px;
+   max-width: 350px;
+  }
+}
+@media screen and (min-width: 1200px) {
+  .packs{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+@media screen and (max-width: 875px) {
+ .packs{
+    border: none;
+  }
+}
+@media screen and (max-width: 690px) {
+  .moderator section.active div{
+    height: 130px;
+  }
+}
+@media screen and (max-width: 650px){
+ .packs section{
+    width: 100%;
+    height: 170px;
+    max-width: none;
+  }
+}

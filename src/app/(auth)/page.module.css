@@ -1,0 +1,122 @@
+.form{
+  width: 100%;
+  padding: 30px;
+  display: flex;
+  row-gap: 20px;
+  max-width: 650px;
+  align-items: center;
+  border-radius: 10px;
+  padding-bottom: 20px;
+  flex-direction: column;
+}
+.form h2{
+  font-weight: 700;
+  font-size: 1.5em;
+  transition: 0.5s;
+  color: var(--translucent);
+}
+.form p{
+  font-weight: 500;
+  transition: 0.5s;
+  padding-left: 10px;
+  color: var(--error);
+}
+.form button{
+  gap: 10px;
+  display: flex;
+  padding: 5px 15px;
+  align-items: center;
+  border-radius: 10px;
+  align-self: flex-end;
+  color: var(--translucent);
+  background-color: var(--brilliant);
+}
+.inputPack{
+  width: 100%;
+  height: 40px;
+  margin-top: 30px;
+  font-weight: 600;
+  color: var(--strong);
+}
+.inputPack input{
+  width: 100%;
+  height: 100%;
+  opacity: 0.9;
+  transition: 0.3s;
+  padding: 5px 20px;
+  border-radius: 25px;
+  background-color: var(--input);
+  border-bottom-left-radius: 12px;
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.23), 0px 5px 8px rgba(0, 0, 0, 0.15);
+}
+.inputPack input:focus{
+  color: rgb( 50, 50, 50);
+  background-color: rgb(227 239 244);
+}
+.inputPack label{
+  top: 7px;
+  left: 20px;
+  z-index: 1;
+  opacity: 0.7;
+  transition: 1s;
+  position: absolute;
+  pointer-events: none;
+}
+.inputPack label.inView{
+  top: -30px;
+  z-index: 1;
+  opacity: 0.9;
+  color: var(--translucent);
+}
+.or{
+  width: 50%;
+  height: 13px;
+  max-width: 500px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--soft);
+  border-bottom: solid var(--soft) 2px;
+}
+.or span{
+  transition: 0.5s;
+  padding-inline: 10px;
+  background-color: var(--background);
+}
+.options{
+  gap: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  padding-inline: 40px;
+  justify-content: center;
+}
+.options button{
+  height: 44px;
+  display: flex;
+  padding: 10px;
+  color: white;
+  column-gap: 10px;
+  border-radius: 5px;
+  align-items: center;
+  min-width: fit-content;
+  justify-content: center;
+  background-color: rgb(30, 30, 30);
+}
+.options button:hover{
+  background-color: rgb(21, 21, 21);
+}
+@media screen and (max-width: 500px) {
+  .options button span{
+    width: 0;
+    display: none;
+    overflow: hidden;
+  }
+  .options button{
+    column-gap: 15px;
+    padding-inline: 15px;
+  }
+}
+@media screen and (max-width: 350px) {
+  .options button{
+    width: 100%;
+  }
+}

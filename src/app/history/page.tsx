@@ -1,0 +1,121 @@
+'use client'
+import Link from 'next/link'
+import Image from 'next/image'
+import { format } from 'date-fns'
+import styles from '../main.module.css'
+import React, { useState } from 'react'
+import { useUserContext } from '@/src/context/UserProvider'
+import { useHistoryContext } from '@/src/context/HistoryContext'
+import { Defaultbg, NewFilterSets } from '@/src/components/pageParts'
+import { CheckIncludes, RemoveAllClass } from '@/src/components/functions'
+import { Backsvg, HistorySvg, Inboxsvg, Linksvg, loaderCircleSvg, Moresvg, NotificationSvg, Searchsvg } from '@/src/components/svgPack'
+
+
+
+const History = () => {
+  const [ filters, setFilters ] = useState('')
+  const { userDetails: user } = useUserContext()
+  const { history, error, setRefresh, isLoading } = useHistoryContext()
+
+  function HistoryPacks({history}: any) {
+    const date = history.createdAt
+    const friendlyDate  = format(new Date(date), 'h:mm a')
+    return (
+      <div className={styles.hist}>
+        <div className='w-full'>
+          <p>{friendlyDate}</p>
+          <p className='flex-[0.4]'>{history.title}</p>
+          <p>{history.target === user.name ? 'User' : history.target}</p>
+          <p>{history.status}</p>
+        </div>
+        <div>
+          <Link href={'/history/'+history._id}>{Linksvg()}</Link>
+          <button>{Moresvg()}</button>
+        </div>
+      </div>
+    )
+  }
+  function Filter(filters:  string){
+    let result
+    let filtered
+    const filter = filters.toLocaleLowerCase()
+
+    filtered = history
+
+    if (!history) result = null
+    else if (filter.trim() === '') filtered = history
+    else if (filter === 'payment') filtered = filtered.filter(( hist: any )=> hist.class.toLocaleLowerCase() === 'payment')
+    else if(filter === 'pending' || filter === 'failed' || filter === 'successful') filtered = filtered.filter(( hist: any )=> hist.status === filter)
+    else if (filter === 'profile' || filter === 'project' || filter === 'subscription') filtered = filtered.filter((hist: any)=> hist.type === filters)
+    else filtered = filtered.filter(( hist: any )=> hist.title.toLocaleLowerCase().includes(filter))
+
+    if (filtered && filtered.length > 0) result = filtered.map((hist: any, i: any)=> <HistoryPacks key={i} history={hist}/>)
+
+    if (history && history.length < 1 && error ) return (
+      <Defaultbg props={{
+        styles: styles,
+        img: '/homehero.png',
+        h2: 'Could not get account history',
+        text: 'Try restoring internet connection or refreshing the page',
+      }}/>)
+    else return result ? (
+      <div className={styles.hist_Pack}>
+        <div className='flex font-medium justify-between gap-2.5 w-full px-7 text-[var(--deepSweetPurple)] mb-2.5'>
+          <p>Time</p>
+          <p className='flex-[0.4]'>Title</p>
+          <p>Target</p>
+          <p>Status</p>
+        </div>
+        {result}
+      </div>) : (
+      <Defaultbg props={{
+        styles: styles,
+        img: '/homehero.png',
+        h2: `You have no ${filter.trim() !== '' ? 'matching' : 'account'} history`,
+        text: 'Try restoring internet connection or refreshing the page',
+      }}/>)
+  }
+
+  return (
+    <main id={styles.main} onClick={( e: any)=> !CheckIncludes(e, 'menu') && !CheckIncludes(e, 'menu div') && !CheckIncludes(e, 'menu button') && !CheckIncludes(e, 'menu span') && RemoveAllClass( styles.inView , 'menu' )}>
+      <div className={styles.main}>
+        <h2 className={styles.title}>{HistorySvg()} History</h2>
+        <div className={styles.quick}>
+          <Link href='/inbox' className={styles.second}>{Inboxsvg('BIG')} Inbox</Link>
+          <Link href='/notifications'>{NotificationSvg('BIG')} Notifications</Link>
+        </div>
+        <div id={styles.searchbar}>
+          <span>{Searchsvg()}</span>
+          <input autoComplete='true' type="text" name="search" placeholder='Search from title' onClick={(e: any)=>e.target.classList.add('isTarget')}  onMouseLeave={(e: any)=>e.target.classList.remove('isTarget')} onChange={(e)=>setFilters(e.target.value)}/>
+          <NewFilterSets props={{
+            id: 'filters',
+            query: filters,
+            class: styles.inView,
+            clicked: styles.clicked,
+            reset: ()=>setFilters(''),
+            buttons: [
+              {txt: 'Failed', reset: ()=>setFilters('failed'), query: 'failed'},
+              {txt: 'Payments', reset: ()=>setFilters('payment'), query: 'payment'},
+              {txt: 'Pending', reset: ()=>setFilters('pending'), query: 'pending'},
+              {txt: 'Successful', reset: ()=>setFilters('successful'), query: 'successful'},
+              {txt: 'Profile', reset: ()=>setFilters('profile'), query: 'profile'},
+              {txt: 'Projects', reset: ()=>setFilters('project'), query: 'project'},
+              {txt: 'Subscriptions', reset: ()=>setFilters('subscription'), query: 'subscription'},
+            ]
+          }} />
+        </div>
+        {isLoading && history.length < 1 && 
+        <Defaultbg props={{
+          styles: styles,
+          img: '/homehero.png',
+          h2: 'Getting history ...',
+          text: 'Please be patient while we get your history',
+        }}/>}
+        {(!isLoading || history.length > 0) && Filter(filters)}
+        {error && <button disabled={isLoading} className={styles.floater} onClick={()=>setRefresh((prev: any) => !prev )}>{isLoading ? loaderCircleSvg() : Backsvg()}</button>}
+      </div>
+    </main>
+  )
+}
+
+export default History
