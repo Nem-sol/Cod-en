@@ -37,6 +37,7 @@ const InboxSchema = new Schema({
   status: {
     type: String,
     required: true,
+    default: 'active',
   },
   messages: {
     default: [],

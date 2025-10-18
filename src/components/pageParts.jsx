@@ -1,13 +1,14 @@
 'use client'
 import Link from 'next/link'
 import Image from 'next/image'
+import validator from 'validator'
 import { signOut } from "next-auth/react";
 import { useRouter } from 'next/navigation';
 import { ThemeContext } from '../context/ThemeContext'
 import { useContext, useEffect, useState } from 'react'
 import { useUserContext } from '../context/UserProvider';
 import { CheckIncludes, classAdd, classRemove, classToggle, FirstCase, pick, pickAll, RemoveLikeClass, RemoveOtherClass, scrollCheck } from './functions'
-import { Backsvg, Blogsvg, cancelSvg, Bugsvg, Csssvg, FolderSvg, Helpsvg, Inboxsvg, Javascriptsvg, Leftsvg, LogInSvg, LogoutSvg, Mailsvg, Nextsvg, Nightsvg, Nodesvg, ProjectSvg, Pythonsvg, Reactsvg, Rocketsvg, Rustsvg, SettingSvg, Sunsvg, SupportSvg, TagSvg, loaderCircleSvg, TypeScriptsvg, Copysvg } from './svgPack'
+import { Backsvg, Blogsvg, cancelSvg, Bugsvg, Csssvg, FolderSvg, Helpsvg, Inboxsvg, Javascriptsvg, Leftsvg, LogInSvg, LogoutSvg, Mailsvg, Nextsvg, Nightsvg, Nodesvg, ProjectSvg, Pythonsvg, Reactsvg, Rocketsvg, Rustsvg, SettingSvg, Sunsvg, SupportSvg, TagSvg, loaderCircleSvg, TypeScriptsvg, Copysvg, checkmarkSvg } from './svgPack'
 
 
 export function Back(){
@@ -172,15 +173,52 @@ export function DashboardSection({props}){
 
 export function ContactForm({props}){
   const [ msg, setMsg ] = useState('')
+  const [ error, setError ] = useState('')
   const [ type, setType ] = useState('custom')
   const { userDetails: user } = useUserContext()
+  const [ success, setSuccess ] = useState(false)
+  const [ loading, setLoading ] = useState(false)
   const [ name, setName ] = useState( user ? user.name : '')
   const [ email, setEmail ] = useState( user ? user.email : '')
-  const handleSubmit = (e) =>{
+  const handleSubmit = async (e) =>{
+    setError('')
     e.preventDefault()
-    if (!msg.trim()) return
-    if (!name.trim()) return
-    if (!email.trim()) return
+    if (!user && !validator.isEmail(email)){
+      setError('Please enter a valid email address')
+      return
+    }
+    if (!email.trim() && user ) setEmail(user.email)
+    if (!name.trim()) setName(user.name || 'Guest')
+    if (!msg.trim()) {
+      setError('A message content is required')
+      return
+    }
+    setLoading(true)
+    try {
+      const res = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ msg , name , email , type })
+      });
+
+      const contentType = res.headers.get('content-type')
+
+      if (!contentType || !contentType.includes('application/json')) {
+        setLoading(false)
+        setError('Unexpected server error. Try again later')
+        return
+      }
+
+      if (!res.ok) setError(res.json().error)
+      else {
+        setSuccess(true)
+        setError(`${FirstCase(type)} message sent successfully. Cod-en will reach out to you shortly.`)
+        setTimeout(()=>{ setSuccess(false) ; setError('') }, 3000)
+      }
+    } catch (err) {
+      setError(err || 'Something went wrong')
+    }
+    setLoading(false)
   }
   return(
     <section className={props.form}>
@@ -188,6 +226,7 @@ export function ContactForm({props}){
       <input name='email' value={email} type="text" autoComplete='true' autoCorrect='true' placeholder={user ? user.email : 'you@example.com'} onChange={(e)=> !user ? setEmail(e.target.value) : setEmail(user.email)} onKeyDown={()=> user && setEmail(user.email)}/>
       <textarea name='message' value={msg} autoComplete='true' autoCorrect='true' placeholder='Start your message...' onChange={(e)=> setMsg(e.target.value)}/>
       {!user && <span>Access convenient comunication when you <Link href='/signup' style={{color: 'var(--compliment)', fontWeight: '700', whiteSpace: 'nowrap'}}>sign up</Link></span>}
+      {error && <p className='text-[var(--error)] font-medium' style={success ? {color: 'var(--success)'} : {}}>{error}</p>}
       <div className='flex gap-x-2.5'>
         <div className='flex-1'><NewDropSets props={{
           query: type,
@@ -205,7 +244,7 @@ export function ContactForm({props}){
             {svg: SupportSvg('BIG'), txt: 'Custom', query: 'custom', func: ()=>setType('custom')}
           ]
         }}/></div>
-        <button onClick={handleSubmit}>Send {Leftsvg('big')}</button>
+        <button disabled={loading} onClick={handleSubmit}>{success ? 'Sent' : !loading ? 'Send' : 'Sending...'} {success ? checkmarkSvg(success ? 'min-w-6 opacity-[1!important] inset-auto' : '') : !loading ? Leftsvg('big') : loaderCircleSvg(loading ? 'min-w-6 opacity-[1!important] inset-auto' : '')}</button>
       </div>
     </section>
   )

@@ -10,7 +10,7 @@ import { useUserContext } from '../context/UserProvider'
 import { useInboxContext } from '../context/InboxContext'
 import { useNotificationContext } from '../context/NotificationContext'
 import { classRemove, classAdd, classToggle, FirstCase } from './functions'
-import { cancelSvg, dblRightArrowsvg, FolderSvg, Helpsvg, HomeSvg, Inboxsvg, Bugsvg, Linksvg, loaderCircleSvg, NotificationSvg, ProjectSvg, Leftsvg, SettingSvg, SupportSvg, TagSvg } from './svgPack'
+import { cancelSvg, dblRightArrowsvg, FolderSvg, Helpsvg, HomeSvg, Inboxsvg, Bugsvg, Linksvg, loaderCircleSvg, NotificationSvg, ProjectSvg, Leftsvg, SettingSvg, SupportSvg, TagSvg, checkmarkSvg } from './svgPack'
 
 type link = {
   tag: string | null
@@ -82,7 +82,9 @@ export default function Navbar() {
   const { unread } = useNotificationContext()
   const [ type, setType ] = useState('custom')
   const { userDetails : user } = useUserContext()
+  const [ sucess , setSuccess ] = useState(false)
   const [ loading , setLoading ] = useState(false)
+  const [ isLoading , setIsLoading ] = useState(false)
   const { inbox , sendMessage } = useInboxContext()
   const [ name, setName ] = useState( user ? user.name : '')
   const [ email, setEmail ] = useState( user ? user.email : '')
@@ -96,6 +98,47 @@ export default function Navbar() {
     ready && setMsg('')
     setLoading(false)
   }
+
+  const handleSendContact = async (e: React.FormEvent) =>{
+      setError('')
+      e.preventDefault()
+      if (!user && (!email || !email.includes('.com') ||  !email.includes('@'))){
+        setError('Please enter a valid email address')
+        return
+      }
+      if (!email.trim() && user ) setEmail(user.email)
+      if (!name.trim()) setName(user.name || 'Guest')
+      if (!msg.trim()) {
+        setError('A message content is required')
+        return
+      }
+      setIsLoading(true)
+      try {
+        const res = await fetch('/api/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ msg , name , email , type })
+        });
+  
+        const contentType = res.headers.get('content-type')
+  
+        if (!contentType || !contentType.includes('application/json')) {
+          setIsLoading(false)
+          setError('Unexpected server error. Try again later')
+          return
+        }
+  
+        if (!res.ok) setError(`Could not send ${type.toLocaleLowerCase()}. Check your ${type.toLocaleLowerCase()} inputs`)
+        else {
+          setSuccess(true)
+          setError(`${FirstCase(type)} message sent successfully. Cod-en will reach out to you shortly.`)
+          setTimeout(()=>{ setSuccess(false) ; setError('') }, 3000)
+        }
+      } catch (err) {
+        setError('Something went wrong')
+      }
+      setIsLoading(false)
+    }
 
   useEffect(()=>{
     setId(activeInbox.length > 0 ? activeInbox[0]._id : null)
@@ -178,7 +221,7 @@ export default function Navbar() {
                     {svg: SupportSvg('BIG'), txt: 'Custom', query: 'custom', func: ()=>setType('custom')}
                   ]
                 }}/></div>
-                <button className='button'>Send {Leftsvg('big')}</button>
+                <button disabled={isLoading} onClick={handleSendContact}>{sucess ? 'Sent' : !isLoading ? 'Send' : 'Sending...'} {sucess ? checkmarkSvg(sucess ? 'min-w-6 opacity-[1!important] inset-auto' : '') : !isLoading ? Leftsvg('big') : loaderCircleSvg(isLoading ? 'min-w-6 opacity-[1!important] inset-auto' : '')}</button>
               </div>
             </div>
           </div>

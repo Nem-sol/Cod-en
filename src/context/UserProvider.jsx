@@ -22,6 +22,13 @@ export const UserProvider = ({ children }) => {
             'authorization': `Bearer ${session.user?.id}`,
             }
           });
+
+          const contentType = res.headers.get('content-type')
+
+          if (!contentType || !contentType.includes('application/json')) {
+            setError(true)
+            return
+          }
           !res.ok && setError(true)
           const extra = await res.json();
           res.ok && setUserDetails({ ...session.user, ...extra });

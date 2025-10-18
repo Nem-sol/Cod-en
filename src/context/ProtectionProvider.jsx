@@ -5,10 +5,11 @@ import Heading from "../components/Header"
 import { useHelp } from './HelpProvider';
 import styles from '../app/main.module.css'
 import { useSession } from 'next-auth/react';
+import styl from '../app/inbox/page.module.css'
 import LoadingBar from "../components/LoadingBar"
-import { createContext , useEffect } from "react";
+import { createContext , useEffect } from "react"
 import style from '../app/contact/page.module.css'
-import { useProjectContext } from './ProjectContext';
+import { useProjectContext } from './ProjectContext'
 import { CheckIncludes, FirstCase, RemoveAllClass, translateText } from '../components/functions';
 import { loaderCircleSvg } from "../components/svgPack";
 import { useParams, usePathname , useRouter } from 'next/navigation';
@@ -64,6 +65,7 @@ export const ProtectorProvider = ({ children }) => {
       <Heading />
       <LoadingBar />
       <div className="root" style={{minHeight: status === 'loading' ? '0' : '100vh'}} onClick={(e) => {if (!['menu', 'menu div', 'menu button', 'menu span'].some(sel => CheckIncludes(e, sel))) {
+        RemoveAllClass(styl.inView, 'menu')
         RemoveAllClass(style.inView, 'menu')
         RemoveAllClass(styles.inView, 'menu')
         RemoveAllClass('inView', 'menu')

@@ -136,6 +136,25 @@ input:autofill,
 textarea:autofill{
   background-color: inherit;
 }
+textarea{
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    margin-block: 20px;
+    border-radius: 5px;
+    background-color: rgba(0, 0, 0, 0.15);
+  }
+  &::-webkit-scrollbar-thumb {
+    cursor: pointer;
+    border-radius: 3px;
+    background-color: var(--sweetPurple); 
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: var(--deepSweetPurple); 
+  }
+}
 input:-internal-autofill-selected{
   color: initial !important;
   appearance: none !important;
@@ -588,25 +607,6 @@ nav .contact input:focus,
 nav .contact textArea:focus{
   color: rgb( 50, 50, 50);
   background-color: rgb(236, 242, 245);
-}
-nav .contact textarea{
-  &::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-  &::-webkit-scrollbar-track {
-    margin-block: 20px;
-    border-radius: 5px;
-    background-color: rgba(0, 0, 0, 0.15);
-  }
-  &::-webkit-scrollbar-thumb {
-    cursor: pointer;
-    border-radius: 3px;
-    background-color: var(--sweetPurple); 
-  }
-  &::-webkit-scrollbar-thumb:hover {
-    background-color: var(--deepSweetPurple); 
-  }
 }
 nav .contact #contact{
   bottom: 0;

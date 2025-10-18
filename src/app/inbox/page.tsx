@@ -1,6 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { format } from 'date-fns'
+import style from './page.module.css'
 import React, { useState } from 'react'
 import styles from './../main.module.css'
 import ChatInput from '@/src/components/ChatBox'
@@ -9,7 +10,7 @@ import { classToggle } from '@/src/components/functions'
 import { useSocket } from '@/src/context/SocketContext'
 import { useUserContext } from '@/src/context/UserProvider'
 import { useInboxContext } from '@/src/context/InboxContext'
-import { Backsvg, HistorySvg, Inboxsvg, loaderCircleSvg, ProjectSvg, Rocketsvg, Searchsvg, SupportSvg } from '@/src/components/svgPack'
+import { Backsvg, HistorySvg, Inboxsvg, loaderCircleSvg, Moresvg, ProjectSvg, Rocketsvg, Searchsvg, SupportSvg } from '@/src/components/svgPack'
 
 type Msg = {
   _id: string
@@ -60,60 +61,68 @@ const Inbox = () => {
     }
 
     return(
-      <div className={styles.inboxPack}>
-        <div className={styles.all}>
+      <div className={style.inboxPack}>
+        <div className={style.all}>
           {inb.length > 0 ? inb.map((i: Inboxes, n: number)=>(
             <section key={n} onClick={()=>{setId(i._id)}}>
               <h2>{Inboxsvg('BIG')} {i.title} {id === i._id && <span>In view</span>}</h2>
               <p style={{backgroundColor: i.status === 'active' ? 'var(--success)' : i.status === 'completed' ? 'var(--error)' : 'var(--mild-dark)'}}>{i.status}</p>
             </section>
           )) : <Defaultbg props={{
-            styles: styles,
+            styles: style,
             img: '/homehero.png',
             h2: 'You have no matcing inbox',
             text: 'Try turning off filters or refreshing the page',
           }}/>}
         </div>
-        <div className={styles.one}>
-          <div style={{paddingInline: '10px'}} className={styles.bar}>
+        <div className={style.one}>
+          <div style={{paddingInline: '10px'}} className={style.bar}>
             <h2 className='font-bold text-[18px] flex-1'>{active ? active.title : 'Inbox'}</h2>
-            {inbox.length > 0 && <button onClick={()=>classToggle(`.${styles.hidden}`, styles.inView)}>{ProjectSvg()}
-              <section className={styles.hidden}>
+            {inbox.length > 0 && <button onClick={()=>classToggle(`.${style.hidden}`, style.inView)}>{ProjectSvg()}
+              <section className={style.hidden}>
+                {inbox.map(( i: Inboxes, n: number )=>(
+                  <span key={n} onClick={()=>setId(i._id)}>{i.title}</span>
+                ))}
+              </section>
+            </button>}
+            {id && <button onClick={()=>classToggle('.hidden2', style.inView)}>
+              {Moresvg()}
+              <section className={`${style.hidden} hidden2`}>
                 {inbox.map(( i: Inboxes, n: number )=>(
                   <span key={n} onClick={()=>setId(i._id)}>{i.title}</span>
                 ))}
               </section>
             </button>}
           </div>
-          <menu style={{boxShadow: 'inset 8px 5px 8px var(--sweetRed), inset 8px -5px 8px var(--sweetRed)', position: 'absolute', inset: '60px 0', bottom: '70px', zIndex: '2', pointerEvents: 'none'}}></menu>
-          <section className={styles.section}>
+          <menu style={{boxShadow: 'inset 8px 5px 8px var(--sweetRed), inset 8px -5px 8px var(--sweetRed)', position: 'absolute', inset: '60px 0', bottom: '70px', zIndex: '1', pointerEvents: 'none'}}></menu>
+          <section className={style.section}>
             {inbox.length < 1 && <Defaultbg props={{            
-              styles: styles,
+              styles: style,
               img: '/homehero.png',
               h2: 'You have no inbox',
               text: 'Create an active project to view inbox or switch inbox from toolbar.',
             }}/>}
             {inbox.length > 0 && !active && <Defaultbg props={{            
-              styles: styles,
+              styles: style,
               img: '/homehero.png',
               h2: 'No message to display',
               text: 'Select an inbox to view and update messages',
             }}/>}
             {active && active.messages && active.messages.length > 0 && active.messages.map(( mes: Msg , i: number) => (
-              <section key={i} className={mes.sent ? (user.role === 'user' ? 'sent' : styles.received) : (user.role !== 'user' ? styles.received : 'sent')}>
+              <section key={i} className={mes.sent ? (user.role === 'user' ? 'sent' : style.received) : (user.role !== 'user' ? style.received : 'sent')}>
                 <div><span>{mes.content}</span></div>
                 <p>{format(mes.updatedAt, 'h:mm a')}</p>
               </section>
             ))}
             { active && active.messages.length < 1 && <Defaultbg props={{            
-              styles: styles,
+              styles: style,
               img: '/homehero.png',
               h2: 'You have no messages',
               text: 'Send a message and begin conversation. Messages deemed unimportant may be ignored',
             }} />}
             <p className='text-[var(--error)] text-end font-medium px-2.5 self-end mt-auto'>{error}</p>
           </section>
-          {active && <div className={`${styles.input} ${styles.bar}`}>
+          {active && <div className={`${style.input} ${style.bar}`}>
             <ChatInput value={msg} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMsg(e.target.value)}/>
             <button disabled={loading} className='bg-[var(--success)!important] text-[white!important]' onClick={()=> msg.trim() !== '' && handleSendMessage()}>{ loading ? loaderCircleSvg() : Rocketsvg('BIG')}</button>
           </div>}
@@ -135,7 +144,7 @@ const Inbox = () => {
 
     else if (inbox.length < 1 && !error) return (
       <Defaultbg props={{
-        styles: styles,
+        styles: style,
         img: '/homehero.png',
         h2: `You have no inbox`,
         text: 'Create a project to view inbox',
@@ -144,7 +153,7 @@ const Inbox = () => {
 
     else if (inbox && inbox.length === 0 && error ) return (
       <Defaultbg props={{
-        styles: styles,
+        styles: style,
         img: '/homehero.png',
         h2: 'Could not get messages',
         text: 'Try restoring internet connection or refreshing the page',
@@ -164,12 +173,12 @@ const Inbox = () => {
         </div>
         {(!isLoading || inbox.length > 0) && Filter(filters)}
         {(isLoading && inbox.length < 1) && <Defaultbg props={{
-            styles: styles,
+            styles: style,
             img: '/homehero.png',
             h2: 'Getting messages...',
             text: 'Please be patient while we get your messages',
           }} />}
-        {error && <button disabled={isLoading} className={styles.floater} onClick={()=>setRefresh((prev: boolean) => !prev )}>{isLoading ? loaderCircleSvg() : Backsvg()}</button>}
+        {(error || isLoading) && inbox.length < 1 && <button disabled={isLoading} className={styles.floater} onClick={()=>setRefresh((prev: boolean) => !prev )}>{isLoading ? loaderCircleSvg() : Backsvg()}</button>}
       </div>
     </main>
   )
