@@ -274,7 +274,6 @@
 }
 .reco button{
   top: 10px;
-  opacity: 0;
   right: 10px;
   height: 30px;
   display: flex;
@@ -284,9 +283,6 @@
   border-radius: 12px;
   justify-content: center;
   background-color: var(--mild-dark);
-}
-.reco:hover button{
-  opacity: 1;
 }
 @media screen and (max-width: 650px) {
   .updator{

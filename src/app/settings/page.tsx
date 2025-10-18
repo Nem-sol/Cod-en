@@ -6,7 +6,7 @@ import { signOut } from 'next-auth/react'
 import React, { useEffect, useState } from 'react'
 import { useUserContext } from '@/src/context/UserProvider'
 import { CheckIncludes, FirstCase } from '@/src/components/functions'
-import { Editsvg, EyeClosedSvg, Eyesvg, Githubsvg, LogoutSvg, Padlocksvg, Refreshsvg, SettingSvg, Packssvg, GoogleG, Cloudsvg, AddSvg, Rocketsvg, Leftsvg, loaderCircleSvg, checkmarkSvg } from '@/src/components/svgPack'
+import { Editsvg, EyeClosedSvg, Eyesvg, Githubsvg, LogoutSvg, Padlocksvg, Refreshsvg, SettingSvg, Packssvg, GoogleG, Cloudsvg, AddSvg, Rocketsvg, Leftsvg, loaderCircleSvg, checkmarkSvg, DeleteSvg } from '@/src/components/svgPack'
 
 type sets = {
   answer: string
@@ -35,6 +35,7 @@ const Settings = () => {
   const [ ready , setReady ] = useState(false)
   const [ update , setUpdate ] = useState(false)
   const [ verify , setVerify ] = useState(false)
+  const [ success, setSuccess ] = useState(false)
   const [ loading, setLoading ] = useState(false)
   const [ password , setPassword ] = useState('')
   const [ deleting , setDeleting ] = useState(false)
@@ -109,10 +110,15 @@ const Settings = () => {
         setEr('Unexpected server error. Try again later')
         return
       }
-      res.ok && setRecovery([])
       const result = await res.json()
       !res.ok && setErr(result.error)
-      res.ok && setUserDetails((prev: User) => {return { ...prev , ...result }})
+      if (res.ok) {
+        setRecovery([])
+        setSuccess(true)
+        setEr('Updates successful')
+        setTimeout(()=>{ setSuccess(false); setEr('')}, 1500)
+        setUserDetails((prev: User) => {return { ...prev , ...result }})
+      }
       setReady(false)
       setPassword('')
       setLoading(false)
@@ -169,14 +175,18 @@ const Settings = () => {
       }
       const result = await res.json()
       if(!res.ok) setErr(result.error)
-      else setUserDetails((prev: User) => { return { ...prev , ...result }})
+      else {
+        setSuccess(true)
+        setErr('Updates successful')
+        setUserDetails((prev: User) => { return { ...prev , ...result }})
+      }
       setLoading(false)
       setPass('')
       setName('')
       setEmail('')
       setBackup('')
       setPassword('')
-      setTimeout(()=>setVerify(false), 1500)
+      setTimeout(()=>{setVerify(false); setSuccess(false)}, 1500)
     }
   }
   useEffect(()=>{
@@ -213,8 +223,8 @@ const Settings = () => {
           <div className={style.setts}>
             <span>Recovery questions</span>
             <p>Slots - {user ? user.recoveryQuestions.length : 0}/3</p>
-            {err && !recovery.length && <p className='text-[var(--error)] max-w-2xl w-full'>{er}</p>}
-            {user && user.recoveryQuestions.map((ques: string, i: number)=><div className={style.reco} key={i}>{ disclose ? ques : '****'} <button style={deleting ? {opacity: 1} : {}} onClick={()=> handleDelete(i)}>{ deleting ? loaderCircleSvg() : AddSvg()}</button></div>)}
+            {err && !recovery.length && <p style={success ? {color: 'var(--success)'} : {}} className='text-[var(--error)] max-w-2xl w-full'>{er}</p>}
+            {user && user.recoveryQuestions.map((ques: string, i: number)=><div className={style.reco} key={i}>{ disclose ? ques : '****'} <button style={deleting ? {opacity: 1} : {}} onClick={()=> handleDelete(i)}>{ loading ? loaderCircleSvg() : deleting? DeleteSvg() : AddSvg()}</button></div>)}
             
             {recovery.map((inp: sets, i: number)=>{
               return <>
@@ -241,7 +251,7 @@ const Settings = () => {
               </div>}
             {recovery.length > 0 && <p className='text-[var(--sweetPurple)] self-center items-center flex gap-1'>{Padlocksvg('big min-w-7')} Recovery answers cannot be displayed after creation</p>}
             {user && user.recoveryQuestions.length < 3 && user.provider === 'custom' && <h3 className='flex-wrap flex justify-end items-center gap-2.5'>
-              <p className='text-[var(--error)] max-w-2xl w-full'>{er}</p>
+              <p style={success ? {color: 'var(--success)'} : {}} className='text-[var(--error)] max-w-2xl w-full'>{er}</p>
               <p className='min-w-fit flex gap-2.5'>{recovery.length > 0 && <button className={style.button} onClick={handleRecovery}>{loading ? loaderCircleSvg() : checkmarkSvg('isBig')} { loading ?  'Saving...' : 'Save' }</button>}
               <button className={style.button} onClick={()=> {setEr(''); user.recoveryQuestions.length + recovery.length < 3 && setRecovery(( prev: sets[] )=> [...prev.filter((f: sets)=> f.question.trim() !== '' || f.answer.trim() !== ''), {question: '', answer: ''}])}}>{AddSvg('isBig')} Add </button></p></h3>}
           </div>
@@ -292,7 +302,7 @@ const Settings = () => {
               <hr />
               {verify && <button style={{backgroundColor: 'var(--error)', color: 'white', paddingLeft: '10px', paddingRight: '17px'}} onClick={(e: React.MouseEvent<HTMLButtonElement>)=>{e.preventDefault; setVerify(false); setPassword(''); setErr('')}}>{Leftsvg('p-1 rotate-180')} Back</button>}
               <button style={verify ? {backgroundColor: 'var(--success)', color: 'white'} : {}} className={!verify ? 'bg-[var(--sweetPurple)]' : ''} onClick={handleSubmit} disabled={verify && (password.length < 6 || loading)}>{verify ? 'Confirm' : 'Submit'} { loading ? loaderCircleSvg() : verify ? Rocketsvg('big') : Leftsvg('p-1')}</button>
-              <h4>{err}</h4>
+              <h4 style={success ? {color: 'var(--success)'} : {}}>{err}</h4>
             </div>
           </form>
           </>}

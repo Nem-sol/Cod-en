@@ -36,18 +36,17 @@ export const GET = async (req) => {
 }
 
 export const POST = async (req) => {
+  const { name , email , password , backup , newPassword , recoveryQuestions } = await req.json()
+  await connect()
+
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+
+  if (!password) return NextResponse.json({ error: 'Password required to update changes' }, { status: 400 })
+
+  if (!token) return NextResponse.json({ error: 'Unauthorized request declined' }, { status: 401 })
+
+  const user = await User.findById( token.id )
   try {
-    const { name , email , password , backup , newPassword , recoveryQuestions } = await req.json()
-    await connect()
-
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
-
-    if (!password) return NextResponse.json({ error: 'Password required to update changes' }, { status: 400 })
-
-    if (!token) return NextResponse.json({ error: 'Unauthorized request declined' }, { status: 401 })
-
-    const user = await User.findById( token.id )
-
     if (!user) return NextResponse.json({ error: 'Could not find user account' }, { status: 400 })
 
     const passCorrect = await bcrypt.compare(
@@ -158,7 +157,7 @@ export const POST = async (req) => {
     { status: 201 }
     )
   } catch (error) {
-    await Notification.create({
+    if (user) await Notification.create({
       read: false,
       important: true,
       type: 'Profile',
