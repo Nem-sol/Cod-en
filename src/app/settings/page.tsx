@@ -22,7 +22,7 @@ type User ={
   createdAt: string
   updatedAt: string
   exclusive: boolean
-  backupEmail:  String | null
+  backupEmail:  string | null
   recoveryQuestions: string[]
 }
 
