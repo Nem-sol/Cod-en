@@ -25,7 +25,7 @@ type Notes = {
 }
 
 type NotificationPack = {
-  notifications: Notes
+  notification: Notes
 }
 
 const Notification = () => {
@@ -48,7 +48,7 @@ const Notification = () => {
         body: JSON.stringify({id})
       })
       await res.json()
-      res.ok && dispatch({type: 'UPDATE_NOTIFICATION', payload: { ...notification, read: true}})
+      if (res.ok) dispatch({type: 'UPDATE_NOTIFICATION', payload: { ...notification, read: true}})
     }
     if (action === 'del'){
       const res = await fetch(`/api/notifications`,{
@@ -59,7 +59,7 @@ const Notification = () => {
         body: JSON.stringify({id})
       })
       await res.json()
-      res.ok && dispatch({type: 'DELETE_NOTIFICATION', payload: notification})
+      if (res.ok) dispatch({type: 'DELETE_NOTIFICATION', payload: notification})
     }
     setLoading(false)
   }
@@ -79,7 +79,7 @@ const Notification = () => {
       body: JSON.stringify({action})
     })
     await res.json()
-    res.ok && dispatch({
+    if (res.ok) dispatch({
       type: 'SET_NOTIFICATIONS',
       payload: action !== 'update' ? action === 'delete' && [] : [...notifications.map((n: Notes)=>{ 
         return {...n, read: true}
@@ -94,8 +94,7 @@ const Notification = () => {
     const [ loading , setLoading ] = useState(false)
     const [ friendlyDate , setDate ] = useState(formatDistanceToNow(new Date(date), {addSuffix: true}))
     useEffect(()=>{
-      let interval = setTimeout(()=>setDate(formatDistanceToNow(new Date(date), {addSuffix: true})), 60000)
-      interval
+      const interval = setTimeout(()=>setDate(formatDistanceToNow(new Date(date), {addSuffix: true})), 60000)
     return ()=>{
       clearTimeout(interval)
     }})
@@ -158,7 +157,7 @@ const Notification = () => {
   }
 
   return (
-    <main id={styles.main} onClick={( e: React.MouseEvent<HTMLElement, MouseEvent>)=>{ !CheckIncludes(e, 'menu') && !CheckIncludes(e, 'menu div') && !CheckIncludes(e, 'menu button') && !CheckIncludes(e, 'menu span') && RemoveAllClass( styles.inView , 'menu' ); !CheckIncludes(e, `.${styles.noti} button`) && !CheckIncludes(e, `.${styles.details}`) && !CheckIncludes(e, `.${styles.details} p`) && RemoveAllClass( styles.inView , `.${styles.noti}` )}}>
+    <main id={styles.main} onClick={( e: React.MouseEvent<HTMLElement, MouseEvent>)=>{ if(!CheckIncludes(e, 'menu') && !CheckIncludes(e, 'menu div') && !CheckIncludes(e, 'menu button') && !CheckIncludes(e, 'menu span')) RemoveAllClass( styles.inView , 'menu' ); if(!CheckIncludes(e, `.${styles.noti} button`) && !CheckIncludes(e, `.${styles.details}`) && !CheckIncludes(e, `.${styles.details} p`)) RemoveAllClass( styles.inView , `.${styles.noti}` )}}>
       <div className={styles.main}>
         <h2 className={styles.title}>{NotificationSvg('BIG')} Notifications</h2>
         <div className={styles.quick}>

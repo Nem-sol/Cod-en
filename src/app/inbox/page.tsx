@@ -52,8 +52,10 @@ const Inbox = () => {
     const handleSendMessage = async () => {
       if (msg.trim() === '') return
       setLoading(true)
-      ready ? sendMessage( id , msg ) : setError('Internet connection lost.')
-      ready && setMsg('')
+      if (ready) {
+        sendMessage( id , msg )
+        setMsg('')
+      } else setError('Internet connection lost.')
       setLoading(false)
     }
 

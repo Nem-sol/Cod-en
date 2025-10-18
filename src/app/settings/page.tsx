@@ -2,12 +2,29 @@
 import Link from 'next/link'
 import validator from 'validator'
 import style from './page.module.css'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styles from '../main.module.css'
 import { signOut } from 'next-auth/react'
 import { CheckIncludes, FirstCase } from '@/src/components/functions'
 import { useUserContext } from '@/src/context/UserProvider'
 import { Editsvg, EyeClosedSvg, Eyesvg, Githubsvg, LogoutSvg, Padlocksvg, Refreshsvg, SettingSvg, Packssvg, GoogleG, Cloudsvg, AddSvg, Rocketsvg, Leftsvg, loaderCircleSvg, checkmarkSvg } from '@/src/components/svgPack'
+
+type sets = {
+  answer: string
+  question: string
+}
+
+type User ={
+  name: string
+  role: string
+  email: string
+  provider: string
+  createdAt: string
+  updatedAt: string
+  exclusive: boolean
+  backupEmail:  String | null
+  recoveryQuestions: string[]
+}
 
 const Settings = () => {
   const [ er , setEr ] = useState('')
@@ -23,16 +40,17 @@ const Settings = () => {
   const [ password , setPassword ] = useState('')
   const [ deleting , setDeleting ] = useState(false)
   const [ disclose , setDisclose ] = useState(false)
-  const [ recovery , setRecovery ]: any[] = useState([])
-  const [ changeArr , setChangeArr ]: any[] = useState([''])
+  const [ changeArr , setChangeArr ] = useState([''])
+  const [ recovery , setRecovery ] = useState([{question: '', answer: ''}])
   const { userDetails: user, error , setRefresh , setUserDetails } = useUserContext()
   const stringArr = changeArr.map((k: string, i: number) => i < changeArr.length - 1 ? k : '').filter((k: string)=> k !== '')
 
-  const handleClick = (e: any)=>{!CheckIncludes(e, `.${style.updator} menu`) && !CheckIncludes(e, `.${style.updator} input`) &&!CheckIncludes(e, `.${style.updator} menu span`) && setRecovery(( prev: any )=> [...prev.filter((f: any)=> f.question.trim() !== '' && f.answer.trim() !== '')])}
+  const handleClick = (e: React.MouseEvent<HTMLFormElement>)=>{!CheckIncludes(e, `.${style.updator} menu`) && !CheckIncludes(e, `.${style.updator} input`) &&!CheckIncludes(e, `.${style.updator} menu span`) && setRecovery(( prev: sets[] )=> [...prev.filter((f: sets)=> f.question.trim() !== '' && f.answer.trim() !== '')])}
 
   const handleDelete = async (i: number) => {
     if (!user) return
     if (ready) {
+      setDeleting(true)
       if (!password.trim()){
         setEr('Password is required for updates')
         return
@@ -51,22 +69,24 @@ const Settings = () => {
 
       if (!contentType || !contentType.includes('application/json')) {
         setLoading(false)
+        setDeleting(false)
         setEr('Unexpected server error. Try again later')
         return
       }
       const result = await res.json()
-      !res.ok && setEr(result.error)
-      res.ok && setUserDetails((prev: any) => {return { ...prev , recoveryQuestions: [...prev.recoveryQuestions.filter((q: string,  n: number ) =>  n ! == i )]}})
+      if (!res.ok) setEr(result.error)
+      else setUserDetails((prev: User) => {return { ...prev , recoveryQuestions: [...prev.recoveryQuestions.filter((q: string,  n: number ) =>  n ! == i )]}})
       setReady(false)
       setPassword('')
       setLoading(false)
+      setDeleting(false)
       return
     }
     if (!ready) setReady(true)
   }
   const handleRecovery = async () => {
     if (recovery.length < 1 || !user) return
-    setRecovery(( prev: any[] )=> [...prev.filter((f: any)=> f.question.trim() !== '' && f.answer.trim() !== '')])
+    setRecovery(( prev: sets[] ) => [...prev.filter((f: sets)=> f.question.trim() !== '' && f.answer.trim() !== '')])
     if (recovery.length < 1 || !user) return
     if (ready){
       if (!password.trim()){
@@ -93,14 +113,14 @@ const Settings = () => {
       res.ok && setRecovery([])
       const result = await res.json()
       !res.ok && setErr(result.error)
-      res.ok && setUserDetails((prev: any) => {return { ...prev , ...result }})
+      res.ok && setUserDetails((prev: User) => {return { ...prev , ...result }})
       setReady(false)
       setPassword('')
       setLoading(false)
       return
     }
-    if (!recovery.find((f: any)=> f.question.trim() !== '' && f.answer.trim() !== '')) setEr('Recovery questions and answers must contain non-empty fields')
-    if (!ready && recovery.find((f: any)=> f.question.trim() !== '' && f.answer.trim() !== '')) setReady(true)
+    if (!recovery.find((f: sets)=> f.question.trim() !== '' && f.answer.trim() !== '')) setEr('Recovery questions and answers must contain non-empty fields')
+    if (!ready && recovery.find((f: sets)=> f.question.trim() !== '' && f.answer.trim() !== '')) setReady(true)
   }
   const handleSubmit = async (e: React.FormEvent) => {
     setChangeArr([])
@@ -110,10 +130,10 @@ const Settings = () => {
     const em = email.trim()
     const be = backup.trim()
     const pw = password.trim()
-    n && setChangeArr(( prev: any[] ) => [ ... prev , 'name'])
-    em && setChangeArr(( prev: any[] ) => [ ... prev , 'email'])
-    be && setChangeArr(( prev: any[] ) => [ ... prev , 'back-up email'])
-    p.length > 6 && setChangeArr(( prev: any[] ) => [ ... prev , 'password'])
+    if(n) setChangeArr(( prev: string[] ) => [ ... prev , 'name'])
+    if(em) setChangeArr(( prev: string[] ) => [ ... prev , 'email'])
+    if(be) setChangeArr(( prev: string[] ) => [ ... prev , 'back-up email'])
+    if(p.length > 6) setChangeArr(( prev: string[] ) => [ ... prev , 'password'])
     if (!n && !em && !p && !be ) setErr('At least one field must be filled')
     else if (n && n.length < 4 ) setErr('User name is too short.')
     else if (em && !validator.isEmail(em)) setErr('Enter valid email adress.')
@@ -128,7 +148,9 @@ const Settings = () => {
       setPassword('')
     }
     else {
-      if (!pw) {setErr('Password required too confirm changes'); return}
+      if (!pw) {
+        setErr('Password required too confirm changes'); return
+      }
       setErr('')
       setLoading(true)
       const res = await fetch('/api/users',{
@@ -147,8 +169,8 @@ const Settings = () => {
         return
       }
       const result = await res.json()
-      !res.ok && setErr(result.error)
-      res.ok && setUserDetails((prev: any) => { return { ...prev , ...result }})
+      if(!res.ok) setErr(result.error)
+      else setUserDetails((prev: User) => { return { ...prev , ...result }})
       setLoading(false)
       setPass('')
       setName('')
@@ -158,13 +180,16 @@ const Settings = () => {
       setTimeout(()=>setVerify(false), 1500)
     }
   }
+  useEffect(()=>{
+    setRecovery(( prev: sets[] )=> [...prev.filter((f: sets)=> f.question.trim() !== '' || f.answer.trim() !== '')])
+  }, [])
   return (
     <main id={styles.main} onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>)=>{
-      !CheckIncludes(e, `.${style.button}`) &&!CheckIncludes(e, `.${style.responses}`) &&!CheckIncludes(e, `.${style.responses} input`) && setRecovery(( prev: any[] )=> [...prev.filter((f: any)=> f.question.trim() !== '' || f.answer.trim() !== '')])}}>
+      !CheckIncludes(e, `.${style.button}`) &&!CheckIncludes(e, `.${style.responses}`) &&!CheckIncludes(e, `.${style.responses} input`) && setRecovery(( prev: sets[] )=> [...prev.filter((f: sets)=> f.question.trim() !== '' || f.answer.trim() !== '')])}}>
       <div className={styles.main}>
         <h2 className={styles.title}>{SettingSvg()} Settings</h2>
         <div className={styles.quick}>
-          <button onClick={()=>setDisclose((prev: any) => !prev)}>{!disclose ? Eyesvg('min-w-8') : EyeClosedSvg('min-w-8')}{!disclose ? 'View' : 'Hide'} credentials</button>
+          <button onClick={()=>setDisclose((prev: boolean) => !prev)}>{!disclose ? Eyesvg('min-w-8') : EyeClosedSvg('min-w-8')}{!disclose ? 'View' : 'Hide'} credentials</button>
           { user && user.provider === 'custom' && <button className={styles.second} onClick={()=> setUpdate(true)}>{Editsvg()} Update credentials</button>}
           <Link href='/recovery' className={user && user.provider === 'custom' ? styles.third : styles.second}>{Padlocksvg('isBig')} Account recovery</Link>
         </div>
@@ -192,22 +217,22 @@ const Settings = () => {
             {err && !recovery.length && <p className='text-[var(--error)] max-w-2xl w-full'>{er}</p>}
             {user && user.recoveryQuestions.map((ques: string, i: number)=><div className={style.reco} key={i}>{ disclose ? ques : '****'} <button style={deleting ? {opacity: 1} : {}} onClick={()=> handleDelete(i)}>{ deleting ? loaderCircleSvg() : AddSvg()}</button></div>)}
             
-            {recovery.map((inp: any, i: number)=>{
+            {recovery.map((inp: sets, i: number)=>{
               return <>
                 <div className={style.responses}>
                   <input type="text" name={'questions' + i} placeholder='Enter new question' value={inp.question} onChange={(e: React.ChangeEvent<HTMLInputElement>)=>
                       setRecovery(
-                        (prev: any) =>[...prev.map((f: any, n: number)=>  n === i ? {...f, question: e.target.value} : f)]
+                        (prev: sets[]) =>[...prev.map((f: sets, n: number)=>  n === i ? {...f, question: e.target.value} : f)]
                     )}
-                    onClick={() => setRecovery(( prev: any )=> [...prev.filter((f: any)=> f === inp || (f.question.trim() !== '' && f.answer.trim() !== ''))])}
+                    onClick={() => setRecovery(( prev: sets[] )=> [...prev.filter((f: sets)=> f === inp || (f.question.trim() !== '' && f.answer.trim() !== ''))])}
                   />
                 </div>
                 <menu className={`${style.responses} ${style.answer}`}>
                   <input type="text" name={'answers'+ i} placeholder='Enter corresponding answer' value={inp.answer} onChange={(e: React.ChangeEvent<HTMLInputElement>)=>
                     setRecovery(
-                      (prev: any) =>[...prev.map((f: any, n: number)=>  n === i ? {...f, answer: e.target.value} : f)]
+                      (prev: sets[]) =>[...prev.map((f: sets, n: number)=>  n === i ? {...f, answer: e.target.value} : f)]
                     )}
-                    onClick={() => setRecovery(( prev: any )=> [...prev.filter((f: any)=> f === inp || (f.question.trim() !== '' && f.answer.trim() !== ''))])}
+                    onClick={() => setRecovery(( prev: sets[] )=> [...prev.filter((f: sets)=> f === inp || (f.question.trim() !== '' && f.answer.trim() !== ''))])}
                   />
                 </menu>
               </>
@@ -219,10 +244,10 @@ const Settings = () => {
             {user && user.recoveryQuestions.length < 3 && user.provider === 'custom' && <h3 className='flex-wrap flex justify-end items-center gap-2.5'>
               <p className='text-[var(--error)] max-w-2xl w-full'>{er}</p>
               <p className='min-w-fit flex gap-2.5'>{recovery.length > 0 && <button className={style.button} onClick={handleRecovery}>{loading ? loaderCircleSvg() : checkmarkSvg('isBig')} { loading ?  'Saving...' : 'Save' }</button>}
-              <button className={style.button} onClick={()=> {setEr(''); user.recoveryQuestions.length + recovery.length < 3 && setRecovery(( prev: any[] )=> [...prev.filter((f: any)=> f.question.trim() !== '' || f.answer.trim() !== ''), {question: '', answer: ''}])}}>{AddSvg('isBig')} Add </button></p></h3>}
+              <button className={style.button} onClick={()=> {setEr(''); user.recoveryQuestions.length + recovery.length < 3 && setRecovery(( prev: sets[] )=> [...prev.filter((f: sets)=> f.question.trim() !== '' || f.answer.trim() !== ''), {question: '', answer: ''}])}}>{AddSvg('isBig')} Add </button></p></h3>}
           </div>
           <p className='flex gap-4'>
-            {error && <button className={style.button} onClick={()=>setRefresh((prev : any)=> !prev)}>{Refreshsvg()} Refresh details</button>}
+            {error && <button className={style.button} onClick={()=>setRefresh((prev : boolean)=> !prev)}>{Refreshsvg()} Refresh details</button>}
             {user && <button className={style.button + ' text-[var(--error)!important]'} onClick={()=>signOut()}>{LogoutSvg()} Log out</button>}
             {user && user.provider === 'custom' && <button className={style. button} onClick={()=> setUpdate(true)}>{Editsvg()} Update credentials</button>}
           </p>
@@ -237,19 +262,19 @@ const Settings = () => {
                 <h3 className='text-[var(--changingPurple)]'>{Editsvg('BIG')} Update only desired fields</h3>
                 {user?.provider === 'custom' && <div className={style.input}>
                   <p>User name</p>
-                  <input type="text" name='name' value={name} onChange={(e: any)=>setName(e.target.value.endsWith('  ') ? e.target.value.slice(0, -1) : e.target.value )}/>
+                  <input type="text" name='name' value={name} onChange={(e: React.ChangeEvent<HTMLInputElement>)=>setName(e.target.value.endsWith('  ') ? e.target.value.slice(0, -1) : e.target.value )}/>
                 </div>}
                 {user?.provider === 'custom' && <div className={style.input}>
                   <p>Email</p>
-                  <input type="email" name='email' value={email} onChange={(e: any)=>setEmail(e.target.value)}/>
+                  <input type="email" name='email' value={email} onChange={(e: React.ChangeEvent<HTMLInputElement>)=>setEmail(e.target.value)}/>
                 </div>}
                 <div className={style.input}>
                   <p>Password</p>
-                  <input type="text" name='password' value={pass} onChange={(e: any)=>setPass(e.target.value.trim())}/>
+                  <input type="text" name='password' value={pass} onChange={(e: React.ChangeEvent<HTMLInputElement>)=>setPass(e.target.value.trim())}/>
                 </div>
                 <div className={style.input}>
                   <p>Back-up email</p>
-                  <input type="email" name='backup' value={backup} onChange={(e: any)=>setBackup(e.target.value)}/>
+                  <input type="email" name='backup' value={backup} onChange={(e: React.ChangeEvent<HTMLInputElement>)=>setBackup(e.target.value)}/>
                 </div>
               </section>
               <section>
@@ -266,7 +291,7 @@ const Settings = () => {
             </div>
             <div className={style.finish}>
               <hr />
-              {verify && <button style={{backgroundColor: 'var(--error)', color: 'white', paddingLeft: '10px', paddingRight: '17px'}} onClick={(e: any)=>{e.preventDefault; setVerify(false); setPassword(''); setErr('')}}>{Leftsvg('p-1 rotate-180')} Back</button>}
+              {verify && <button style={{backgroundColor: 'var(--error)', color: 'white', paddingLeft: '10px', paddingRight: '17px'}} onClick={(e: React.MouseEvent<HTMLButtonElement>)=>{e.preventDefault; setVerify(false); setPassword(''); setErr('')}}>{Leftsvg('p-1 rotate-180')} Back</button>}
               <button style={verify ? {backgroundColor: 'var(--success)', color: 'white'} : {}} className={!verify ? 'bg-[var(--sweetPurple)]' : ''} onClick={handleSubmit} disabled={verify && (password.length < 6 || loading)}>{verify ? 'Confirm' : 'Submit'} { loading ? loaderCircleSvg() : verify ? Rocketsvg('big') : Leftsvg('p-1')}</button>
               <h4>{err}</h4>
             </div>

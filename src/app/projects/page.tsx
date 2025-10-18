@@ -6,14 +6,14 @@ import { useProjectContext } from '@/src/context/ProjectContext'
 import { Defaultbg, NewFilterSets } from '@/src/components/pageParts'
 import { AddProjectsvg, Inboxsvg, Linksvg, loaderCircleSvg, Moresvg, ProjectSvg, Refreshsvg, Searchsvg, SupportSvg } from '@/src/components/svgPack'
 
-type process = {
-  _id: string
-  title: string,
-  phase: {
-    type: string,
-    completed: Boolean
-  }
-}
+// type process = {
+//   _id: string
+//   title: string,
+//   phase: {
+//     type: string,
+//     completed: boolean
+//   }
+// }
 
 // type projct = {
 //   _id: string
@@ -148,7 +148,7 @@ const ProjectPack = () => {
           text: 'Please be patient while we get your projects',
         }}/>}
         {(!isLoading || project.length < 1) && Filter(filters)}
-        {error && <button disabled={isLoading} className={styles.floater} onClick={()=>setRefresh((prev: Boolean) => !prev )}>{isLoading ? loaderCircleSvg() : Refreshsvg()}</button>}
+        {error && <button disabled={isLoading} className={styles.floater} onClick={()=>setRefresh((prev: boolean) => !prev )}>{isLoading ? loaderCircleSvg() : Refreshsvg()}</button>}
       </div>
     </main>
   )

@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { NewDropSets } from './pageParts'
 import styles from '../app/main.module.css'
 import ChatInput from '../components/ChatBox'
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSocket } from '../context/SocketContext'
 import { useUserContext } from '../context/UserProvider'
 import { useInboxContext } from '../context/InboxContext'
@@ -54,10 +54,6 @@ type Inboxes = {
   receiverId: string
 }
 
-type InboxPacks = {
-  inb: Inboxes[]
-}
-
 const NavLinks = ({props}: prop) => {
   return props.arr.map(( l: link , i: number )=>(
     <Link href={l.link || window.location.pathname} key={i}>{l.svg}{l.tag}</Link>
@@ -88,10 +84,10 @@ export default function Navbar() {
   const { userDetails : user } = useUserContext()
   const [ loading , setLoading ] = useState(false)
   const { inbox , sendMessage } = useInboxContext()
-  const [ viewInbox , setViewInbox]: any[] = useState(null)
-  const [ activeInbox , setActiveInbox]: any[] = useState([])
   const [ name, setName ] = useState( user ? user.name : '')
   const [ email, setEmail ] = useState( user ? user.email : '')
+  const viewInbox = inbox.filter(( inb: Inboxes) => inb._id === id)[0] || null
+  const activeInbox = inbox.filter(( inb: Inboxes) => inb.status === 'active')
 
   const handleSendMessage = () => {
     if ( !msg.trim() ) return
@@ -102,9 +98,7 @@ export default function Navbar() {
   }
 
   useEffect(()=>{
-    setActiveInbox(inbox.filter(( inb: Inboxes) => inb.status === 'active'))
     setId(activeInbox.length > 0 ? activeInbox[0]._id : null)
-    inbox.length > 0 && setViewInbox(inbox.filter(( inb: Inboxes) => inb._id === id)[0] || null)
   }, [ inbox ])
   if (user) return  (
     <nav>
