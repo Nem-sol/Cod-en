@@ -747,6 +747,7 @@ nav .contact .button:hover svg{
 }
 @media screen and (max-width: 500px) {
   .root{
+    column-gap: 0;
     padding-bottom: 60px;
   }
   nav{
@@ -788,6 +789,9 @@ nav .contact .button:hover svg{
   nav.inView .pagenav{
     width: 75vw;
   }
+  nav .contact .holder{
+    padding: 10px;
+  }
   svg, nav .links svg{
     width: 22px;
     height: 22px;
@@ -795,10 +799,15 @@ nav .contact .button:hover svg{
 }
 @media screen and (max-width: 375px) {
   nav.inView .pagenav{
-    width: 95%;
+    width: 90%;
   }
   svg, nav .links svg{
     width: 21px;
     height: 21px;
+  }
+}
+@media screen and (max-width: 317px) {
+  nav.inb .holdr{
+    translate: -34.7%;
   }
 }

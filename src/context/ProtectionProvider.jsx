@@ -54,7 +54,7 @@ export const ProtectorProvider = ({ children }) => {
           project ? project.title : 'Not found') : 
         'Not found'
       )
-      translateText(`Cod-en | ${parts[1][0].toLocaleUpperCase()}${parts[1].slice(1)} - ${sub}`, 'title')
+      translateText(`Cod-en | ${FirstCase(parts[1])} - ${sub}`, 'title')
     }
     else translateText('Cod-en', 'title')
   }, [ path , status ]);
