@@ -688,6 +688,7 @@ nav .contact .button:hover svg{
     left: 0;
     width: 0;
     top: 60px;
+    bottom: 0;
     z-index: 2;
     position: fixed;
     transition: 0.5s;
