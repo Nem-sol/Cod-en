@@ -9,6 +9,17 @@ import { useUserContext } from '@/src/context/UserProvider'
 import { Blogsvg, FolderSvg, Helpsvg, Refreshsvg, Searchsvg } from '@/src/components/svgPack'
 import { CheckIncludes, classToggle, RemoveAllClass, RemoveOtherClass } from '@/src/components/functions'
 
+type Help = {
+  _id: string
+  link: string
+  slug: string
+  title: string
+  content: string
+  related: string[]
+  createdAt: string | null
+  updatedAt: string | null
+}
+
 const Help = () => {
   const { slug } = useParams()
   const [ filters, setFilters ] = useState('')
@@ -16,7 +27,7 @@ const Help = () => {
   const [ content , setContent ] = useState(null)
   const { help , error, setRefresh, isLoading } = useHelp()
   return (
-    <main id={styles.main} className={!user ? 'pl-2.5' : ''} onClick={( e: any)=> !CheckIncludes(e, 'menu') && !CheckIncludes(e, 'menu div') && !CheckIncludes(e, 'menu button') && !CheckIncludes(e, 'menu span') && RemoveAllClass( styles.inView , 'menu' )}>
+    <main id={styles.main} className={!user ? 'pl-2.5' : ''}>
       <div className={styles.main}>
         <h2 className={styles.title}>{Helpsvg()} Help - {slug && (slug[0].toLocaleUpperCase() + slug.slice(1))}</h2>
         <div className={styles.quick}>
@@ -26,12 +37,12 @@ const Help = () => {
         </div>
         <div id={styles.searchbar}>
           <span>{Searchsvg()}</span>
-          <input autoComplete='true' value={filters} type="text" name="search" placeholder='Search cod-en help' onClick={(e: any)=>e.target.classList.add('isTarget')}  onMouseLeave={(e: any)=>e.target.classList.remove('isTarget')} onChange={(e)=>setFilters(e.target.value)}/>
+          <input autoComplete='true' value={filters} type="text" name="search" placeholder='Search cod-en help' onChange={(e: React.ChangeEvent<HTMLInputElement>)=>setFilters(e.target.value)}/>
           {help.length > 0 && (
             <menu id='filter'>
               <span style={{boxShadow: '0 2px 4px rgba(0, 0, 0, 0.282), 0 0px 3px rgba(0, 0, 0, 0.282)', backgroundColor: 'var(--sweetRed) !important'}} onClick={()=>{classToggle('#filter', styles.inView); RemoveOtherClass('#filter', styles.inView, 'menu')}}>Helps</span>
               <div>
-                {help.map(( h: any , i: any )=> <Link href={h.link} key={i}>{h.title}</Link>)}
+                {help.map(( h: Help , i: number )=> <Link href={h.link} key={i}>{h.title}</Link>)}
               </div>
             </menu>
           )}

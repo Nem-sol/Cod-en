@@ -272,6 +272,22 @@
   box-shadow: 0 3px 10px rgb(0, 0, 0 ,0.15);
   background-color: rgba(217, 167, 221, 0.36);
 }
+.reco button{
+  top: 10px;
+  opacity: 0;
+  right: 10px;
+  height: 30px;
+  display: flex;
+  transition: 0.5s;
+  position: absolute;
+  align-items: center;
+  border-radius: 12px;
+  justify-content: center;
+  background-color: var(--mild-dark);
+}
+.reco:hover button{
+  opacity: 1;
+}
 @media screen and (max-width: 650px) {
   .updator{
     top: auto;

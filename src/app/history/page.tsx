@@ -4,20 +4,34 @@ import Image from 'next/image'
 import { format } from 'date-fns'
 import styles from '../main.module.css'
 import React, { useState } from 'react'
+import { Copier } from '../../components/pageParts'
 import { useUserContext } from '@/src/context/UserProvider'
 import { useHistoryContext } from '@/src/context/HistoryContext'
 import { Defaultbg, NewFilterSets } from '@/src/components/pageParts'
-import { CheckIncludes, RemoveAllClass } from '@/src/components/functions'
-import { Backsvg, HistorySvg, Inboxsvg, Linksvg, loaderCircleSvg, Moresvg, NotificationSvg, Searchsvg } from '@/src/components/svgPack'
+import { Backsvg, HistorySvg, Inboxsvg, Linksvg, loaderCircleSvg, NotificationSvg, Searchsvg } from '@/src/components/svgPack'
 
-
+type Histories = {
+  _id: string
+  type: string
+  class: string
+  title: string
+  target: string
+  status: string
+  userId: string
+  message: string
+  createdAt: string
+  updatedAt: string
+}
+type HistoryPacks = {
+  history: Histories
+}
 
 const History = () => {
   const [ filters, setFilters ] = useState('')
   const { userDetails: user } = useUserContext()
   const { history, error, setRefresh, isLoading } = useHistoryContext()
 
-  function HistoryPacks({history}: any) {
+  function HistoryPacks({history}: HistoryPacks) {
     const date = history.createdAt
     const friendlyDate  = format(new Date(date), 'h:mm a')
     return (
@@ -30,7 +44,7 @@ const History = () => {
         </div>
         <div>
           <Link href={'/history/'+history._id}>{Linksvg()}</Link>
-          <button>{Moresvg()}</button>
+          <Copier props={{text: history._id}}/>
         </div>
       </div>
     )
@@ -44,12 +58,12 @@ const History = () => {
 
     if (!history) result = null
     else if (filter.trim() === '') filtered = history
-    else if (filter === 'payment') filtered = filtered.filter(( hist: any )=> hist.class.toLocaleLowerCase() === 'payment')
-    else if(filter === 'pending' || filter === 'failed' || filter === 'successful') filtered = filtered.filter(( hist: any )=> hist.status === filter)
-    else if (filter === 'profile' || filter === 'project' || filter === 'subscription') filtered = filtered.filter((hist: any)=> hist.type === filters)
-    else filtered = filtered.filter(( hist: any )=> hist.title.toLocaleLowerCase().includes(filter))
+    else if (filter === 'payment') filtered = filtered.filter(( hist: Histories )=> hist.class.toLocaleLowerCase() === 'payment')
+    else if(filter === 'pending' || filter === 'failed' || filter === 'successful') filtered = filtered.filter(( hist: Histories )=> hist.status === filter)
+    else if (filter === 'profile' || filter === 'project' || filter === 'subscription') filtered = filtered.filter((hist: Histories)=> hist.type === filters)
+    else filtered = filtered.filter(( hist: Histories )=> hist.title.toLocaleLowerCase().includes(filter))
 
-    if (filtered && filtered.length > 0) result = filtered.map((hist: any, i: any)=> <HistoryPacks key={i} history={hist}/>)
+    if (filtered && filtered.length > 0) result = filtered.map((hist: Histories, i: number)=> <HistoryPacks key={i} history={hist}/>)
 
     if (history && history.length < 1 && error ) return (
       <Defaultbg props={{
@@ -77,7 +91,7 @@ const History = () => {
   }
 
   return (
-    <main id={styles.main} onClick={( e: any)=> !CheckIncludes(e, 'menu') && !CheckIncludes(e, 'menu div') && !CheckIncludes(e, 'menu button') && !CheckIncludes(e, 'menu span') && RemoveAllClass( styles.inView , 'menu' )}>
+    <main id={styles.main}>
       <div className={styles.main}>
         <h2 className={styles.title}>{HistorySvg()} History</h2>
         <div className={styles.quick}>
@@ -86,7 +100,7 @@ const History = () => {
         </div>
         <div id={styles.searchbar}>
           <span>{Searchsvg()}</span>
-          <input autoComplete='true' type="text" name="search" placeholder='Search from title' onClick={(e: any)=>e.target.classList.add('isTarget')}  onMouseLeave={(e: any)=>e.target.classList.remove('isTarget')} onChange={(e)=>setFilters(e.target.value)}/>
+          <input autoComplete='true' type="text" name="search" placeholder='Search from title' onChange={(e: React.ChangeEvent<HTMLInputElement>)=>setFilters(e.target.value)}/>
           <NewFilterSets props={{
             id: 'filters',
             query: filters,
@@ -112,7 +126,7 @@ const History = () => {
           text: 'Please be patient while we get your history',
         }}/>}
         {(!isLoading || history.length > 0) && Filter(filters)}
-        {error && <button disabled={isLoading} className={styles.floater} onClick={()=>setRefresh((prev: any) => !prev )}>{isLoading ? loaderCircleSvg() : Backsvg()}</button>}
+        {error && <button disabled={isLoading} className={styles.floater} onClick={()=>setRefresh((prev: boolean) => !prev )}>{isLoading ? loaderCircleSvg() : Backsvg()}</button>}
       </div>
     </main>
   )

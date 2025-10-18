@@ -12,7 +12,7 @@ const NotFound = () => {
     <main className={`flex flex-row justify-center items-center text-[var(--translucent)] ${style.main}`}>
       <div className={styles.background}></div>
       <div className='w-10/12 gap-y-2.5 gap-x-7 flex flex-row justify-center items-center flex-wrap content-center p-2.5 max-w-5xl'>
-        <h2 className='w-full font-bold text-2xl text-center pt-8'>The page you're looking for could not be found</h2>
+        <h2 className='w-full font-bold text-2xl text-center pt-8'>The page you&apos;re looking for could not be found</h2>
         <div className={styles.img}>
           <Image src='/homehero.png' fill={true} alt='page-not-found' />
         </div>

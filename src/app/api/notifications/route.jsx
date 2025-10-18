@@ -3,7 +3,7 @@ import { getToken } from 'next-auth/jwt'
 import { NextResponse } from 'next/server'
 import Notification from  '../../../models/Notification'
 
-export const GET = async (req: any) => {
+export const GET = async ( req ) => {
   
   await connect()
 
@@ -23,7 +23,7 @@ export const GET = async (req: any) => {
   }
 }
 
-export const DELETE = async (req: any) => {
+export const DELETE = async ( req ) => {
   
   await connect()
   const { id } = await req.json()
@@ -44,7 +44,7 @@ export const DELETE = async (req: any) => {
   }
 }
 
-export const PATCH = async (req: any) => {
+export const PATCH = async ( req ) => {
   
   await connect()
   const { id } = await req.json()
@@ -65,7 +65,7 @@ export const PATCH = async (req: any) => {
   }
 }
 
-export const POST = async (req: any) => {
+export const POST = async ( req ) => {
   
   await connect()
   const { action } = await req.json()
@@ -77,13 +77,13 @@ export const POST = async (req: any) => {
 
     if (action !== 'update' && action !== 'delete') return NextResponse.json({ error: `Could not process unrecognized action ; ${action}.` }, { status: 400 })
       
-    const notification: any = action === 'update' ? 
+    const notification = action === 'update' ? 
       await Notification.updateMany({userId: token.id, read: false}, {read: true}) : 
       action === 'delete' && await Notification.find({userId: token.id})
 
     if (action === 'delete') try {
       await Promise.all(
-        notification.map(async ( notification: any ) =>(Notification.findOneAndDelete(notification._id)))
+        notification.map(async ( notification ) =>(Notification.findOneAndDelete(notification._id)))
       )
       return NextResponse.json({mssg: `Notifications ${action}d.`}, { status: 200 })
     } catch (error) {

@@ -21,14 +21,49 @@ const Settings = () => {
   const [ verify , setVerify ] = useState(false)
   const [ loading, setLoading ] = useState(false)
   const [ password , setPassword ] = useState('')
+  const [ deleting , setDeleting ] = useState(false)
   const [ disclose , setDisclose ] = useState(false)
   const [ recovery , setRecovery ]: any[] = useState([])
-  const [ changeArr , setChangeArr ]: any[] = useState([])
+  const [ changeArr , setChangeArr ]: any[] = useState([''])
   const { userDetails: user, error , setRefresh , setUserDetails } = useUserContext()
-  const stringArr = changeArr.map((k: string, i: number) => i < changeArr.length - 1 ? k : '').filter((k: any)=> k !== '')
+  const stringArr = changeArr.map((k: string, i: number) => i < changeArr.length - 1 ? k : '').filter((k: string)=> k !== '')
 
   const handleClick = (e: any)=>{!CheckIncludes(e, `.${style.updator} menu`) && !CheckIncludes(e, `.${style.updator} input`) &&!CheckIncludes(e, `.${style.updator} menu span`) && setRecovery(( prev: any )=> [...prev.filter((f: any)=> f.question.trim() !== '' && f.answer.trim() !== '')])}
 
+  const handleDelete = async (i: number) => {
+    if (!user) return
+    if (ready) {
+      if (!password.trim()){
+        setEr('Password is required for updates')
+        return
+      }
+      setEr('')
+      setLoading(true)
+      const res = await fetch('/api/users',{
+        method: 'DELETE',
+        headers: {
+          'Cntent-Type': 'application/json',
+          'authorization': `Bearer ${user.id}`
+        },
+        body: JSON.stringify({ i , password })
+      })
+      const contentType = res.headers.get('content-type')
+
+      if (!contentType || !contentType.includes('application/json')) {
+        setLoading(false)
+        setEr('Unexpected server error. Try again later')
+        return
+      }
+      const result = await res.json()
+      !res.ok && setEr(result.error)
+      res.ok && setUserDetails((prev: any) => {return { ...prev , recoveryQuestions: [...prev.recoveryQuestions.filter((q: string,  n: number ) =>  n ! == i )]}})
+      setReady(false)
+      setPassword('')
+      setLoading(false)
+      return
+    }
+    if (!ready) setReady(true)
+  }
   const handleRecovery = async () => {
     if (recovery.length < 1 || !user) return
     setRecovery(( prev: any[] )=> [...prev.filter((f: any)=> f.question.trim() !== '' && f.answer.trim() !== '')])
@@ -55,11 +90,10 @@ const Settings = () => {
         setEr('Unexpected server error. Try again later')
         return
       }
-      const prev = user
       res.ok && setRecovery([])
       const result = await res.json()
       !res.ok && setErr(result.error)
-      res.ok && setUserDetails({ ...prev , ...result })
+      res.ok && setUserDetails((prev: any) => {return { ...prev , ...result }})
       setReady(false)
       setPassword('')
       setLoading(false)
@@ -112,10 +146,9 @@ const Settings = () => {
         setErr('Unexpected server error. Try again later')
         return
       }
-      const prev = user
       const result = await res.json()
       !res.ok && setErr(result.error)
-      res.ok && setUserDetails({ ...prev , ...result })
+      res.ok && setUserDetails((prev: any) => { return { ...prev , ...result }})
       setLoading(false)
       setPass('')
       setName('')
@@ -156,7 +189,8 @@ const Settings = () => {
           <div className={style.setts}>
             <span>Recovery questions</span>
             <p>Slots - {user ? user.recoveryQuestions.length : 0}/3</p>
-            {user && user.recoveryQuestions.map((ques: string, i: number)=><div className={style.reco} key={i}>{ disclose ? ques : '****'}</div>)}
+            {err && !recovery.length && <p className='text-[var(--error)] max-w-2xl w-full'>{er}</p>}
+            {user && user.recoveryQuestions.map((ques: string, i: number)=><div className={style.reco} key={i}>{ disclose ? ques : '****'} <button style={deleting ? {opacity: 1} : {}} onClick={()=> handleDelete(i)}>{ deleting ? loaderCircleSvg() : AddSvg()}</button></div>)}
             
             {recovery.map((inp: any, i: number)=>{
               return <>
@@ -220,7 +254,7 @@ const Settings = () => {
               </section>
               <section>
                 <span>Confirm updates</span>
-                <h2>Confirm updates to change "{stringArr.length > 0 && stringArr.join(', ') + ' and '}{changeArr[changeArr.length - 1]}"</h2>
+                <h2>Confirm updates to change &quot;{stringArr.length > 0 && stringArr.join(', ') + ' and '}{changeArr[changeArr.length - 1]}&quot;</h2>
                 { name && <h3> <ul>Name</ul> <ol>{name}</ol></h3>}
                 { email && <h3> <ul>Email</ul> <ol>{email}</ol></h3>}
                 { pass && <h3> <ul>Password</ul> <ol>{pass}</ol></h3>}

@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const ThemeContext = createContext({})
 
-export const ThemeProvider = ({children}: any) =>{
+export const ThemeProvider: React.FC<{children: React.ReactNode}> = ({children}) =>{
   const [ mode, setMode ] = useState('light')
 
   const toggle = () => {

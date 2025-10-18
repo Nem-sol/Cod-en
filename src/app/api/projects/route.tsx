@@ -1,9 +1,9 @@
 import connect from '@/src/utils/db'
 import { getToken } from 'next-auth/jwt'
-import { NextResponse } from 'next/server'
 import  Project from  '../../../models/Project'
+import { NextRequest, NextResponse } from 'next/server'
 
-export const GET = async (req: any) => {
+export const GET = async (req: NextRequest) => {
   
   await connect()
 
@@ -18,7 +18,7 @@ export const GET = async (req: any) => {
 
     return NextResponse.json(projects, {status: 200})
   }
-  catch(err: any){
-    return NextResponse.json({error: err.message}, {status: 400})
+  catch(err: unknown){
+    if (err instanceof Error) return NextResponse.json({error: err.message}, {status: 400})
   }
 }

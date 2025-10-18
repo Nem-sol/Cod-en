@@ -1,14 +1,29 @@
 'use client'
-import React from 'react'
 import Link from 'next/link'
 import style from './page.module.css'
 import styles from '../main.module.css'
+import React, { ReactNode } from 'react'
 import { DashboardSection } from '@/src/components/pageParts'
 import { useProjectContext } from '@/src/context/ProjectContext'
 import { Blogsvg, Booksvg, Buildsvg, Devsvg, Helpsvg, HomeSvg, Packssvg, Rocketsvg } from '@/src/components/svgPack'
 import { useUserContext } from '@/src/context/UserProvider'
 
-function DashboardBlogs({props}: any){
+type Blogs = {
+  props: { 
+    svg: ReactNode;
+    title: string;
+    address: string;
+    link: string
+  }
+}
+type Summary = {
+  props: { 
+    summary: string | undefined
+    jobStatus: string | undefined
+  }
+}
+
+function DashboardBlogs({props}: Blogs){
   return(
     <section>
       {props.svg}
@@ -18,7 +33,7 @@ function DashboardBlogs({props}: any){
   )
 }
 
-function DashboardSummary({props}: any){
+function DashboardSummary({props}: Summary){
   const { status } = useProjectContext()
   return(
     <div className='flex flex-col gap-y-2.5'>
@@ -42,7 +57,7 @@ const Dashboard = () => {
         </div>
         <DashboardSummary props={{
           summary: style.summary,
-          jobstatus: style.jobstatus
+          jobStatus: style.jobstatus
         }}/>
         <div className="flex gap-y-5 flex-col">
           <p className={style.moderatortitle}>{Rocketsvg('BIG')} Getting Started</p>

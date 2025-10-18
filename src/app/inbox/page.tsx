@@ -11,14 +11,39 @@ import { useUserContext } from '@/src/context/UserProvider'
 import { useInboxContext } from '@/src/context/InboxContext'
 import { Backsvg, HistorySvg, Inboxsvg, loaderCircleSvg, ProjectSvg, Rocketsvg, Searchsvg, SupportSvg } from '@/src/components/svgPack'
 
+type Msg = {
+  _id: string
+  sent: boolean
+  read: boolean
+  content: string
+  createdAt: string
+  updatedAt: string
+}
+
+type Inboxes = {
+  _id: string
+  title: string
+  status: string
+  userId: string
+  messages: Msg[]
+  createdAt: string
+  updatedAt: string
+  projectId: string
+  receiverId: string
+}
+
+type InboxPacks = {
+  inb: Inboxes[]
+}
+
 const Inbox = () => {
   const { ready } = useSocket()
-  const [ id , setId ] = useState(null)
+  const [ id , setId ] = useState('')
   const [ filters, setFilters ] = useState('')
   const { inbox, error, setRefresh, isLoading, sendMessage } = useInboxContext()
-  const active = inbox.length > 0 ? inbox.filter(( inb: any) => inb._id === id)[0] || null : null
+  const active = inbox.length > 0 ? inbox.filter(( inb: Inboxes) => inb._id === id)[0] || null : null
 
-  function InboxPack({inb}:any){
+  function InboxPack({inb}: InboxPacks){
     const [ msg , setMsg ] = useState('')
     const [ error , setError ] = useState('')
     const { userDetails: user } = useUserContext()
@@ -35,7 +60,7 @@ const Inbox = () => {
     return(
       <div className={styles.inboxPack}>
         <div className={styles.all}>
-          {inb.length > 0 ? inb.map((i: any, n: number)=>(
+          {inb.length > 0 ? inb.map((i: Inboxes, n: number)=>(
             <section key={n} onClick={()=>{setId(i._id)}}>
               <h2>{Inboxsvg('BIG')} {i.title} {id === i._id && <span>In view</span>}</h2>
               <p style={{backgroundColor: i.status === 'active' ? 'var(--success)' : i.status === 'completed' ? 'var(--error)' : 'var(--mild-dark)'}}>{i.status}</p>
@@ -52,7 +77,7 @@ const Inbox = () => {
             <h2 className='font-bold text-[18px] flex-1'>{active ? active.title : 'Inbox'}</h2>
             {inbox.length > 0 && <button onClick={()=>classToggle(`.${styles.hidden}`, styles.inView)}>{ProjectSvg()}
               <section className={styles.hidden}>
-                {inbox.map(( i: any, n: number )=>(
+                {inbox.map(( i: Inboxes, n: number )=>(
                   <span key={n} onClick={()=>setId(i._id)}>{i.title}</span>
                 ))}
               </section>
@@ -72,9 +97,9 @@ const Inbox = () => {
               h2: 'No message to display',
               text: 'Select an inbox to view and update messages',
             }}/>}
-            {active && active.messages && active.messages.length > 0 && active.messages.map(( mes: any ) => (
-              <section className={mes.sent ? (user.role === 'user' ? 'sent' : styles.received) : (user.role !== 'user' ? styles.received : 'sent')}>
-                <div><span>{`${String(mes.content)}`}</span></div>
+            {active && active.messages && active.messages.length > 0 && active.messages.map(( mes: Msg , i: number) => (
+              <section key={i} className={mes.sent ? (user.role === 'user' ? 'sent' : styles.received) : (user.role !== 'user' ? styles.received : 'sent')}>
+                <div><span>{mes.content}</span></div>
                 <p>{format(mes.updatedAt, 'h:mm a')}</p>
               </section>
             ))}
@@ -102,7 +127,7 @@ const Inbox = () => {
     filtered = inbox
 
     if (filter.trim() === '') filtered = inbox
-    else filtered = filtered.filter(( msg: any )=> msg.title.toLocaleLowerCase().includes(filter))
+    else filtered = filtered.filter(( inb: Inboxes )=> inb.title.toLocaleLowerCase().includes(filter))
 
     if (inbox && inbox.length > 0) return <InboxPack inb={filtered}/>
 
@@ -142,7 +167,7 @@ const Inbox = () => {
             h2: 'Getting messages...',
             text: 'Please be patient while we get your messages',
           }} />}
-        {error && <button disabled={isLoading} className={styles.floater} onClick={()=>setRefresh((prev: Boolean) => !prev )}>{isLoading ? loaderCircleSvg() : Backsvg()}</button>}
+        {error && <button disabled={isLoading} className={styles.floater} onClick={()=>setRefresh((prev: boolean) => !prev )}>{isLoading ? loaderCircleSvg() : Backsvg()}</button>}
       </div>
     </main>
   )

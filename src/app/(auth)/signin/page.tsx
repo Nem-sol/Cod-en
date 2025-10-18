@@ -27,7 +27,7 @@ const SignIn = () => {
       password: pass,
       redirect: false
     })
-    res?.error && setErr(res.error)
+    if (res?.error) setErr(res.error)
     setLoading(false)
   }
   return (

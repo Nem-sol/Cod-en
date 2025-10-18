@@ -4,7 +4,7 @@ import Image from 'next/image'
 import { NewDropSets } from './pageParts'
 import styles from '../app/main.module.css'
 import ChatInput from '../components/ChatBox'
-import React, { useEffect, useState } from 'react'
+import React, { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { useSocket } from '../context/SocketContext'
 import { useUserContext } from '../context/UserProvider'
 import { useInboxContext } from '../context/InboxContext'
@@ -12,13 +12,59 @@ import { useNotificationContext } from '../context/NotificationContext'
 import { classRemove, classAdd, classToggle, FirstCase } from './functions'
 import { cancelSvg, dblRightArrowsvg, FolderSvg, Helpsvg, HomeSvg, Inboxsvg, Bugsvg, Linksvg, loaderCircleSvg, NotificationSvg, ProjectSvg, Leftsvg, SettingSvg, SupportSvg, TagSvg } from './svgPack'
 
-const NavLinks = ({props}: any) => {
-  return props.arr.map(( l: any , i: number )=>(
-    <Link href={l.link} key={i}>{l.svg}{l.tag}</Link>
+type link = {
+  tag: string | null
+  link: string | null
+  svg: React.ReactNode | null
+}
+
+type prop = {
+  props: {
+    arr: link[] | []
+  }
+}
+
+type bg = {
+  props: {
+    h2: string
+    img: string
+    text: string
+    styles: {readonly [key: string]: string}
+  }
+}
+
+type Msg = {
+  _id: string
+  sent: boolean
+  read: boolean
+  content: string
+  createdAt: string
+  updatedAt: string
+}
+
+type Inboxes = {
+  _id: string
+  title: string
+  status: string
+  userId: string
+  messages: Msg[]
+  createdAt: string
+  updatedAt: string
+  projectId: string
+  receiverId: string
+}
+
+type InboxPacks = {
+  inb: Inboxes[]
+}
+
+const NavLinks = ({props}: prop) => {
+  return props.arr.map(( l: link , i: number )=>(
+    <Link href={l.link || window.location.pathname} key={i}>{l.svg}{l.tag}</Link>
   ))
 }
 
-export const Defaultbg = ({props}: any) => {
+export const Defaultbg = ({props}: bg) => {
   return (
     <div className={props.styles.default_bg + ' place-self-center'}>
       <h2 className='w-full font-bold text-[21px] text-center pt-8'>{props.h2}</h2>
@@ -42,8 +88,8 @@ export default function Navbar() {
   const { userDetails : user } = useUserContext()
   const [ loading , setLoading ] = useState(false)
   const { inbox , sendMessage } = useInboxContext()
-  const [ viewInbox , setViewInbox]: any = useState(null)
-  const [ activeInbox , setActiveInbox]: any = useState([])
+  const [ viewInbox , setViewInbox]: any[] = useState(null)
+  const [ activeInbox , setActiveInbox]: any[] = useState([])
   const [ name, setName ] = useState( user ? user.name : '')
   const [ email, setEmail ] = useState( user ? user.email : '')
 
@@ -56,9 +102,9 @@ export default function Navbar() {
   }
 
   useEffect(()=>{
-    setActiveInbox(inbox.filter(( inb: any) => inb.status === 'active'))
+    setActiveInbox(inbox.filter(( inb: Inboxes) => inb.status === 'active'))
     setId(activeInbox.length > 0 ? activeInbox[0]._id : null)
-    inbox.length > 0 && setViewInbox(inbox.filter(( inb: any) => inb._id === id)[0] || null)
+    inbox.length > 0 && setViewInbox(inbox.filter(( inb: Inboxes) => inb._id === id)[0] || null)
   }, [ inbox ])
   if (user) return  (
     <nav>
@@ -78,7 +124,7 @@ export default function Navbar() {
               <button onClick={()=>classRemove('nav', 'inb')}>{dblRightArrowsvg()}</button>
               <button onClick={()=>classToggle('nav .hidden','inView')}>{ProjectSvg()}
                 {inbox.length > 0 && <section className="hidden">
-                  {inbox.map(( inb: any, i: number )=>(
+                  {inbox.map(( inb: Inboxes, i: number )=>(
                     <span key={i} onClick={()=>setId(inb._id)}>{inb.title}</span>
                   ))}
                 </section>}
@@ -87,9 +133,9 @@ export default function Navbar() {
               <Link href='/inbox'>{Linksvg()}</Link>
             </div>
             <section className='section'>
-              {viewInbox ? (viewInbox.messages && viewInbox.messages.length > 0) ? viewInbox.messages.map(( mes: any )=> (
-                <section>
-                  <span>{`${String(mes.content)}`}</span>
+              {viewInbox ? (viewInbox.messages && viewInbox.messages.length > 0) ? viewInbox.messages.map(( mes: Msg, i:number )=> (
+                <section key={i}>
+                  <span>{mes.content}</span>
                   <div>{mes.updatedAt}</div>
                 </section>
               )) : <Defaultbg props={{
@@ -120,7 +166,7 @@ export default function Navbar() {
             <div className="holder">
               <input name='name' value={name} type="text" autoComplete='true' autoCorrect='true' placeholder={user.name} onChange={()=> setName(user.name)} onKeyDown={()=> setName(user.name)}/>
               <input name='email' value={email} type="text" autoComplete='true' autoCorrect='true' placeholder={user.email} onChange={()=> setEmail(user.email)} onKeyDown={()=> setEmail(user.email)}/>
-              <textarea name='message' value={mss} autoComplete='true' autoCorrect='true' placeholder='Start your message...' onChange={(e)=> setMss(e.target.value)}/>
+              <textarea name='message' value={mss} autoComplete='true' autoCorrect='true' placeholder='Start your message...' onChange={(e: React.ChangeEvent<HTMLTextAreaElement>)=> setMss(e.target.value)}/>
               <div className='flex gap-x-2.5 items-center'>
                 <div className='flex-1 h-10'><NewDropSets props={{
                   query: type,

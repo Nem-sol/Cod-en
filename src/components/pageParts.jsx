@@ -7,7 +7,7 @@ import { ThemeContext } from '../context/ThemeContext'
 import { useContext, useEffect, useState } from 'react'
 import { useUserContext } from '../context/UserProvider';
 import { CheckIncludes, classAdd, classRemove, classToggle, FirstCase, pick, pickAll, RemoveLikeClass, RemoveOtherClass, scrollCheck } from './functions'
-import { Backsvg, Blogsvg, cancelSvg, Bugsvg, Csssvg, FolderSvg, Helpsvg, Inboxsvg, Javascriptsvg, Leftsvg, LogInSvg, LogoutSvg, Mailsvg, Nextsvg, Nightsvg, Nodesvg, ProjectSvg, Pythonsvg, Reactsvg, Rocketsvg, Rustsvg, SettingSvg, Sunsvg, SupportSvg, TagSvg, TypeScriptsvg } from './svgPack'
+import { Backsvg, Blogsvg, cancelSvg, Bugsvg, Csssvg, FolderSvg, Helpsvg, Inboxsvg, Javascriptsvg, Leftsvg, LogInSvg, LogoutSvg, Mailsvg, Nextsvg, Nightsvg, Nodesvg, ProjectSvg, Pythonsvg, Reactsvg, Rocketsvg, Rustsvg, SettingSvg, Sunsvg, SupportSvg, TagSvg, TypeScriptsvg, Copysvg } from './svgPack'
 
 
 export function Back(){
@@ -80,6 +80,21 @@ export function DropButton({props}) {
       }}>
       {props.text}
     </button>
+  )
+}
+
+export function Copier ({props}){
+  const [ copied , setCopied ] = useState(false)
+  const [ loading , setLoading ] = useState(false)
+  const copy = async () => {
+    setLoading(true)
+    await navigator.clipboard.writeText(props.text);
+    setCopied(true);
+    setLoading(false)
+    setTimeout(() => setCopied(false), 1000)
+  }
+  return(
+    <button onClick={copy}>{loading ? loaderCircleSvg() : copied ? checkmarkSvg() : Copysvg()}</button>
   )
 }
 

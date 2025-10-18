@@ -9,7 +9,24 @@ import { useNotificationContext } from '@/src/context/NotificationContext'
 import { CheckIncludes, classToggle, RemoveAllClass, RemoveOtherClass } from '@/src/components/functions'
 import { Backsvg, dblChecksvg, DeleteSvg, HistorySvg, Inboxsvg, Linksvg, loaderCircleSvg, Moresvg, NotificationSvg, Searchsvg } from '@/src/components/svgPack'
 
+type Notes = {
+  _id: string
+  type: string
+  link: string
+  read: boolean
+  class: string
+  title: string
+  target: string
+  userId: string
+  message: string
+  createdAt: string
+  updatedAt: string
+  important: boolean
+}
 
+type NotificationPack = {
+  notifications: Notes
+}
 
 const Notification = () => {
   const [ act, setAct ] = useState('')
@@ -18,7 +35,7 @@ const Notification = () => {
   const [ Loading , setIsLoading ] = useState(false)
   const { notifications, error, setRefresh, isLoading , dispatch , unread } = useNotificationContext()
 
-  const handleUpdate = async (notification: any, action: any, setLoading: any) => {
+  const handleUpdate = async (notification: Notes, action: string, setLoading: React.Dispatch<React.SetStateAction<boolean>>) => {
     const id = notification._id
 
     setLoading(true)
@@ -47,7 +64,7 @@ const Notification = () => {
     setLoading(false)
   }
 
-  const handleMass = async ( act: any ) => {
+  const handleMass = async (act: string ) => {
     setAct(act)
     const action = act.toLocaleLowerCase()
     if (notifications.length < 1) return
@@ -64,14 +81,14 @@ const Notification = () => {
     await res.json()
     res.ok && dispatch({
       type: 'SET_NOTIFICATIONS',
-      payload: action !== 'update' ? action === 'delete' && [] : [...notifications.map((n: any)=>{ 
+      payload: action !== 'update' ? action === 'delete' && [] : [...notifications.map((n: Notes)=>{ 
         return {...n, read: true}
       })]
     })
     setIsLoading(false)
   }
 
-  function NotificationPacks({notification}: any) {
+  function NotificationPacks({notification}: NotificationPack) {
     const date = notification.createdAt
     const [ act , setAct ] = useState('')
     const [ loading , setLoading ] = useState(false)
@@ -109,7 +126,7 @@ const Notification = () => {
     )
   }
 
-  function Filter(filters :  any){
+  function Filter(filters: string){
     let result
     let filtered
     const filter = filters.toLocaleLowerCase()
@@ -118,12 +135,12 @@ const Notification = () => {
 
     if (!notifications) result = null
     else if (filter.trim() === '') filtered = notifications
-    else if(filter === 'unread') filtered = filtered.filter(( note: any )=> note.read === false)
-    else if (filters === 'payment') filtered = filtered.filter(( note: any )=> note.class.toLocaleLowerCase() === 'payment')
-    else if (filters === 'project' || filters === 'log in' || filters === 'profile' || filters === 'subscription') filtered = filtered.filter(( note: any )=> note.type.toLocaleLowerCase() === filters)
-    else filtered = filtered.filter(( note: any )=> note.message.toLocaleLowerCase().includes(filter))
+    else if(filter === 'unread') filtered = filtered.filter(( note: Notes )=> note.read === false)
+    else if (filters === 'payment') filtered = filtered.filter(( note: Notes )=> note.class.toLocaleLowerCase() === 'payment')
+    else if (filters === 'project' || filters === 'log in' || filters === 'profile' || filters === 'subscription') filtered = filtered.filter(( note: Notes )=> note.type.toLocaleLowerCase() === filters)
+    else filtered = filtered.filter(( note: Notes )=> note.message.toLocaleLowerCase().includes(filter))
 
-    if (filtered && filtered.length > 0) result = filtered.map((not: any, i: any)=> <NotificationPacks key={i} notification={not}/>)
+    if (filtered && filtered.length > 0) result = filtered.map((not: Notes, i: number)=> <NotificationPacks key={i} notification={not}/>)
     if (notifications && notifications.length < 1 && error ) return (
       <Defaultbg props={{
         styles: styles,
@@ -141,7 +158,7 @@ const Notification = () => {
   }
 
   return (
-    <main id={styles.main} onClick={( e: any)=>{ !CheckIncludes(e, 'menu') && !CheckIncludes(e, 'menu div') && !CheckIncludes(e, 'menu button') && !CheckIncludes(e, 'menu span') && RemoveAllClass( styles.inView , 'menu' ); !CheckIncludes(e, `.${styles.noti} button`) && !CheckIncludes(e, `.${styles.details}`) && !CheckIncludes(e, `.${styles.details} p`) && RemoveAllClass( styles.inView , `.${styles.noti}` )}}>
+    <main id={styles.main} onClick={( e: React.MouseEvent<HTMLElement, MouseEvent>)=>{ !CheckIncludes(e, 'menu') && !CheckIncludes(e, 'menu div') && !CheckIncludes(e, 'menu button') && !CheckIncludes(e, 'menu span') && RemoveAllClass( styles.inView , 'menu' ); !CheckIncludes(e, `.${styles.noti} button`) && !CheckIncludes(e, `.${styles.details}`) && !CheckIncludes(e, `.${styles.details} p`) && RemoveAllClass( styles.inView , `.${styles.noti}` )}}>
       <div className={styles.main}>
         <h2 className={styles.title}>{NotificationSvg('BIG')} Notifications</h2>
         <div className={styles.quick}>
@@ -152,7 +169,7 @@ const Notification = () => {
         </div>
         <div id={styles.searchbar}>
           <span>{Searchsvg()}</span>
-          <input autoComplete='true' type="text" name="search" placeholder='Search from message' onClick={(e: any)=>e.target.classList.add('isTarget')}  onMouseLeave={(e: any)=>e.target.classList.remove('isTarget')} onChange={(e)=>setFilters(e.target.value)}/>
+          <input autoComplete='true' type="text" name="search" placeholder='Search from message' onChange={(e:  React.ChangeEvent<HTMLInputElement>)=>setFilters(e.target.value)}/>
           <NewFilterSets props={{
             id: 'filters',
             query: filters,
@@ -178,7 +195,7 @@ const Notification = () => {
           text: 'Please be patient while we get your notifications',
         }}/>}
         {(!isLoading || notifications.length > 0) && Filter(filters)}
-        {(error || isLoading ) && <button disabled={isLoading} className={styles.floater} onClick={()=>setRefresh((prev: any) => !prev )}>{isLoading ? loaderCircleSvg() : Backsvg()}</button>}
+        {(error || isLoading ) && <button disabled={isLoading} className={styles.floater} onClick={()=>setRefresh((prev: boolean) => !prev )}>{isLoading ? loaderCircleSvg() : Backsvg()}</button>}
       </div>
     </main>
   )
