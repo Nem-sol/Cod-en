@@ -1,12 +1,11 @@
 'use client'
 import Link from 'next/link'
-import validator from 'validator'
 import style from './page.module.css'
-import React, { useEffect, useState } from 'react'
 import styles from '../main.module.css'
 import { signOut } from 'next-auth/react'
-import { CheckIncludes, FirstCase } from '@/src/components/functions'
+import React, { useEffect, useState } from 'react'
 import { useUserContext } from '@/src/context/UserProvider'
+import { CheckIncludes, FirstCase } from '@/src/components/functions'
 import { Editsvg, EyeClosedSvg, Eyesvg, Githubsvg, LogoutSvg, Padlocksvg, Refreshsvg, SettingSvg, Packssvg, GoogleG, Cloudsvg, AddSvg, Rocketsvg, Leftsvg, loaderCircleSvg, checkmarkSvg } from '@/src/components/svgPack'
 
 type sets = {
@@ -136,10 +135,10 @@ const Settings = () => {
     if(p.length > 6) setChangeArr(( prev: string[] ) => [ ... prev , 'password'])
     if (!n && !em && !p && !be ) setErr('At least one field must be filled')
     else if (n && n.length < 4 ) setErr('User name is too short.')
-    else if (em && !validator.isEmail(em)) setErr('Enter valid email adress.')
+    else if (em && (!em.includes('@') || !em.includes('.com'))) setErr('Enter valid email adress.')
     else if (em && em.length < 12 ) setErr('Email is too short.')
     else if (p && p.length < 6) setErr('Password is too short')
-    else if (be && !validator.isEmail(be)) setErr('Enter valid back-up adress.')
+    else if (be && (!be.includes('@') || !be.includes('.com'))) setErr('Enter valid back-up adress.')
     else if (be && be.length < 12 ) setErr('Backup-email is too short.')
     else if (be && em && be === em ) setErr('Email cannot be used as back-up')
     else if (!verify) {
