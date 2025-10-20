@@ -154,7 +154,6 @@
 }
 .form #contact.inView div{
   opacity: 1;
-  height: 125px;
   pointer-events: all;
 }
 .form #contact.inView span{

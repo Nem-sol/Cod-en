@@ -7,7 +7,7 @@ import { useUserContext } from '@/src/context/UserProvider'
 import { Defaultbg, NewFilterSets } from '@/src/components/pageParts'
 import { useNotificationContext } from '@/src/context/NotificationContext'
 import { CheckIncludes, classToggle, RemoveAllClass, RemoveOtherClass } from '@/src/components/functions'
-import { Backsvg, dblChecksvg, DeleteSvg, HistorySvg, Inboxsvg, Linksvg, loaderCircleSvg, Moresvg, NotificationSvg, Searchsvg } from '@/src/components/svgPack'
+import { Backsvg, checkmarkSvg, dblChecksvg, DeleteSvg, HistorySvg, Inboxsvg, Linksvg, loaderCircleSvg, Moresvg, NotificationSvg, Searchsvg } from '@/src/components/svgPack'
 
 type Notes = {
   _id: string
@@ -33,6 +33,7 @@ const Notification = () => {
   const [ filters, setFilters ] = useState('')
   const { userDetails: user } = useUserContext()
   const [ Loading , setIsLoading ] = useState(false)
+  const [ small , setSmall ] = useState(window.innerWidth <= 675)
   const { notifications, error, setRefresh, isLoading , dispatch , unread } = useNotificationContext()
 
   const handleUpdate = async (notification: Notes, action: string, setLoading: React.Dispatch<React.SetStateAction<boolean>>) => {
@@ -94,9 +95,11 @@ const Notification = () => {
     const [ loading , setLoading ] = useState(false)
     const [ friendlyDate , setDate ] = useState(formatDistanceToNow(new Date(date), {addSuffix: true}))
     useEffect(()=>{
+      window.addEventListener('resize', ()=> setSmall(window.innerWidth <= 700))
       const interval = setTimeout(()=>setDate(formatDistanceToNow(new Date(date), {addSuffix: true})), 60000)
     return ()=>{
       clearTimeout(interval)
+      window.removeEventListener('resize', ()=> setSmall(window.innerWidth <= 675))
     }})
     return (
       <div className={styles.noti} id={`n${notification._id}`}>
@@ -194,6 +197,7 @@ const Notification = () => {
           text: 'Please be patient while we get your notifications',
         }}/>}
         {(!isLoading || notifications.length > 0) && Filter(filters)}
+        {!error && unread > 0 && <button disabled={Loading} className={styles.floater} onClick={()=>handleMass('update')} style={isLoading ? { bottom : '170px'} : {}}>{(Loading && act === 'update') ? loaderCircleSvg() : checkmarkSvg()}</button>}
         {(error || isLoading ) && <button disabled={isLoading} className={styles.floater} onClick={()=>setRefresh((prev: boolean) => !prev )}>{isLoading ? loaderCircleSvg() : Backsvg()}</button>}
       </div>
     </main>

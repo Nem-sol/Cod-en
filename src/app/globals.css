@@ -62,7 +62,7 @@ body{
   display: flex;
   flex-wrap: wrap;
   font-size: 15px;
-  min-width: 295px;
+  min-width: 285px;
   min-height: 100vh;
   flex-direction: column;
   transition: 0.5s ease;
@@ -138,8 +138,9 @@ textarea:autofill{
 }
 textarea{
   &::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    opacity: 0;
+    height: 6px;
   }
   &::-webkit-scrollbar-track {
     margin-block: 20px;
@@ -153,6 +154,11 @@ textarea{
   }
   &::-webkit-scrollbar-thumb:hover {
     background-color: var(--deepSweetPurple); 
+  }
+}
+textarea:hover{
+  &::-webkit-scrollbar {
+    opacity: 1
   }
 }
 input:-internal-autofill-selected{
@@ -436,6 +442,7 @@ nav .links svg{
 nav .pagenav{
   flex: 1;
   top: 60px;
+  bottom: 0;
   display: flex;
   transition: 1s;
   position: sticky;
@@ -443,6 +450,7 @@ nav .pagenav{
   margin-left: 65px;
   align-self: flex-start;
   height: calc(100vh - 60px);
+  max-height: calc(100vh - 60px);
   background-color: var(--pageNav);
   border-bottom-right-radius: 15px;
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.28), 0 0 15px var(--background);
@@ -491,12 +499,12 @@ nav .pagenav .hidden.inView{
   top: calc(100% + 10px);
 }
 nav .pagenav .inbox{
-  gap: 15px;
   opacity: 0;
-  display: grid;
+  display: flex;
   transition: 1s;
+  flex-direction: column;
   padding-block: 5px 15px;
-  grid-template-rows: 40px 1fr 40px;
+  max-height: calc(100vh - 60px);
 }
 nav.inb .pagenav .inbox{
   opacity: 1;
@@ -517,9 +525,10 @@ nav .pagenav .contact{
 }
 nav .pagenav .bar{
   gap: 10px;
-  height: 40px;
   display: flex;
   padding: 0 5px;
+  font-size: 20px;
+  min-height: 40px;
   font-weight: 600;
   align-items: center;
   color: var(--strong);
@@ -527,22 +536,25 @@ nav .pagenav .bar{
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.28), 0 3px 15px var(--mild-dark);
 }
 nav .pagenav .inbox .input{
-  gap: 15px;
+  gap: 0 10px;
+  padding: 5px;
+  flex-wrap: wrap;
   border-radius: 16px;
   align-self: flex-end;
+  width: calc(100% - 20px);
   background-color: rgba(245, 225, 215, 0.526);
 }
 nav .pagenav .inbox .section{
+  flex: 1;
   gap: 15px;
+  height: 100%;
   display: flex;
   overflow-y: auto;
   overflow-x: hidden;
-  height: fit-content;
   flex-direction: column;
-  height: calc(100vh - 200px);
   &::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
   }
   &::-webkit-scrollbar-track {
     margin-block: 10px;
@@ -558,13 +570,13 @@ nav .pagenav .inbox .section{
     background-color: rgb(129, 91, 65); 
   }
 }
-nav .pagenav .inbox input{
-  flex: 1;
+nav .input button{
+  max-height: 29px;
+}
+nav .pagenav .inbox textarea{
   width: 100%;
-  height: 32px;
-  padding-inline: 10px;
+  min-height: 32px;
   border-radius: 10px 0 0 10px;
-  border-right: solid var(--strong) 1px;
 }
 nav .pagenav div a,
 nav .pagenav button{
@@ -648,7 +660,6 @@ nav .contact #contact.inView{
 }
 nav .contact #contact.inView div{
   opacity: 1;
-  height: 200px;
   pointer-events: all;
 }
 nav .contact #contact.inView span{
@@ -692,6 +703,7 @@ nav .contact .button:hover svg{
     z-index: 2;
     position: fixed;
     transition: 0.5s;
+    height: calc(100% - 60px);
   }
   nav.inView .pagenav{
     width: 60vw;
@@ -784,7 +796,6 @@ nav .contact .button:hover svg{
   nav .pagenav{
     z-index: 3;
     margin-left: 0;
-    height: calc(100vh - 60px);
   }
   nav.inView .pagenav{
     width: 75vw;
@@ -799,15 +810,31 @@ nav .contact .button:hover svg{
 }
 @media screen and (max-width: 375px) {
   nav.inView .pagenav{
-    width: 90%;
+    width: 85%;
+  }
+  nav .pagenav .bar{
+    font-size: 17px;
   }
   svg, nav .links svg{
     width: 21px;
     height: 21px;
   }
 }
-@media screen and (max-width: 317px) {
-  nav.inb .holdr{
-    translate: -34.7%;
+@media screen and (max-width: 320px) {
+  nav .pagenav .bar{
+    font-size: 15px;
+  }
+  nav .pagenav div a,
+  nav .pagenav button{
+    min-width: 30px;
+  }
+  nav .contact .holder{
+    padding-inline: 5px;
+  }
+  nav .contact .holder .flex.gap-x-2\.5.items-center{
+    gap: 5px;
+  }
+  nav .contact #contact span{
+    padding: 5px;
   }
 }

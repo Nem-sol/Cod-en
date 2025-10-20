@@ -6,7 +6,7 @@ import React, { useState } from 'react'
 import styles from './../main.module.css'
 import ChatInput from '@/src/components/ChatBox'
 import { Defaultbg } from '@/src/components/pageParts'
-import { classToggle } from '@/src/components/functions'
+import { classRemove, classToggle, FirstCase } from '@/src/components/functions'
 import { useSocket } from '@/src/context/SocketContext'
 import { useUserContext } from '@/src/context/UserProvider'
 import { useInboxContext } from '@/src/context/InboxContext'
@@ -41,7 +41,8 @@ const Inbox = () => {
   const { ready } = useSocket()
   const [ id , setId ] = useState('')
   const [ filters, setFilters ] = useState('')
-  const { inbox, error, setRefresh, isLoading, sendMessage } = useInboxContext()
+  const { inbox , error, setRefresh, isLoading, sendMessage } = useInboxContext()
+
   const active = inbox.length > 0 ? inbox.filter(( inb: Inboxes) => inb._id === id)[0] || null : null
 
   function InboxPack({inb}: InboxPacks){
@@ -76,25 +77,26 @@ const Inbox = () => {
           }}/>}
         </div>
         <div className={style.one}>
-          <div style={{paddingInline: '10px'}} className={style.bar}>
+          <div style={{paddingInline: '20px', boxShadow: '0 5px 10px var(--sweetRed)', zIndex: 1}} className={style.bar}>
             <h2 className='font-bold text-[18px] flex-1'>{active ? active.title : 'Inbox'}</h2>
-            {inbox.length > 0 && <button onClick={()=>classToggle(`.${style.hidden}`, style.inView)}>{ProjectSvg()}
+            {inbox.length > 0 && <button onClick={()=>{classToggle(`.${style.hidden}`, style.inView); classRemove(`.hidden2`, style.inView)}}>{ProjectSvg()}
               <section className={style.hidden}>
                 {inbox.map(( i: Inboxes, n: number )=>(
                   <span key={n} onClick={()=>setId(i._id)}>{i.title}</span>
                 ))}
               </section>
             </button>}
-            {id && <button onClick={()=>classToggle('.hidden2', style.inView)}>
+            {id && <button onClick={()=>{classToggle('.hidden2', style.inView); classRemove(`.${style.hidden}`, style.inView)}}>
               {Moresvg()}
               <section className={`${style.hidden} hidden2`}>
-                {inbox.map(( i: Inboxes, n: number )=>(
-                  <span key={n} onClick={()=>setId(i._id)}>{i.title}</span>
-                ))}
+                <span>{active?._id}</span>
+                <span>{active?.title}</span>
+                <span>{FirstCase(active?.status)}</span>
+                <span>Unread - {active?.messages.filter((msg: Msg) => user.id === active.userId ? !msg.sent : msg.sent).length}</span>
+                <span>{format(active!.createdAt, "do MMMM, yyyy")}</span>
               </section>
             </button>}
           </div>
-          <menu style={{boxShadow: 'inset 8px 5px 8px var(--sweetRed), inset 8px -5px 8px var(--sweetRed)', position: 'absolute', inset: '60px 0', bottom: '70px', zIndex: '1', pointerEvents: 'none'}}></menu>
           <section className={style.section}>
             {inbox.length < 1 && <Defaultbg props={{            
               styles: style,
@@ -120,7 +122,7 @@ const Inbox = () => {
               h2: 'You have no messages',
               text: 'Send a message and begin conversation. Messages deemed unimportant may be ignored',
             }} />}
-            <p className='text-[var(--error)] text-end font-medium px-2.5 self-end mt-auto'>{error}</p>
+            <p className='text-[var(--error)] text-end font-medium px-2.5 self-end my-1'>{error}</p>
           </section>
           {active && <div className={`${style.input} ${style.bar}`}>
             <ChatInput value={msg} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMsg(e.target.value)}/>

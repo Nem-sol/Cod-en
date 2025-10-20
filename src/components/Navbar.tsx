@@ -78,6 +78,7 @@ export default function Navbar() {
   const [ id , setId ] = useState('')
   const [ mss, setMss ] = useState('')
   const [ msg , setMsg ] = useState('')
+  const [ err , setErr ] = useState('')
   const [ error , setError ] = useState('')
   const { unread } = useNotificationContext()
   const [ type, setType ] = useState('custom')
@@ -94,7 +95,7 @@ export default function Navbar() {
   const handleSendMessage = () => {
     if ( !msg.trim() ) return
     setLoading(true)
-    ready ? sendMessage( id , msg ) : setError('Internet connection lost.')
+    ready ? sendMessage( id , msg ) : setErr('Internet connection lost.')
     ready && setMsg('')
     setLoading(false)
   }
@@ -108,7 +109,7 @@ export default function Navbar() {
       }
       if (!email.trim() && user ) setEmail(user.email)
       if (!name.trim()) setName(user.name || 'Guest')
-      if (!msg.trim()) {
+      if (!mss.trim()) {
         setError('A message content is required')
         return
       }
@@ -117,8 +118,8 @@ export default function Navbar() {
         const res = await fetch('/api/messages', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ msg , name , email , type })
-        });
+          body: JSON.stringify({ msg: mss , name , email , type })
+        })
   
         const contentType = res.headers.get('content-type')
   
@@ -127,7 +128,7 @@ export default function Navbar() {
           setError('Unexpected server error. Try again later')
           return
         }
-  
+
         if (!res.ok) setError(`Could not send ${type.toLocaleLowerCase()}. Check your ${type.toLocaleLowerCase()} inputs`)
         else {
           setSuccess(true)
@@ -136,8 +137,9 @@ export default function Navbar() {
         }
       } catch (err) {
         setError('Something went wrong')
+      } finally {
+        setIsLoading(false)
       }
-      setIsLoading(false)
     }
 
   useEffect(()=>{
@@ -149,7 +151,7 @@ export default function Navbar() {
       <section className='pagenav'>
         <div className="holdr">
           <div className="nav">
-            <h2 className="bar whitespace-nowrap text-[20px] pl-[15px!important] font-[700!important]">
+            <h2 className="bar whitespace-nowrap pl-[15px!important] font-[700!important]">
               <span className='flex-1'>Quick Links</span>
               <button onClick={()=> classAdd('nav', 'inb')}>{Inboxsvg('isBig')}</button>
               <button onClick={()=> classAdd('nav', 'msg')}>{SupportSvg('isBig')}</button>
@@ -186,15 +188,15 @@ export default function Navbar() {
                 h2: 'You have no inbox',
                 text: 'Create an active project to view inbox or switch inbox from toolbar.',
               }}/>}
-              <p className='text-[var(--error)] text-end font-medium px-2.5 self-end mt-auto'>{error}</p>
             </section>
+            <p className='text-[var(--error)] text-end font-medium px-2.5 self-end my-1'>{err}</p>
             {viewInbox && <div className="input mx-2.5 bar">
               <ChatInput value={msg} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMsg(e.target.value)}/>
-              <button disabled={loading} className='bg-[var(--success)!important] text-[white!important]' onClick={()=> msg.trim() !== '' && handleSendMessage()}>{ loading ? loaderCircleSvg() : Leftsvg('BIG')}</button>
+              <button disabled={loading} className='bg-[var(--success)!important] text-[white!important]' onClick={()=> msg.trim() !== '' && handleSendMessage()}>{ loading ? loaderCircleSvg() : Leftsvg('p-1')}</button>
             </div>}
           </div>
           <div className="contact">
-            <h2 className="bar whitespace-nowrap text-[20px] pl-[15px!important] font-[700!important]">
+            <h2 className="bar whitespace-nowrap pl-[15px!important] font-[700!important]">
               <span className='flex-1'>{type === 'custom' ? 'Contact' : type === 'deals' ? 'Business deals' : FirstCase(type)} </span>
               <button onClick={()=> classRemove('nav', 'msg')}>{dblRightArrowsvg()}</button>
               <button onClick={()=> {classAdd('nav', 'inb'); classRemove('nav', 'msg')}}>{Inboxsvg('isBig')}</button>
@@ -204,6 +206,7 @@ export default function Navbar() {
               <input name='name' value={name} type="text" autoComplete='true' autoCorrect='true' placeholder={user.name} onChange={()=> setName(user.name)} onKeyDown={()=> setName(user.name)}/>
               <input name='email' value={email} type="text" autoComplete='true' autoCorrect='true' placeholder={user.email} onChange={()=> setEmail(user.email)} onKeyDown={()=> setEmail(user.email)}/>
               <textarea name='message' value={mss} autoComplete='true' autoCorrect='true' placeholder='Start your message...' onChange={(e: React.ChangeEvent<HTMLTextAreaElement>)=> setMss(e.target.value)}/>
+              <p className='text-[var(--error)] text-end font-medium px-2.5 self-end mt-auto'>{error}</p>
               <div className='flex gap-x-2.5 items-center'>
                 <div className='flex-1 h-10'><NewDropSets props={{
                   query: type,
@@ -221,7 +224,7 @@ export default function Navbar() {
                     {svg: SupportSvg('BIG'), txt: 'Custom', query: 'custom', func: ()=>setType('custom')}
                   ]
                 }}/></div>
-                <button disabled={isLoading} onClick={handleSendContact}>{sucess ? 'Sent' : !isLoading ? 'Send' : 'Sending...'} {sucess ? checkmarkSvg(sucess ? 'min-w-6 opacity-[1!important] inset-auto' : '') : !isLoading ? Leftsvg('big') : loaderCircleSvg(isLoading ? 'min-w-6 opacity-[1!important] inset-auto' : '')}</button>
+                <button className='button' disabled={isLoading} onClick={handleSendContact}>{sucess ? 'Sent' : !isLoading ? 'Send' : 'Sending...'} {sucess ? checkmarkSvg(sucess ? 'min-w-6 opacity-[1!important] inset-auto' : '') : !isLoading ? Leftsvg('big') : loaderCircleSvg(isLoading ? 'min-w-6 opacity-[1!important] inset-auto' : '')}</button>
               </div>
             </div>
           </div>

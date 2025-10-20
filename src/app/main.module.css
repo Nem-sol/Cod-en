@@ -199,7 +199,7 @@
   box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.28), 0px 3px 10px rgba(0, 0, 0, 0.2);
 }
 #searchbar input:focus{
-  background-color: var(--sweetRed);
+  background-color: var(--sweetRed) !important;
 }
 #searchbar menu span{
   width: 100%;
@@ -402,5 +402,17 @@
   }
   .quick .second{
     display: none;
+  }
+}
+@media screen and (max-width: 350px) {
+  .default_bg h2{
+    font-size: 18px;
+  }
+  .default_bg p{
+    font-size: 14px;
+  }
+  .default_bg div{
+    padding: 0;
+    min-width: 140px;
   }
 }

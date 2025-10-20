@@ -75,7 +75,7 @@ const Settings = () => {
       }
       const result = await res.json()
       if (!res.ok) setEr(result.error)
-      else setUserDetails((prev: User) => {return { ...prev , recoveryQuestions: [...prev.recoveryQuestions.filter((q: string,  n: number ) =>  n ! == i )]}})
+      else setUserDetails((prev: User) => {return { ...prev , recoveryQuestions: [...prev.recoveryQuestions.filter((q: string,  n: number ) =>  n !== i )]}})
       setReady(false)
       setPassword('')
       setLoading(false)
@@ -180,13 +180,13 @@ const Settings = () => {
         setErr('Updates successful')
         setUserDetails((prev: User) => { return { ...prev , ...result }})
       }
-      setLoading(false)
       setPass('')
       setName('')
       setEmail('')
       setBackup('')
       setPassword('')
-      setTimeout(()=>{setVerify(false); setSuccess(false)}, 1500)
+      setLoading(false)
+      setTimeout(()=>{setVerify(false); setErr(''); setSuccess(false)}, 1500)
     }
   }
   useEffect(()=>{
@@ -228,7 +228,7 @@ const Settings = () => {
             
             {recovery.map((inp: sets, i: number)=>{
               return <>
-                <div className={style.responses}>
+                <div className={style.responses} key={i}>
                   <input type="text" name={'questions' + i} placeholder='Enter new question' value={inp.question} onChange={(e: React.ChangeEvent<HTMLInputElement>)=>
                       setRecovery(
                         (prev: sets[]) =>[...prev.map((f: sets, n: number)=>  n === i ? {...f, question: e.target.value} : f)]
@@ -236,7 +236,7 @@ const Settings = () => {
                     onClick={() => setRecovery(( prev: sets[] )=> [...prev.filter((f: sets)=> f === inp || (f.question.trim() !== '' && f.answer.trim() !== ''))])}
                   />
                 </div>
-                <menu className={`${style.responses} ${style.answer}`}>
+                <menu className={`${style.responses} ${style.answer}`} key={i + 3}>
                   <input type="text" name={'answers'+ i} placeholder='Enter corresponding answer' value={inp.answer} onChange={(e: React.ChangeEvent<HTMLInputElement>)=>
                     setRecovery(
                       (prev: sets[]) =>[...prev.map((f: sets, n: number)=>  n === i ? {...f, answer: e.target.value} : f)]
@@ -294,7 +294,7 @@ const Settings = () => {
                 { pass && <h3> <ul>Password</ul> <ol>{pass}</ol></h3>}
                 { backup && <h3> <ul>Back-up email</ul> <ol>{backup}</ol></h3>}
                 <div className={style.password}>
-                  <input type="text" value={password} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value.trim())} placeholder="Enter current password"/>
+                  <input type="text" value={password} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value.trim())} placeholder="Enter current password" style={success ? {pointerEvents: 'none'} : {}}/>
                 </div>
               </section>
             </div>

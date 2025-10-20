@@ -20,14 +20,12 @@ export default function ChatInput({ value , onChange , placeholder = 'Start new 
       placeholder={placeholder}
       rows={1}
       style={{
-        width: "100%",
         resize: "none",
-        padding: "8px",
+        padding: "5px",
         fontSize: "14px",
         lineHeight: "1.5",
         overflowY: "auto",
-        minHeight: "40px",
-        maxHeight: "200px",
+        maxHeight: "150px",
       }}
     />
   );

@@ -122,9 +122,14 @@ export function NewFilterSets({props}){
 }
 
 export function NewDropSets({props}){
+  useEffect(()=>{
+    const listen = () => pick(`#${props.id}.${props.class}`) ? pick(`#${props.id} div`).style.height = `${(props.buttons.length) * 35 + (props.buttons.length) * 5 }px` : pick(`#${props.id} div`).style.height = '0px'
+    window.addEventListener('click', listen)
+    return () => window.removeEventListener('click', listen)
+  })
   const active = props.buttons.filter(( btn ) => props.query.toLocaleLowerCase() === btn.query.toLocaleLowerCase())
   return(
-    <menu id={props.id} className={props.cln ? props.cln : ''} onClick={(e)=>{classToggle(`#${props.id}`, `${props.class}`); RemoveOtherClass(`#${props.id}`, `${props.class}`, 'menu')}}>
+    <menu id={props.id} className={props.cln ? props.cln : ''} onClick={()=>{classToggle(`#${props.id}`, `${props.class}`); RemoveOtherClass(`#${props.id}`, `${props.class}`, 'menu')}}>
       <span>
         { active.length > 0 ?  <> {active[0].svg} {active[0].txt} </> : <>{SupportSvg('BIG')} Custom</>}</span>
       <div>

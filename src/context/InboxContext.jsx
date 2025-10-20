@@ -6,12 +6,14 @@ import { useUserContext } from './UserProvider';
 export const InboxContext = createContext()
 
 export const InboxProvider = ({ children }) => {
+  let unread = 0
   const { socket, ready } = useSocket()
   const [ inbox, setInbox ] = useState([])
   const [ error, setError ] = useState(false)
   const { userDetails: user } = useUserContext()
   const [ refresh, setRefresh ] = useState(false)
   const [ isLoading, setIsLoading ] = useState(false)
+  inbox.forEach((inb)=> unread += inb.messages.filter((msg) => user.id === inb.userId ? !msg.sent : msg.sent).length)
 
   // Fetch inbox on mount
   useEffect(() => {
@@ -74,7 +76,7 @@ export const InboxProvider = ({ children }) => {
     } : inb ))
   }
   return(
-    <InboxContext.Provider value={{inbox, setInbox, isLoading, error , sendMessage, setRefresh , readMessages}}>
+    <InboxContext.Provider value={{ unread , inbox, setInbox, isLoading, error , sendMessage, setRefresh , readMessages}}>
       { children }
     </InboxContext.Provider>
   )
