@@ -3,6 +3,7 @@ import Link from 'next/link'
 import style from './page.module.css'
 import styles from '../main.module.css'
 import React, { ReactNode } from 'react'
+import Footer from '@/src/components/Footer'
 import { DashboardSection } from '@/src/components/pageParts'
 import { useProjectContext } from '@/src/context/ProjectContext'
 import { Blogsvg, Booksvg, Buildsvg, Devsvg, Helpsvg, HomeSvg, Packssvg, Rocketsvg } from '@/src/components/svgPack'
@@ -10,10 +11,10 @@ import { useUserContext } from '@/src/context/UserProvider'
 
 type Blogs = {
   props: { 
-    svg: ReactNode;
-    title: string;
-    address: string;
     link: string
+    title: string;
+    svg: ReactNode;
+    address: string;
   }
 }
 type Summary = {
@@ -143,6 +144,7 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </main>
   )
 }

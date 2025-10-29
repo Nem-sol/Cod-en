@@ -2,8 +2,11 @@
   "name": "cod-en",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "concurrently \"npm run dev:next\" \"npm run dev:socket\"",
+    "dev:next": "next dev --turbopack",
+    "dev:socket": "node --loader ts-node/esm --trace-warnings --no-warnings socket.ts",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint"
@@ -11,6 +14,7 @@
   "dependencies": {
     "bcrypt": "^6.0.0",
     "date-fns": "^4.1.0",
+    "dotenv": "^17.2.3",
     "mongoose": "^8.19.1",
     "next": "15.5.4",
     "next-auth": "^4.24.11",
@@ -27,9 +31,11 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^9.2.1",
     "eslint": "^9",
     "eslint-config-next": "15.5.4",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }

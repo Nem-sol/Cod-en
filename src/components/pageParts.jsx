@@ -121,8 +121,35 @@ export function NewFilterSets({props}){
   )
 }
 
+export function Notify({ condition = true, setCondition, timer = 5000 , message = 'Alert', types = 'notes'}){
+  const time = Number(timer) || 5000
+  const msg = String(message) || 'Notification'
+  const [ display , setDisplay ] = useState(condition)
+  useEffect(()=>{
+    const delay = setTimeout(()=>{if (display) setCondition(false); setDisplay(false)}, time)
+    return () => clearTimeout(delay)
+  })
+  if (display) return <span className='notify' style={{
+    opacity: 1,
+    top: '80px',
+    right: '20px',
+    fontWeight: 600,
+    fontSize: '15px',
+    position: 'fixed',
+    padding: '10px 15px',
+    borderRadius: '25px',
+    pointerEvents: 'none',
+    borderBottomRightRadius: '5px',
+    animation: `notify 1 ${time}ms linear forwards`,
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.282), 0 0px 3px rgba(0, 0, 0, 0.282)',
+    color: types === 'error' ? 'var(--error)' : types === 'success' ? 'var(--success)' : '#a6aa69',
+    borderColor: types === 'error' ? 'var(--error)' : types === 'success' ? 'var(--success)' : '#a6aa69',
+    backgroundColor: types === 'error' ? '#fad2d2' : types === 'success' ? '#d4f2a0' : 'var(--primary)'}}>{msg}</span>
+}
+
 export function NewDropSets({props}){
   useEffect(()=>{
+    if (props.listen) return
     const listen = () => pick(`#${props.id}.${props.class}`) ? pick(`#${props.id} div`).style.height = `${(props.buttons.length) * 35 + (props.buttons.length) * 5 }px` : pick(`#${props.id} div`).style.height = '0px'
     window.addEventListener('click', listen)
     return () => window.removeEventListener('click', listen)
@@ -131,7 +158,7 @@ export function NewDropSets({props}){
   return(
     <menu id={props.id} className={props.cln ? props.cln : ''} onClick={()=>{classToggle(`#${props.id}`, `${props.class}`); RemoveOtherClass(`#${props.id}`, `${props.class}`, 'menu')}}>
       <span>
-        { active.length > 0 ?  <> {active[0].svg} {active[0].txt} </> : <>{SupportSvg('BIG')} Custom</>}</span>
+        { active.length > 0 ?  <> {active[0].svg} {active[0].txt} </> : <>{SupportSvg('BIG')} Message</>}</span>
       <div>
         {props.buttons.map(( btn , i )=> <span key={i} onClick={btn.func}> {btn.svg} {btn.txt} </span>
         )}
@@ -179,7 +206,7 @@ export function DashboardSection({props}){
 export function ContactForm({props}){
   const [ msg, setMsg ] = useState('')
   const [ error, setError ] = useState('')
-  const [ type, setType ] = useState('custom')
+  const [ type, setType ] = useState('Message')
   const { userDetails: user } = useUserContext()
   const [ success, setSuccess ] = useState(false)
   const [ loading, setLoading ] = useState(false)
@@ -192,8 +219,7 @@ export function ContactForm({props}){
       setError('Please enter a valid email address')
       return
     }
-    if (!email.trim() && user ) setEmail(user.email)
-    if (!name.trim()) setName(user.name || 'Guest')
+    if (!user && !name.trim()) setError('User name required')
     if (!msg.trim()) {
       setError('A message content is required')
       return
@@ -203,7 +229,7 @@ export function ContactForm({props}){
       const res = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ msg , name , email , type })
+        body: JSON.stringify({ msg , name: user ? user.name : name , email: user ? user.email : email , type })
       });
 
       const contentType = res.headers.get('content-type')
@@ -214,11 +240,11 @@ export function ContactForm({props}){
         return
       }
 
-      if (!res.ok) setError(res.json().error)
+      if (!res.ok) setError(res.json().error || `Could not send ${type.toLocaleLowerCase()}`)
       else {
         setSuccess(true)
-        setError(`${FirstCase(type)} message sent successfully. Cod-en will reach out to you shortly.`)
-        setTimeout(()=>{ setSuccess(false) ; setError('') }, 3000)
+        setError(`${FirstCase(type)} ${type !== 'message' && message} sent successfully. Cod-en will reach out to you shortly.`)
+        setTimeout(()=>{ setSuccess(false) ; setError('') ; setMsg('') }, 3000)
       }
     } catch (err) {
       setError(err || 'Something went wrong')
@@ -240,13 +266,13 @@ export function ContactForm({props}){
           buttons: user ? [
               {svg: Helpsvg(), txt: 'Enquiry', query: 'enquiry', func: ()=>setType('enquiry')},
               {svg: FolderSvg(), txt: 'Deals', query: 'deals', func: ()=>setType('deals')},
-              {svg: SupportSvg('isBig'), txt: 'Custom', query: 'custom', func: ()=>setType('custom')},
+              {svg: SupportSvg('isBig'), txt: 'Message', query: 'message', func: ()=>setType('message')},
               {svg: Bugsvg(), txt: 'Report', query: 'report', func: ()=>setType('report')},
               {svg: SupportSvg('isBig'), txt: 'Feedback', query: 'feeds', func: ()=>setType('feeds')}
             ] : [
             {svg: Helpsvg(), txt: 'Enquiry', query: 'enquiry', func: ()=>setType('enquiry')},
             {svg: FolderSvg(), txt: 'Business deals', query: 'deals', func: ()=>setType('deals')},
-            {svg: SupportSvg('BIG'), txt: 'Custom', query: 'custom', func: ()=>setType('custom')}
+            {svg: SupportSvg('BIG'), txt: 'Message', query: 'message', func: ()=>setType('message')}
           ]
         }}/></div>
         <button disabled={loading} onClick={handleSubmit}>{success ? 'Sent' : !loading ? 'Send' : 'Sending...'} {success ? checkmarkSvg(success ? 'min-w-6 opacity-[1!important] inset-auto' : '') : !loading ? Leftsvg('big') : loaderCircleSvg(loading ? 'min-w-6 opacity-[1!important] inset-auto' : '')}</button>

@@ -3,7 +3,7 @@ import connect from '@/src/utils/db'
 import { NextResponse } from 'next/server'
 import Message from '../../../models/Message'
 
-const POST = async ( req ) => {
+export const POST = async ( req ) => {
 
   try{
     await connect()
@@ -11,7 +11,7 @@ const POST = async ( req ) => {
 
     if (!name.trim()) return NextResponse.json({ error: 'Please submit message with a name entry.' }, { status: 400 })
 
-    if (validator.isEmail(email)) return NextResponse.json({ error: 'Please submit message with a valid email entry.' }, { status: 400 })
+    if (!validator.isEmail(email)) return NextResponse.json({ error: 'Please submit message with a valid email entry.' }, { status: 400 })
 
     if (!type.trim()) return NextResponse.json({ error: 'Please submit message with a type entry.' }, { status: 400 })
 
@@ -19,8 +19,9 @@ const POST = async ( req ) => {
 
     await Message.create({ name , email , type , content: msg })
       
-    return NextResponse.json({mssg: 'Message sent successfully. Cod-en will get back to you shortly.'}, { status: 200 })
+    return NextResponse.json({mssg: `${type[0].toLocaleUpperCase()}${type.toLocaleLowerCase().slice(1)} sent successfully. Cod-en will get back to you shortly.`}, { status: 200 })
   } catch (error) {
-    NextResponse.json({error: 'Error occured in the process'}, { status: 400 })
+    console.log(error)
+    return NextResponse.json({error: 'Error occured in the process'}, { status: 400 })
   }
 }

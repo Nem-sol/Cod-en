@@ -3,9 +3,10 @@ import Link from 'next/link'
 import Image from 'next/image'
 import React, { useState } from 'react'
 import styles from '../main.module.css'
+import Footer from '@/src/components/Footer'
 import { useHelp } from '@/src/context/HelpProvider'
-import { Blogsvg, FolderSvg, Helpsvg, Locationsvg, Refreshsvg, Searchsvg } from '@/src/components/svgPack'
 import { classToggle, RemoveOtherClass } from '@/src/components/functions'
+import { Blogsvg, FolderSvg, Helpsvg, Locationsvg, Refreshsvg, Searchsvg } from '@/src/components/svgPack'
 
 type Help = {
   _id: string
@@ -49,7 +50,7 @@ const Help = () => {
           {(error || isLoading) && <section className='pt-6 w-full'><button className='flex gap-2.5 items-center justify-center rounded-[25px!important] mx-auto hover:bg-[#fc52524d]' style={{border: 'solid 2px', padding: '5px 23px', fontSize: '16px', color: 'var(--error)', borderColor: 'var(--error)', backgroundImage: 'linear-gradient( to right, #fc52524d, transparent'}} disabled={isLoading} onClick={()=>setRefresh(( prev : boolean)=> !prev)}>{Refreshsvg()} Refresh</button></section>}
         </div>
       </div>
-      
+      <Footer />
     </main>
   )
 }

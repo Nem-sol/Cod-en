@@ -56,6 +56,7 @@ body.dark{
 main{
   flex: 5;
   width: 100%;
+  flex-direction: column;
   padding-block: 60px 20px;
 }
 body{
@@ -169,6 +170,27 @@ input:-internal-autofill-selected{
 .loading-circle{
   animation: loader-circle 0.8s linear infinite forwards;
 }
+.notify{
+  z-index: 1;
+  width: 80%;
+  border: solid 2px;
+  max-width: fit-content;
+}
+@keyframes notify {
+  0%{
+    opacity: 0;
+    translate: 25%;
+  } 10%{
+    opacity: 0.9;
+    translate: 0;
+  } 90%{
+    opacity: 0.9;
+    translate: 0;
+  } 100%{
+    opacity: 0;
+    translate: 25%;
+  }
+}
 #nprogress .bar {
   top: 0;
   left: 0;
@@ -252,6 +274,39 @@ header{
 .footer a:hover{
   color: var(--compliment);
 }
+.footer{
+  gap: 15px;
+  width: 100%;
+  display: flex;
+  row-gap: 10px;
+  min-height: 60px;
+  font-weight: 600;
+  transition: 0.5s;
+  margin-top: auto;
+  align-self: center;
+  align-items: center;
+  padding-inline: 10px;
+  padding-block: 30px 0;
+  justify-content: space-between;
+}
+.footer a{
+  white-space: nowrap;
+}
+.footer .l{
+  font-size: 16px;
+  border-right: solid var(--sweetPurple) 2px;
+}
+.footer div{
+  row-gap: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  color: var(--translucent);
+  flex-direction: row-reverse;
+}
+.footer span{
+  padding-left: 10px;
+}
 .header div button:first-child{
   display: none;
 }
@@ -276,7 +331,6 @@ header{
   align-items: center;
   justify-content: space-around;
 }
-
 .user_pack{
   gap: 3px;
   top: 133%;
@@ -444,12 +498,12 @@ nav .pagenav{
   top: 60px;
   bottom: 0;
   display: flex;
-  transition: 1s;
   position: sticky;
   overflow: hidden;
   margin-left: 65px;
   align-self: flex-start;
   height: calc(100vh - 60px);
+  transition: 1s all, 0.5s color;
   max-height: calc(100vh - 60px);
   background-color: var(--pageNav);
   border-bottom-right-radius: 15px;
@@ -513,8 +567,27 @@ nav .pagenav .nav{
   gap: 10px;
   display: flex;
   transition: 1s;
+  overflow-y: auto;
   flex-direction: column;
   padding-block: 5px 15px;
+  &::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+    margin-block: 50px 10px;
+  }
+  &::-webkit-scrollbar-track {
+    margin-block: 10px;
+    border-radius: 3px;
+    background-color: rgba(0, 0, 0, 0.15);
+  }
+  &::-webkit-scrollbar-thumb {
+    cursor: pointer;
+    border-radius: 3px;
+    background-color: var(--light-texts); 
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(81, 61, 49); 
+  }
 }
 nav .pagenav .contact{
   gap: 10px;
@@ -578,8 +651,9 @@ nav .pagenav .inbox textarea{
   min-height: 32px;
   border-radius: 10px 0 0 10px;
 }
-nav .pagenav div a,
+nav .pagenav .bar a,
 nav .pagenav button{
+  gap: 10px;
   height: 32px;
   display: flex;
   min-width: 40px;
@@ -587,8 +661,24 @@ nav .pagenav button{
   border-radius: 10px;
   justify-content: center;
 }
-nav .pagenav div a:hover,
+nav .pagenav .bar a:hover,
 nav .pagenav button:hover{
+  background-color: var(--mild-dark);
+  background-image: linear-gradient(to top right, rgba(0, 0, 0, 0.15), transparent );
+}
+nav .pagenav .nav a{
+  gap: 10px;
+  display: flex;
+  transition: 0s;
+  padding: 5px 20px;
+  border-radius: 5px 15px;
+}
+nav .pagenav .nav a:last-child{
+  margin-top: auto;
+  justify-content: center;
+  background-image: linear-gradient(to top right, rgba(0, 0, 0, 0.15), transparent );
+}
+nav .pagenav .nav a:hover{
   background-color: var(--mild-dark);
 }
 nav.inView{
@@ -606,7 +696,7 @@ nav .contact input,
 nav .contact textArea{
   resize: none;
   transition: 0.1s;
-  font-weight: 500;
+  font-weight: 600;
   max-height: 350px;
   padding: 10px 15px;
   border-radius: 27px;
@@ -756,6 +846,12 @@ nav .contact .button:hover svg{
   .header div button:first-child{
     display: initial;
   }
+  .footer .l{
+    width: 0;
+    padding: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
 }
 @media screen and (max-width: 500px) {
   .root{
@@ -807,6 +903,10 @@ nav .contact .button:hover svg{
     width: 22px;
     height: 22px;
   }
+  .footer span{
+    width: 100%;
+    border: none;
+  }
 }
 @media screen and (max-width: 375px) {
   nav.inView .pagenav{
@@ -818,6 +918,17 @@ nav .contact .button:hover svg{
   svg, nav .links svg{
     width: 21px;
     height: 21px;
+  }
+  .footer{
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .footer span{
+    text-align: start;
+    padding-left: 10px;
+  }
+  .footer div{
+    justify-content: flex-start;
   }
 }
 @media screen and (max-width: 320px) {

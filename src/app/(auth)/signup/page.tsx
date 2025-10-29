@@ -3,6 +3,7 @@ import Link from 'next/link'
 import React, { useState } from 'react'
 import styles from '../page.module.css'
 import { signIn } from 'next-auth/react'
+import Footer from '@/src/components/Footer'
 import { Githubsvg, GoogleG, loaderCircleSvg } from '@/src/components/svgPack'
 import { CheckIncludes, classAdd, classRemove, pick } from '@/src/components/functions'
 
@@ -97,6 +98,7 @@ const Signup = () => {
         <button onClick={()=>GithubSignUp()} disabled={loading}>{Githubsvg()} Sign up <span>with Github</span></button>
       </div>
       <p className='text-end pr-14 max-w-2xl w-full'>Have an account? <Link href='/signin' style={{color: 'var(--compliment)'}}>Log in</Link> </p>
+      <Footer />
     </main>
   )
 }

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import styles from '../main.module.css'
 import React, { useState } from 'react'
+import Footer from '@/src/components/Footer'
 import { Copier } from '../../components/pageParts'
 import { useUserContext } from '@/src/context/UserProvider'
 import { useHistoryContext } from '@/src/context/HistoryContext'
@@ -127,6 +128,7 @@ const History = () => {
         {(!isLoading || history.length > 0) && Filter(filters)}
         {error && <button disabled={isLoading} className={styles.floater} onClick={()=>setRefresh((prev: boolean) => !prev )}>{isLoading ? loaderCircleSvg() : Backsvg()}</button>}
       </div>
+      <Footer />
     </main>
   )
 }

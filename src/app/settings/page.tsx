@@ -3,7 +3,9 @@ import Link from 'next/link'
 import style from './page.module.css'
 import styles from '../main.module.css'
 import { signOut } from 'next-auth/react'
+import Footer from '@/src/components/Footer'
 import React, { useEffect, useState } from 'react'
+import { PasswordInput } from '@/src/components/ChatBox'
 import { useUserContext } from '@/src/context/UserProvider'
 import { CheckIncludes, FirstCase } from '@/src/components/functions'
 import { Editsvg, EyeClosedSvg, Eyesvg, Githubsvg, LogoutSvg, Padlocksvg, Refreshsvg, SettingSvg, Packssvg, GoogleG, Cloudsvg, AddSvg, Rocketsvg, Leftsvg, loaderCircleSvg, checkmarkSvg, DeleteSvg } from '@/src/components/svgPack'
@@ -246,9 +248,7 @@ const Settings = () => {
                 </menu>
               </>
             })}
-            {ready && <div className={style.password}>
-                <input type="text" value={password} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value.trim())} placeholder="Enter current password"/>
-              </div>}
+            {ready && <PasswordInput value={password} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value.trim())} classes={style.password} placeholder="Enter current password" />}
             {recovery.length > 0 && <p className='text-[var(--sweetPurple)] self-center items-center flex gap-1'>{Padlocksvg('big min-w-7')} Recovery answers cannot be displayed after creation</p>}
             {user && user.recoveryQuestions.length < 3 && user.provider === 'custom' && <h3 className='flex-wrap flex justify-end items-center gap-2.5'>
               <p style={success ? {color: 'var(--success)'} : {}} className='text-[var(--error)] max-w-2xl w-full'>{er}</p>
@@ -293,9 +293,7 @@ const Settings = () => {
                 { email && <h3> <ul>Email</ul> <ol>{email}</ol></h3>}
                 { pass && <h3> <ul>Password</ul> <ol>{pass}</ol></h3>}
                 { backup && <h3> <ul>Back-up email</ul> <ol>{backup}</ol></h3>}
-                <div className={style.password}>
-                  <input type="text" value={password} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value.trim())} placeholder="Enter current password" style={success ? {pointerEvents: 'none'} : {}}/>
-                </div>
+                <PasswordInput value={password} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value.trim())} classes={style.password} style={success ? {pointerEvents: 'none'} : {}} placeholder="Enter current password" />
               </section>
             </div>
             <div className={style.finish}>
@@ -307,6 +305,7 @@ const Settings = () => {
           </form>
           </>}
       </div>
+      <Footer />
     </main>
   )
 }

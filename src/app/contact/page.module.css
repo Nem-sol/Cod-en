@@ -23,7 +23,7 @@
   width: 90%;
   display: flex;
   transition: 0.5s;
-  font-weight: 500;
+  font-weight: 600;
   font-size: 1.2em;
   padding-top: 30px;
   flex-direction: column;
@@ -60,7 +60,7 @@
   gap: 0 10px;
   width: 100%;
   font-size: 1em;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--translucent);
 }
 .formHolder h2{
@@ -98,7 +98,7 @@
 .form input,
 .form textArea{
   transition: 0.1s;
-  font-weight: 500;
+  font-weight: 600;
   padding: 12px 15px;
   border-radius: 25px;
   color: var(--translucent);

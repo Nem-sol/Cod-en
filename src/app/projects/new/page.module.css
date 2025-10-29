@@ -1,0 +1,467 @@
+.autoFill{
+  gap: 5px;
+  top: 20px;
+  z-index: 1;
+  opacity: 0;
+  right: -110%;
+  display: flex;
+  padding: 10px;
+  font-weight: 600;
+  transition: 0.5s;
+  min-width: 250px;
+  min-height: 150px;
+  position: absolute;
+  border-radius: 25px;
+  pointer-events: none;
+  flex-direction: column;
+  border-top-left-radius: 5px;
+  background-color: var(--pageNav);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.28), 0 0 10px var(--mild-dark);
+}
+.inView .autoFill{
+  opacity: 1;
+  pointer-events: all;
+  top: calc( 100% + 10px );
+}
+.autoFill span{
+  gap: 15px;
+  box-shadow: none;
+  color: rgb( 50, 50, 50);
+}
+.autoFill svg{
+  width: 20px;
+  height: 20px;
+  border: solid 7px;
+  border-radius: 100%;
+}
+.autoFill button{
+  background-color: var(--success) !important;
+}
+.holder{
+  flex: 1;
+  gap: 20px;
+  display: grid;
+  padding: 10px 0;
+  min-width: 300%;
+  transition: 0.5s;
+  align-items: flex-start;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+.typeSelector{
+  gap: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  padding: 30px 0px;
+  max-width: 1200px;
+  align-items: center;
+  justify-self: center;
+  place-content: center;
+}
+.typeSelector section{
+  display: flex;
+  height: 200px;
+  row-gap: 10px;
+  padding: 15px;
+  font-size: 15px;
+  max-width: 350px;
+  font-weight: 600;
+  transition: 0.5s;
+  width: fit-content;
+  border-radius: 20px;
+  color: var(--black);
+  border-image-slice: 1;
+  flex-direction: column;
+  border-top-right-radius: 7px;
+  background-color: rgba(255, 252, 240, 0.95);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.28), 0 0 10px var(--mild-dark);
+}
+.typeSelector section svg{
+  width: 27px;
+  height: 27px;
+}
+.typeSelector section button{
+  margin-top: auto;
+  padding: 5px 10px;
+  border-radius: 15px;
+  align-self: flex-end;
+  color: var(--translucent);
+  border-bottom-left-radius: 5px;
+  background-color: var(--natural);
+}
+.fillerForm{
+  gap: 30px;
+  width: 100%;
+  display: flex;
+  max-width: 1200px;
+  justify-self: center;
+  flex-direction: column-reverse;
+}
+.fillerForm section{
+  gap: 20px;
+  display: flex;
+  padding: 25px 0;
+  transition: 0.1s;
+  font-weight: 600;
+  color: var(--translucent);
+  flex-direction: column-reverse;
+  border-top: solid var(--deepSweetPurple) 2px;
+}
+.fillerForm section div{
+  flex: 3;
+  gap: 10px;
+  display: flex;
+  padding: 15px;
+  transition: 0.5s;
+  font-weight: 600;
+  border-radius: 13px;
+  color: var(--translucent);
+  border: solid var(--sweetPurple) 2px;
+}
+.fillerForm section div:hover,
+.fillerForm section div:focus{
+  scale: 1.03;
+}
+.fillerForm .input{
+  width: 100%;
+  column-gap: 2px;
+  padding: 6.5px 15px;
+}
+.fillerForm textarea{
+  max-height: 150px;
+  min-height: 100px;
+}
+.fillerForm #lang{
+  flex-wrap: wrap;
+  align-items: start;
+  flex-direction: row-reverse;
+}
+.form .check,
+.fillerForm .auto{
+  gap: 10px;
+  padding: 5px;
+  opacity: 0.8;
+  display: flex;
+  cursor: pointer;
+  transition: 0.5s;
+  border-radius: 20px;
+  padding-right: 15px;
+  align-items: center;
+  color: rgb( 50, 50, 50);
+  border-bottom-right-radius: 5px;
+  background-color: var(--pageNav);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.282), 0 2px 5px rgba(0, 0, 0, 0.282);
+}
+.fillerForm .auto svg,
+.form .check svg{
+  width: 25px;
+  height: 25px;
+  border: solid 8px;
+  border-radius: 100%;
+}
+.fillerForm #lang div{
+  cursor: pointer;
+  min-width: 100px;
+  border-radius: 20px;
+  border-bottom-left-radius: 5px;
+  box-shadow: 0 3px 10px rgb(0, 0, 0 ,0.15);
+}
+.fillerForm menu.inActive{
+  opacity: 0.65;
+  pointer-events: none;
+}
+.fillerForm #lang menu{
+  display: flex;
+  border-radius: 15px;
+  flex-direction: column;
+  background-color: var(--sweetRed);
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.15), transparent);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.282), 0 0px 3px rgba(0, 0, 0, 0.282);
+}
+.fillerForm #lang menu span{
+  padding: 7px 14px;
+  background-color: transparent;
+}
+.fillerForm #lang menu div{
+  gap: 5px;
+  flex: auto;
+  opacity: 0;
+  padding: 0;
+  height: 0px;
+  inset: auto;
+  border: none;
+  display: flex;
+  max-width: none;
+  overflow: hidden;
+  box-shadow: none;
+  position: static;
+  border-radius: inherit;
+  background-image: none;
+  background-color: transparent;
+  flex-direction: column-reverse;
+}
+.fillerForm #lang .inView span{
+  box-shadow: inherit
+}
+.fillerForm #lang menu div span{
+  box-shadow: none !important;
+}
+.fillerForm #lang menu.inView{
+  padding: 7px;
+}
+.fillerForm #lang menu.inView div{
+  opacity: 1;
+  height: 115px;
+  margin-top: 10px;
+  pointer-events: all;
+}
+.fillerForm .input.only input:focus,
+.fillerForm .input.only textArea:focus{
+  color: rgb( 50, 50, 50);
+  background-color: rgba(227, 239, 244, 0.85);
+}
+.fillerForm .input.only input,
+.fillerForm .input.only textarea{
+  padding: 10px;
+  transition: 0.2s;
+}
+.fillerForm .input.only{
+  padding: 10px;
+  border-bottom-left-radius: 3px;
+}
+.fillerForm .input input,
+.fillerForm .input textarea{
+  flex: 1;
+  width: 100%;
+  padding: 0 5px;
+  border-radius: 5px;
+}
+.fillerForm p{
+  left: 50px;
+  top: -12px;
+  transition: 0.5s;
+  position: absolute;
+  padding-inline: 15px;
+  background-color: var(--background);
+}
+.fillerForm div p{
+  left: auto;
+  right: 20px;
+  font-weight: 600;
+}
+.form button,
+.fillerForm button{
+  gap: 10px;
+  display: flex;
+  padding: 7px 10px;
+  width: fit-content;
+  border-radius: 5px;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.282), 0 0 3px rgba(0, 0, 0, 0.282);
+}
+.fillerForm menu{
+  max-width: 225px;
+}
+.fillerForm menu:last-child{
+  flex: 3;
+  max-width: none;
+}
+.fillerForm menu span{
+  gap: 15px;
+  display: flex;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.3s;
+  padding: 7px 15px;
+  align-items: center;
+  white-space: nowrap;
+  border-radius: 15px;
+  color: var(--translucent);
+  background-color: var(--sweetRed);
+}
+.fillerForm menu span:hover{
+  background-color: var(--mild-dark);
+}
+.fillerForm menu div{
+  gap: 5px;
+  opacity: 0;
+  z-index: 2;
+  width: 100%;
+  border: none;
+  display: flex;
+  inset-inline: 0;
+  padding: 10px 0;
+  transition: 0.5s;
+  max-width: 700px;
+  position: absolute;
+  border-radius: 10px;
+  pointer-events: none;
+  top: calc(50% + 10px);
+  min-width: fit-content;
+  flex-direction: column;
+  background-color: var(--primary);
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.15), transparent);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.282), 0 0px 3px rgba(0, 0, 0, 0.282);
+}
+.fillerForm menu div:hover,
+.fillerForm menu div:focus{
+  scale: 1;
+}
+.fillerForm menu div span{
+  width: 100%;
+  border-radius: 0;
+  padding: 7px 20px;
+  background-color: transparent;
+}
+.inView .details,
+.fillerForm menu.inView div{
+  opacity: 1;
+  z-index: 4;
+  pointer-events: all;
+  top: calc(100% + 10px);
+}
+.fillerForm .special div{
+  right: 0;
+  top: auto;
+  left: auto;
+  width: 175px;
+  bottom: calc(50% + 10px);
+}
+.fillerForm .special.inView div{
+  top: auto;
+  bottom: calc(100% + 10px);
+}
+.form{
+  gap: 20px;
+  display: flex;
+  overflow: hidden;
+  padding-right: 15px;
+  padding-bottom: 30px;
+  flex-direction: column;
+}
+.confirmer{
+  display: flex;
+  gap: 20px 30px;
+  flex-wrap: wrap;
+  align-items: start;
+  justify-self: center;
+}
+.form h2 p{
+  font-weight: 400;
+  font-size: 0.67em;
+}
+.form h2{
+  gap: 10px;
+  transition: 0.5s;
+  font-weight: 600;
+  font-size: 1.5em;
+  color: var(--translucent);
+}
+.confirmer div{
+  gap: 10px;
+  display: grid;
+  font-weight: 600;
+  transition: 0.5s;
+  min-width: fit-content;
+  width: calc(50% - 20px);
+  color: var(--changingPurple);
+  grid-template-columns: 115px 1fr;
+}
+.confirmer .auto{
+  gap: 10px;
+  opacity: 0.9;
+  display: flex;
+  max-width: 450px;
+  min-width: 150px;
+  transition: 0.5s;
+  padding: 5px 15px;
+  border-radius: 25px;
+  align-items: center;
+  cursor: context-menu;
+  color: rgb( 50, 50, 50);
+  background-color: #fff0e2;
+  border-bottom-left-radius: 5px;
+  border: solid var(--sweetPurple) 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.282), 0 2px 5px rgba(0, 0, 0, 0.282);
+}
+.confirmer .auto:hover{
+  scale: 1.05;
+}
+.form .check{
+  top: 0;
+  opacity: 1;
+  transition: 0.5s;
+  transition-delay: 0.2s;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 20px;
+  background-color: rgb(255, 240, 226);
+  background-image: linear-gradient(to top left, rgba(0, 0, 0, 0.15), transparent);
+}
+.form .check svg{
+  width: 20px;
+  height: 20px;
+  border-width: 7px;
+}
+.form button{
+  top: 0;
+  transition: 0.5s;
+  border-radius: 10px;
+  color: var(--black);
+  transition-delay: 0.2s;
+  background-image: linear-gradient(to top left, rgba(0, 0, 0, 0.15), transparent);
+}
+.form .check:hover,
+.form button:hover{
+  top: -5px;
+}
+.form menu{
+  gap: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row-reverse;
+}
+.error{
+  width: 100%;
+  text-align: end;
+  min-height: 25px;
+  font-weight: 600;
+  color: var(--error);
+}
+@media screen and (max-width: 725px) {
+  .confirmer div{
+    width: 80%;
+  }
+}
+@media screen and (max-width: 675px) {
+  .confirmer div{
+    width: 100%;
+  }
+}
+@media screen and (max-width: 500px) {
+  .autoFill{
+    right: -80%;
+    min-width: 200px;
+  }
+  .autoFill span{
+    padding-left: 10px;
+  }
+  .autoFill svg{
+    width: 18px;
+    height: 18px;
+  }
+  .fillerForm section div{
+    padding: 10px;
+  }
+  .fillerForm menu div{
+    padding: 10px 0;
+  }
+  .confirmer div{
+    grid-template-columns: 100px 1fr;
+  }
+}
+@media screen and (max-width: 375px) {
+  .autoFill{
+    right: 0px;
+    border-top-left-radius: 25px;
+    border-top-right-radius: 5px;
+  }
+}

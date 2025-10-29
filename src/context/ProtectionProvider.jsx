@@ -10,9 +10,10 @@ import LoadingBar from "../components/LoadingBar"
 import { createContext , useEffect } from "react"
 import style from '../app/contact/page.module.css'
 import { useProjectContext } from './ProjectContext'
-import { CheckIncludes, FirstCase, RemoveAllClass, translateText } from '../components/functions';
+import stylez from '../app/projects/new/page.module.css'
 import { loaderCircleSvg } from "../components/svgPack";
 import { useParams, usePathname , useRouter } from 'next/navigation';
+import { CheckIncludes, FirstCase, RemoveAllClass, translateText } from '../components/functions';
 
 const ProtectorContext = createContext();
 
@@ -64,10 +65,11 @@ export const ProtectorProvider = ({ children }) => {
     <ProtectorContext.Provider value={{}}>
       <Heading />
       <LoadingBar />
-      <div className="root" style={{minHeight: status === 'loading' ? '0' : '100vh'}} onClick={(e) => {if (!['menu', 'menu div', 'menu button', 'menu span'].some(sel => CheckIncludes(e, sel))) {
+      <div className="root" style={{minHeight: status === 'loading' ? '0' : '100vh'}} onClick={(e) => {if (!['menu', 'menu div', 'menu button', 'menu span' ,`.${stylez.autoFill}`].some(sel => CheckIncludes(e, sel))) {
         RemoveAllClass(styl.inView, 'menu')
         RemoveAllClass(style.inView, 'menu')
         RemoveAllClass(styles.inView, 'menu')
+        RemoveAllClass(stylez.inView, 'menu')
         RemoveAllClass('inView', 'menu')
       }}}>
         <Navbar />
@@ -81,7 +83,6 @@ export const ProtectorProvider = ({ children }) => {
         ) : 
         children}
         </div>
-        <Footer />
     </ProtectorContext.Provider>
   );
 };

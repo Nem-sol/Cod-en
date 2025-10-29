@@ -1,13 +1,15 @@
 "use client";
-import { getSocket } from "../utils/socket";
+import { io } from "socket.io-client";
+import { useSession } from "next-auth/react";
 import { useUserContext } from "./UserProvider";
 import { createContext, useContext, useEffect, useState } from "react";
 
 const SocketContext = createContext();
 
 export function SocketProvider({ children }) {
-  const [ready, setReady] = useState(false);
-  const [socket, setSocket] = useState(null);
+  const { date: session } = useSession()
+  const [ ready, setReady] = useState(false);
+  const [ socket, setSocket] = useState(null);
   const { userDetails: user } = useUserContext();
 
   useEffect(() => {
@@ -15,33 +17,38 @@ export function SocketProvider({ children }) {
 
     const connectSocket = async () => {
       try {
-        await fetch("/api/socket", {
-          headers: {
-            "Content-Type": "application/json",
-            authorization: `Bearer ${user.id}`,
-          },
+        const s = io( process.env.socketURL || 'http://localhost:4000' , {
+          autoConnect: true,
+          reconnection: true,
+          withCredentials: true,
+          reconnectionDelay: 2000,
+          reconnectionAttempts: 10,
+          transports: ["websocket"],
+          auth: { token: session?.accessToken }
         });
 
-        const s = getSocket();
+        s.on("connect_error", (err) => {
+          console.warn("Socket connection failed:", err.message);
+        });
+
         setSocket(s);
 
-        s.on("connect", () => {
-          console.log("Connected to Socket.IO:", s.id);
+        socket.on("connect", () => {
+          console.log("Connected to Socket.IO:", socket.id);
           setReady(true);
         });
 
-        s.on("disconnect", () => {
+        socket.on("disconnect", () => {
           setReady(false);
           console.warn("Disconnected from Socket.IO");
 
-          // Retry after short delay if user still logged in
          user && setTimeout(() => {
             console.log("Reconnecting socket...");
             connectSocket();
           }, 5000);
         });
 
-        s.on("connect_error", () => setReady(false))
+        socket.on("connect_error", () => setReady(false))
       } catch (err) {
         console.error("Failed to initialize socket:", err);
       }
@@ -49,7 +56,7 @@ export function SocketProvider({ children }) {
 
     connectSocket();
     return () => socket && socket.disconnect();
-  }, [user]);
+  }, [ session ]);
 
   return (
     <SocketContext.Provider value={{ socket, ready }}>

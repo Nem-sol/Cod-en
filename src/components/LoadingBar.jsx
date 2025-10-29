@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 
 NProgress.configure({
-  speed: 400,
+  speed: 500,
   minimum: 0.1,
   trickle: true,
   trickleSpeed: 200,
@@ -26,15 +26,12 @@ export default function LoadingBar() {
       if (link && link.href && link.pathname === pathname) done()
     }
 
-    if (status === 'loading') start()
-
-    // Handle back/forward navigation
+    window.addEventListener("load", start);
     window.addEventListener("popstate", start);
-
-    // Handle normal link clicks
     window.addEventListener("click", handleLinkClick);
 
     return () => {
+      window.removeEventListener("load", start);
       window.removeEventListener("popstate", start);
       window.removeEventListener("click", handleLinkClick);
     };
@@ -42,8 +39,8 @@ export default function LoadingBar() {
 
   // Stop progress when new route actually renders
   useEffect(() => {
-    if (status !== 'loading') done()
-    const timer = setTimeout(() => done(), 300);
+    if (status === 'loading') start()
+    const timer = setTimeout(() => {if (status !== 'loading') done()}, 300);
     return () => clearTimeout(timer);
   }, [ pathname , status ]);
 

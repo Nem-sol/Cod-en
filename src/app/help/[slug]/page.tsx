@@ -4,6 +4,7 @@ import Image from 'next/image'
 import React, { useState } from 'react'
 import styles from '../../main.module.css'
 import { useParams } from 'next/navigation'
+import Footer from '@/src/components/Footer'
 import { useHelp } from '@/src/context/HelpProvider'
 import { useUserContext } from '@/src/context/UserProvider'
 import { Blogsvg, FolderSvg, Helpsvg, Refreshsvg, Searchsvg } from '@/src/components/svgPack'
@@ -67,7 +68,7 @@ const Help = () => {
           <p>Please be patient while we get your help</p></h3>
         </div>}
       </div>
-      
+      <Footer />
     </main>
   )
 }

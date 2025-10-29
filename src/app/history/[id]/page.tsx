@@ -5,6 +5,7 @@ import { format } from 'date-fns'
 import React, { useState } from 'react'
 import styles from '../../main.module.css'
 import { useParams } from 'next/navigation'
+import Footer from '@/src/components/Footer'
 import { FirstCase } from '@/src/components/functions'
 import { Copier } from '../../../components/pageParts'
 import { useHistoryContext } from '@/src/context/HistoryContext'
@@ -107,6 +108,7 @@ const HistoryPack = () => {
         </div>}
         {error && <button disabled={isLoading} className={styles.floater} onClick={()=>setRefresh((prev: boolean) => !prev )}>{isLoading ? loaderCircleSvg() : Backsvg()}</button>}
       </div>
+      <Footer />
     </main>
   )
 }

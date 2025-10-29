@@ -1,6 +1,7 @@
 import React from 'react'
 import Image from 'next/image'
 import styles from './page.module.css'
+import Footer from '@/src/components/Footer'
 import { ContactForm } from '@/src/components/pageParts'
 
 const Contact = () => {
@@ -18,6 +19,7 @@ const Contact = () => {
           <p>Reach out to us: <em></em></p>
         </h3>
       </form>
+      <Footer />
     </main>
   )
 }

@@ -3,6 +3,7 @@ import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import style from './main.module.css'
+import Footer from '../components/Footer'
 import styles from './contact/page.module.css'
 import { Back, HomeLink } from '../components/pageParts'
 import { Helpsvg, HomeSvg } from '../components/svgPack'
@@ -23,6 +24,7 @@ const NotFound = () => {
           <Back />
         </div>
       </div>
+      <Footer />
     </main>
   )
 }

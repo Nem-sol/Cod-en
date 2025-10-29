@@ -1,6 +1,7 @@
 'use client'
 import Link from 'next/link'
 import styles from '../main.module.css'
+import Footer from '@/src/components/Footer'
 import { formatDistanceToNow } from 'date-fns'
 import React, { useEffect, useState } from 'react'
 import { useUserContext } from '@/src/context/UserProvider'
@@ -200,6 +201,7 @@ const Notification = () => {
         {!error && unread > 0 && <button disabled={Loading} className={styles.floater} onClick={()=>handleMass('update')} style={isLoading ? { bottom : '170px'} : {}}>{(Loading && act === 'update') ? loaderCircleSvg() : checkmarkSvg()}</button>}
         {(error || isLoading ) && <button disabled={isLoading} className={styles.floater} onClick={()=>setRefresh((prev: boolean) => !prev )}>{isLoading ? loaderCircleSvg() : Backsvg()}</button>}
       </div>
+      <Footer />
     </main>
   )
 }

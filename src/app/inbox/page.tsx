@@ -4,13 +4,14 @@ import { format } from 'date-fns'
 import style from './page.module.css'
 import React, { useState } from 'react'
 import styles from './../main.module.css'
+import Footer from '@/src/components/Footer'
 import ChatInput from '@/src/components/ChatBox'
 import { Defaultbg } from '@/src/components/pageParts'
-import { classRemove, classToggle, FirstCase } from '@/src/components/functions'
 import { useSocket } from '@/src/context/SocketContext'
 import { useUserContext } from '@/src/context/UserProvider'
 import { useInboxContext } from '@/src/context/InboxContext'
 import { Backsvg, HistorySvg, Inboxsvg, loaderCircleSvg, Moresvg, ProjectSvg, Rocketsvg, Searchsvg, SupportSvg } from '@/src/components/svgPack'
+import { classRemove, classToggle, FirstCase } from '@/src/components/functions'
 
 type Msg = {
   _id: string
@@ -182,6 +183,7 @@ const Inbox = () => {
           }} />}
         {(error || isLoading) && inbox.length < 1 && <button disabled={isLoading} className={styles.floater} onClick={()=>setRefresh((prev: boolean) => !prev )}>{isLoading ? loaderCircleSvg() : Backsvg()}</button>}
       </div>
+      <Footer />
     </main>
   )
 }

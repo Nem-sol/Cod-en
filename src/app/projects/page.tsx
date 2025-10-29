@@ -2,9 +2,10 @@
 import Link from 'next/link'
 import styles from '../main.module.css'
 import React, { useState } from 'react'
+import Footer from '@/src/components/Footer'
 import { useProjectContext } from '@/src/context/ProjectContext'
 import { Defaultbg, NewFilterSets } from '@/src/components/pageParts'
-import { AddProjectsvg, Inboxsvg, Linksvg, loaderCircleSvg, Moresvg, ProjectSvg, Refreshsvg, Searchsvg, SupportSvg } from '@/src/components/svgPack'
+import { Inboxsvg, Linksvg, loaderCircleSvg, Moresvg, ProjectSvg, Refreshsvg, Rocketsvg, Searchsvg, SupportSvg } from '@/src/components/svgPack'
 
 // type process = {
 //   _id: string
@@ -117,7 +118,7 @@ const ProjectPack = () => {
       <div className={styles.main}>
         <h2 className={styles.title}>{ProjectSvg()} Projects</h2>
         <div className={styles.quick}>
-          <Link href='/projects/new'>{AddProjectsvg()} Create new project</Link>
+          <Link href='/projects/new'>{Rocketsvg('BIG')} Create new project</Link>
           <Link href='/contact' className={styles.second}>{SupportSvg('max-w-[22]')} Contact us</Link>
           <Link href='/inbox' className={styles.third}>{Inboxsvg('BIG')} Inbox</Link>
         </div>
@@ -150,6 +151,7 @@ const ProjectPack = () => {
         {(!isLoading || project.length < 1) && Filter(filters)}
         {error && <button disabled={isLoading} className={styles.floater} onClick={()=>setRefresh((prev: boolean) => !prev )}>{isLoading ? loaderCircleSvg() : Refreshsvg()}</button>}
       </div>
+      <Footer />
     </main>
   )
 }

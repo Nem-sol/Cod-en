@@ -2,7 +2,7 @@ import mongoose from "mongoose"
 
 const { Schema } = mongoose
 
-const NotifiactionSchema = new Schema({
+const NotificationSchema = new Schema({
   title: {
     type: String,
     required: true,
@@ -43,6 +43,6 @@ const NotifiactionSchema = new Schema({
   }
 }, {timestamps: true})
 
-const Notification = mongoose.models.Notification || mongoose.model('Notification', NotifiactionSchema)
+const Notification = mongoose.models.Notification || mongoose.model('Notification', NotificationSchema)
 
 export default Notification

@@ -8,7 +8,7 @@
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "Node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
@@ -22,6 +22,20 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/context/NotificationContext.jsx", "src/context/UserProvider.jsx", "src/context/HistoryContext.jsx", "src/app/api/auth/signup/route.jsx", "src/app/api/users/route.jsx", "src/app/api/inbox/route.jsx", "src/components/ChatBox.tsx", "src/app/api/notifications/route.jsx", "src/app/api/messages/route.jsx"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "src/context/NotificationContext.jsx",
+    "src/context/UserProvider.jsx",
+    "src/context/HistoryContext.jsx",
+    "src/app/api/auth/signup/route.jsx",
+    "src/app/api/users/route.jsx",
+    "src/app/api/inbox/route.jsx",
+    "src/components/ChatBox.tsx",
+    "src/app/api/notifications/route.jsx",
+    "src/app/api/messages/route.tsx",
+    "socket.ts"],
   "exclude": ["node_modules"]
 }

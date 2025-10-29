@@ -10,9 +10,10 @@ import { useUserContext } from '../context/UserProvider'
 import { useInboxContext } from '../context/InboxContext'
 import { useNotificationContext } from '../context/NotificationContext'
 import { classRemove, classAdd, classToggle, FirstCase } from './functions'
-import { cancelSvg, dblRightArrowsvg, FolderSvg, Helpsvg, HomeSvg, Inboxsvg, Bugsvg, Linksvg, loaderCircleSvg, NotificationSvg, ProjectSvg, Leftsvg, SettingSvg, SupportSvg, TagSvg, checkmarkSvg } from './svgPack'
+import { cancelSvg, dblRightArrowsvg, FolderSvg, Helpsvg, HomeSvg, Inboxsvg, Bugsvg, Linksvg, loaderCircleSvg, NotificationSvg, ProjectSvg, Leftsvg, SettingSvg, SupportSvg, TagSvg, checkmarkSvg, HistorySvg, Rocketsvg, AddProjectsvg, Blogsvg, Locationsvg, Githubsvg, Facebooksvg, AppSvg, Packssvg, Padlocksvg } from './svgPack'
 
 type link = {
+  func: void | null
   tag: string | null
   link: string | null
   svg: React.ReactNode | null
@@ -56,7 +57,7 @@ type Inboxes = {
 
 const NavLinks = ({props}: prop) => {
   return props.arr.map(( l: link , i: number )=>(
-    <Link href={l.link || window.location.pathname} key={i}>{l.svg}{l.tag}</Link>
+    l.func ? <button key={i} onClick={l.func}>{l.svg}{l.tag}</button> : <Link href={l.link || window.location.pathname} key={i}>{l.svg}{l.tag}</Link>
   ))
 }
 
@@ -81,7 +82,7 @@ export default function Navbar() {
   const [ err , setErr ] = useState('')
   const [ error , setError ] = useState('')
   const { unread } = useNotificationContext()
-  const [ type, setType ] = useState('custom')
+  const [ type, setType ] = useState('message')
   const { userDetails : user } = useUserContext()
   const [ sucess , setSuccess ] = useState(false)
   const [ loading , setLoading ] = useState(false)
@@ -107,8 +108,7 @@ export default function Navbar() {
         setError('Please enter a valid email address')
         return
       }
-      if (!email.trim() && user ) setEmail(user.email)
-      if (!name.trim()) setName(user.name || 'Guest')
+      if (!user && !name.trim()) setError('User name required')
       if (!mss.trim()) {
         setError('A message content is required')
         return
@@ -118,7 +118,7 @@ export default function Navbar() {
         const res = await fetch('/api/messages', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ msg: mss , name , email , type })
+          body: JSON.stringify({ msg: mss , name: user ? user.name : name , email: user ? user.email : email , type })
         })
   
         const contentType = res.headers.get('content-type')
@@ -128,12 +128,13 @@ export default function Navbar() {
           setError('Unexpected server error. Try again later')
           return
         }
+        const result = await res.json()
 
-        if (!res.ok) setError(`Could not send ${type.toLocaleLowerCase()}. Check your ${type.toLocaleLowerCase()} inputs`)
+        if (!res.ok) setError(result.error || `Could not send ${type.toLocaleLowerCase()}`)
         else {
           setSuccess(true)
-          setError(`${FirstCase(type)} message sent successfully. Cod-en will reach out to you shortly.`)
-          setTimeout(()=>{ setSuccess(false) ; setError('') }, 3000)
+          setError(`${FirstCase(type)} sent successfully. Cod-en will reach out to you shortly.`)
+          setTimeout(()=>{ setSuccess(false) ; setError('') ; setMss('')}, 3000)
         }
       } catch (err) {
         setError('Something went wrong')
@@ -156,7 +157,19 @@ export default function Navbar() {
               <button onClick={()=> classAdd('nav', 'inb')}>{Inboxsvg('isBig')}</button>
               <button onClick={()=> classAdd('nav', 'msg')}>{SupportSvg('isBig')}</button>
               <button onClick={()=> classRemove('nav', 'inView')}>{cancelSvg('p-1')}</button></h2>
-              <NavLinks props={{ arr: []}}/>
+              <NavLinks props={{ arr: [
+                {tag: 'New Project', link: '/projects/new', svg: AddProjectsvg(), func: null},
+                {tag: 'History', link: '/history', svg: HistorySvg(), func: null},
+                {tag: 'Routing', link: '/help/routing', svg: Locationsvg(), func: null},
+                {tag: 'Contact', link: '/contact', svg: SupportSvg(), func: null},
+                {tag: 'Inbox', link: '/inbox', svg: Inboxsvg('isBig'), func: null},
+                {tag: 'Blogs', link: '/blogs', svg: Blogsvg(), func: null},
+                {tag: 'Help', link: '/help', svg: Helpsvg(), func: null},
+                {tag: 'Account recovery', link: '/recovery', svg: Padlocksvg('pb-0.5'), func: null},
+                {tag: 'Send a gift', link: '/payments/gift', svg: Packssvg('BIG'), func: null},
+                {tag: 'Cod-en apps', link: '/portfolio/apps', svg: AppSvg(), func: null},
+                {tag: 'Follow us', link: '/portfolio/socials', svg: <>{Githubsvg('BIG')}{Facebooksvg()}</>, func: null},
+              ]}}/>
           </div>
           <div className="inbox">
             <div style={{paddingInline: '10px'}} className='bar'>
@@ -190,14 +203,14 @@ export default function Navbar() {
               }}/>}
             </section>
             <p className='text-[var(--error)] text-end font-medium px-2.5 self-end my-1'>{err}</p>
-            {viewInbox && <div className="input mx-2.5 bar">
+            {viewInbox && viewInbox.status === 'active' && <div className="input mx-2.5 bar">
               <ChatInput value={msg} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMsg(e.target.value)}/>
               <button disabled={loading} className='bg-[var(--success)!important] text-[white!important]' onClick={()=> msg.trim() !== '' && handleSendMessage()}>{ loading ? loaderCircleSvg() : Leftsvg('p-1')}</button>
             </div>}
           </div>
           <div className="contact">
             <h2 className="bar whitespace-nowrap pl-[15px!important] font-[700!important]">
-              <span className='flex-1'>{type === 'custom' ? 'Contact' : type === 'deals' ? 'Business deals' : FirstCase(type)} </span>
+              <span className='flex-1'>{type === 'message' ? 'Contact' : type === 'deals' ? 'Business deals' : FirstCase(type)} </span>
               <button onClick={()=> classRemove('nav', 'msg')}>{dblRightArrowsvg()}</button>
               <button onClick={()=> {classAdd('nav', 'inb'); classRemove('nav', 'msg')}}>{Inboxsvg('isBig')}</button>
               <Link href='/contact'>{Linksvg()}</Link>
@@ -206,7 +219,7 @@ export default function Navbar() {
               <input name='name' value={name} type="text" autoComplete='true' autoCorrect='true' placeholder={user.name} onChange={()=> setName(user.name)} onKeyDown={()=> setName(user.name)}/>
               <input name='email' value={email} type="text" autoComplete='true' autoCorrect='true' placeholder={user.email} onChange={()=> setEmail(user.email)} onKeyDown={()=> setEmail(user.email)}/>
               <textarea name='message' value={mss} autoComplete='true' autoCorrect='true' placeholder='Start your message...' onChange={(e: React.ChangeEvent<HTMLTextAreaElement>)=> setMss(e.target.value)}/>
-              <p className='text-[var(--error)] text-end font-medium px-2.5 self-end mt-auto'>{error}</p>
+              <p className='text-[var(--error)] text-end font-medium px-2.5 self-end mt-auto' style={sucess ? {color: 'var(--success)'} : {}}>{error}</p>
               <div className='flex gap-x-2.5 items-center'>
                 <div className='flex-1 h-10'><NewDropSets props={{
                   query: type,
@@ -215,13 +228,13 @@ export default function Navbar() {
                   buttons: user ? [
                     {svg: Helpsvg(), txt: 'Enquiry', query: 'enquiry', func: ()=>setType('enquiry')},
                     {svg: FolderSvg(), txt: 'Deals', query: 'deals', func: ()=>setType('deals')},
-                    {svg: SupportSvg('isBig'), txt: 'Custom', query: 'custom', func: ()=>setType('custom')},
+                    {svg: SupportSvg('isBig'), txt: 'Message', query: 'message', func: ()=>setType('message')},
                     {svg: Bugsvg(), txt: 'Report', query: 'report', func: ()=>setType('report')},
                     {svg: SupportSvg('isBig'), txt: 'Feedback', query: 'feeds', func: ()=>setType('feeds')}
                   ] : [
                     {svg: Helpsvg(), txt: 'Enquiry', query: 'enquiry', func: ()=>setType('enquiry')},
                     {svg: FolderSvg(), txt: 'Business deals', query: 'deals', func: ()=>setType('deals')},
-                    {svg: SupportSvg('BIG'), txt: 'Custom', query: 'custom', func: ()=>setType('custom')}
+                    {svg: SupportSvg('BIG'), txt: 'Message', query: 'message', func: ()=>setType('message')}
                   ]
                 }}/></div>
                 <button className='button' disabled={isLoading} onClick={handleSendContact}>{sucess ? 'Sent' : !isLoading ? 'Send' : 'Sending...'} {sucess ? checkmarkSvg(sucess ? 'min-w-6 opacity-[1!important] inset-auto' : '') : !isLoading ? Leftsvg('big') : loaderCircleSvg(isLoading ? 'min-w-6 opacity-[1!important] inset-auto' : '')}</button>

@@ -3,6 +3,8 @@ import Link from 'next/link'
 import React, { useState } from 'react'
 import styles from '../page.module.css'
 import { signIn } from 'next-auth/react'
+import Footer from '@/src/components/Footer'
+import { PasswordInput } from '@/src/components/ChatBox'
 import { Githubsvg, GoogleG, loaderCircleSvg } from '@/src/components/svgPack'
 
 const SignIn = () => {
@@ -37,9 +39,7 @@ const SignIn = () => {
         <div className={styles.inputPack} id='email'>
           <input value={email} name='email' type="text" autoComplete='true' autoCorrect='true' placeholder='Enter email' onChange={(e: React.ChangeEvent<HTMLInputElement>)=>{setEmail(e.target.value); setErr('')}}/>
         </div>
-        <div className={styles.inputPack} id='password'>
-          <input value={pass} name='password' type="text" autoComplete='true' autoCorrect='true' placeholder='Enter password' onChange={(e: React.ChangeEvent<HTMLInputElement>)=>{setPass(e.target.value.trim()); setErr('')}}/>
-        </div>
+        <PasswordInput value={pass} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPass(e.target.value.trim())} classes={styles.inputPack} placeholder="Enter current password" />
         <p className='flex-1 self-start min-h-5'>{err}</p>
         <p className='flex gap-1 w-full justify-between items-center'><Link href='/recovery' className='text-[var(--changingPurple)]'>Forgot password</Link><button disabled={loading}>{loading && loaderCircleSvg()}{loading ? 'Logging in...' : 'Sign in'}</button></p>
       </form>
@@ -49,6 +49,7 @@ const SignIn = () => {
         <button onClick={()=>GithubSignIn()} disabled={loading}>{Githubsvg()} Sign in <span>with Github</span></button>
       </div>
       <p className='text-end pr-14 max-w-2xl w-full'>New to Cod-en? <Link href='/signup' style={{color: 'var(--compliment)'}}>Sign up</Link> </p>
+      <Footer />
     </main>
   )
 }

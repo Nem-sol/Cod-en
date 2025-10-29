@@ -3,6 +3,7 @@
 //Note:  This is not a next file!
 
 export const pick = focus => document.querySelector(focus)
+export const Add = (e, focus) => e.target.classList.add(focus)
 export const pickAll = focus => document.querySelectorAll(focus)
 export function hide(focus){
   pick(focus).style.display = "none"
