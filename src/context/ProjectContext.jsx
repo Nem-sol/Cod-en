@@ -7,10 +7,12 @@ export const ProjectContext = createContext()
 
 export const ProjectProvider = ({ children }) => {
   const { socket, ready } = useSocket()
+  const [ reason, setReason ] = useState('')
   const [ error, setError ] = useState(false)
   const [ project, setProject ] = useState([])
   const [ status, setStatus ] = useState('Idle')
   const { userDetails: user } = useUserContext()
+  const [ notify , setNotify ] = useState(false)
   const [ refresh, setRefresh ] = useState(false)
   const [ isLoading, setIsLoading ] = useState(false)
 
@@ -40,6 +42,10 @@ export const ProjectProvider = ({ children }) => {
 
   useEffect(()=>{
     if (!ready) return
+    socket.on("project-created", ()=>{
+      setNotify(true)
+      setReason('created')
+    })
     socket.on('project-updated', (updated)=> {
       setProject((prev) => prev.map( p => p._id === updated._id ? updated : p))
     })
@@ -50,6 +56,7 @@ export const ProjectProvider = ({ children }) => {
   return(
     <ProjectContext.Provider value={{project, status, setProject, isLoading, setRefresh, error}}>
       { children }
+      { notify && <Notify message='Project created' setCondition={setNotify} types='success' condition={reason === 'created'} />}
     </ProjectContext.Provider>
   )
 }

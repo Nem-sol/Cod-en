@@ -88,7 +88,6 @@ const NewProject = () => {
 
   const autoSave = () => {
     if (!service) return
-    localStorage.removeItem('draft')
     const draft = {
       url, sec, name, rate, type, lang, about, pages, scale, sector, service, classes, concept, langFrom, features, provider
     }
@@ -101,8 +100,9 @@ const NewProject = () => {
     if (!fill) return
     if (request) return
     if ( fill === 'draft') {
-      const draft = JSON.parse(localStorage.getItem('draft') || '')
-      if (!draft) {setNotify(true); setReason('draft'); return}
+      const raw = localStorage.getItem('draft')
+      if (!raw) {setNotify(true); setReason('draft'); return}
+      const draft = JSON.parse(raw)
       setSec(draft.sec);
       setName(draft.name);
       setRate(draft.rate);
@@ -140,19 +140,17 @@ const NewProject = () => {
     else if (provider === 'github' && !url ) setErr("Url is a required field when provider is Github. Enter your project's repository or change provider")
     else if ((service.includes('quality') || service === 'upgrade' || service === 'contract') && !scale ) setErr(`Scale is required for ${FirstCase(service)} project`)
     else if (lang.length < 1 && (service.includes('application') || service === 'transcript')) {
-      mode === 'assist' ? Click(`.${style.auto}`) : setErr('Language is required')
+      service !== 'transcript' && mode === 'assist' ? Click(`.${style.auto}`) : setErr('Language is required')
     }
+    else if (service === 'transcript' && langFrom.length < 1 ) setErr('Origin language required')
+    else if (lang.filter((l: string) => langFrom.includes(l)).length > 0) setErr('Code file cannot be transcripted to origin file language. Try quality-assurance testing for code improvement.')
     else if (!request) setRequest(true)
     else if (!ready) { setNotify(true); setReason('failed'); setError('Could not submit project details')}
     else{ setIsLoading(true); socket.emit("create-project", project )}
     return
   }
 
-  if(ready) socket.on("project-created", ()=>{
-    setNotify(true)
-    setIsLoading(false)
-    setReason('created')
-  })
+  if(ready) socket.on("project-created", ()=> setIsLoading(false))
 
   const resizeCheck = () => {
     const holder = pick(`.${style.holder}`).style
@@ -177,13 +175,8 @@ const NewProject = () => {
   }, [])
   
   useEffect(()=>{
-    if (classes === 'back') setLang((prev: string[]) => prev.filter((l: string) => !['react', 'html'].includes(l)))
-    if (classes !== 'front') setLang((prev: string[]) => prev.filter((l: string) => !['html'].includes(l)))
-    if (classes === 'front') setLang((prev: string[]) => prev.filter((l: string) => !['rust'].includes(l)))
-    if (service === 'transcript') setLang((prev: string[]) => prev.filter((l: string) => l && l !== 'auto'))
-    else setLangFrom([''])
     if (lang.includes('auto')) classAdd('#flang', style.inActive)
-    else classRemove('#flang', style.inActive)
+      else classRemove('#flang', style.inActive)
     if (pages === 'auto') {
       classAdd('#pages', style.inActive)
       classRemove('#pages', style.inView)
@@ -206,13 +199,18 @@ const NewProject = () => {
       setFeatures([''])
     }
     if (!request) setRead(false)
+    if (service === 'transcript') setLang((prev: string[]) => prev.filter((l: string) => l && l !== 'auto'))
+    else setLangFrom([])
+    if (classes === 'back') setLang((prev: string[]) => prev.filter((l: string) => !['react', 'html'].includes(l)))
+    if (classes !== 'front') setLang((prev: string[]) => prev.filter((l: string) => !['html'].includes(l)))
+    if (classes === 'front') setLang((prev: string[]) => prev.filter((l: string) => !['rust'].includes(l)))
     window.addEventListener('scroll', resizeCheck)
     window.addEventListener('resize', resizeCheck)
     return () => {
       window.removeEventListener('scroll', resizeCheck)
       window.removeEventListener('resize', resizeCheck)
     }
-  }, [ service , request ])
+  }, [ service , request , classes ])
 
   return (
     <main id={styles.main} onClick={()=>{
@@ -252,7 +250,6 @@ const NewProject = () => {
         { notify && <Notify message='Draft saved locally in storage' setCondition={setNotify} types='success' condition={reason === 'saved'} />}
         { notify && <Notify message='Draft loaded successfully' setCondition={setNotify} types='success' condition={reason === 'drafted'} />}
         { notify && <Notify message='Non-draft autosaves require a service' setCondition={setNotify} types='error' condition={reason === 'not-drafted'} />}
-        { notify && <Notify message='Project created' setCondition={setNotify} types='success' condition={reason === 'created'} />}
         { notify && <Notify message='Unstable internet connection' setCondition={setNotify} types='error' condition={reason === 'failed'} />}
         { notify && <Notify message='Auto-fill complete' setCondition={setNotify} types='success' condition={reason === 'complete'} />}
         { notify && <Notify message={`Auto save could not find project ${`${[{x: name, y: 'name'}, {x: about, y: 'about'}, {x: concept, y: 'concept'}].map((i)=> { if (!i.x) return i.y}).filter((i)=> i).slice(0, -1).join(', ')}`}${[name, about, concept].filter((i)=> !i).length > 1 ? ' and ' : ''}${[{x: name, y: 'name'}, {x: about, y: 'about'}, {x: concept, y: 'concept'}].filter((i)=> !i.x).slice(-1)[0]?.y} info`} setCondition={setNotify} condition={reason === 'not-complete'} />}
@@ -374,7 +371,7 @@ const NewProject = () => {
               </section>
               <section id='integrations'>
                 <p>Integrations</p>
-                <div id='providers' className='flex-wrap'>
+                <div id={style.providers} className='flex-wrap'>
                   <p>Provider</p>
                   <NewDropSets props={{
                     listen: true,
@@ -430,6 +427,46 @@ const NewProject = () => {
               </section>
             </> :
             (service === 'transcript' || service.includes('quality')) ?  <>
+              { service === 'transcript' && <div className={style.transcript}>
+                <div className='flex-1 min-w-50'>
+                  <section className='min-h-20 flex-1'><p>Current</p>
+                    <h2 className='flex w-full flex-wrap gap-2.5'>{langFrom.map((l: string, i: number) => <div key={i} className={`${style.input} ${style.only}`} onDoubleClick={()=>setLangFrom((prev: string[]) => [...prev.filter((lang: string) => lang && lang !== l)])}>{FirstCase(l)}</div>)}</h2>
+                  </section>
+                  <section className='min-h-20 flex-1'><p>Preferred</p>
+                    <h2 className='flex w-full flex-wrap gap-2.5'>{lang.map((l: string, i: number) => <div key={i} className={`${style.input} ${style.only}`} onDoubleClick={()=>setLang((prev: string[]) => [...prev.filter((lang: string) => lang && lang !== l)])}>{FirstCase(l)}</div>)}</h2>
+                  </section>
+                </div>
+                <menu className='min-w-50'>
+                  <NewDropSets props={{
+                    query: '',
+                    id: 'flang',
+                    click: true,
+                    listen: true,
+                    class: style.active,
+                    buttons:[
+                      {txt: 'Add language', query: '', func: ()=>{}, svg: AddSvg()},
+                      {txt: 'Next.js', query: 'next', func: ()=> setLangFrom((prev: string[]) => [...prev.filter((l: string) => l && l !== 'next'), 'next']), svg: Nextsvg()},{txt: 'HTML', query: 'html', func: ()=> setLangFrom((prev: string[]) => [...prev.filter((l: string) => l && l !== 'html'), 'html']), svg: HTMLsvg()},
+                      {txt: 'Node + express', query: 'node', func: ()=> setLangFrom((prev: string[]) => [...prev.filter((l: string) => l && l !== 'node'), 'node']), svg: Nodesvg()},
+                      {txt: 'Rust', query: 'rust', func: ()=> setLangFrom((prev: string[]) => [...prev.filter((l: string) => l && l !== 'rust'), 'rust']), svg: Rustsvg()},
+                      {txt: 'React', query: 'react', func: ()=> setLangFrom((prev: string[]) => [...prev.filter((l: string) => l && l !== 'react'), 'react']), svg: Reactsvg()}
+                    ]
+                  }}/>
+                  <NewDropSets props={{
+                    query: '',
+                    id: 'tlang',
+                    click: true,
+                    listen: true,
+                    class: style.active,
+                    buttons:[
+                      {txt: 'Add language', query: '', func: ()=>{}, svg: AddSvg()},
+                      {txt: 'Next.js', query: 'next', func: ()=> setLang((prev: string[]) => [...prev.filter((l: string) => l && l !== 'next'), 'next']), svg: Nextsvg()},{txt: 'HTML', query: 'html', func: ()=> setLang((prev: string[]) => [...prev.filter((l: string) => l && l !== 'html'), 'html']), svg: HTMLsvg()},
+                      {txt: 'Node + express', query: 'node', func: ()=> setLang((prev: string[]) => [...prev.filter((l: string) => l && l !== 'node'), 'node']), svg: Nodesvg()},
+                      {txt: 'Rust', query: 'rust', func: ()=> setLang((prev: string[]) => [...prev.filter((l: string) => l && l !== 'rust'), 'rust']), svg: Rustsvg()},
+                      {txt: 'React', query: 'react', func: ()=> setLang((prev: string[]) => [...prev.filter((l: string) => l && l !== 'react'), 'react']), svg: Reactsvg()}
+                    ]
+                  }}/>
+                </menu>
+              </div>}
               <section>
                 <p>About</p>
                 <div className={`${style.input} ${style.only}`}>
@@ -477,7 +514,7 @@ const NewProject = () => {
               </section>
               <section id='integrations'>
                 <p>Integrations</p>
-                <div id='providers' className='flex-wrap'>
+                <div id={style.providers} className='flex-wrap'>
                   <p>Provider</p>
                   <NewDropSets props={{
                     listen: true,
@@ -595,7 +632,7 @@ const NewProject = () => {
                       ]
                     }}/>
                   </div>
-                  <div id='providers' className='flex-wrap'>
+                  <div id={style.providers} className='flex-wrap'>
                     <p>Provider</p>
                     <NewDropSets props={{
                       listen: true,
@@ -656,7 +693,7 @@ const NewProject = () => {
                 </section>
                 <section>
                   <p>Integrations</p>
-                  <div id='providers' className='flex-wrap'>
+                  <div id={style.providers} className='flex-wrap'>
                     <p>Provider</p>
                     <NewDropSets props={{
                       listen: true,

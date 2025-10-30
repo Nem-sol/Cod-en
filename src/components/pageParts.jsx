@@ -156,7 +156,7 @@ export function NewDropSets({props}){
   })
   const active = props.buttons.filter(( btn ) => props.query.toLocaleLowerCase() === btn.query.toLocaleLowerCase())
   return(
-    <menu id={props.id} className={props.cln ? props.cln : ''} onClick={()=>{classToggle(`#${props.id}`, `${props.class}`); RemoveOtherClass(`#${props.id}`, `${props.class}`, 'menu')}}>
+    <menu id={props.id} className={props.cln ? props.cln : ''} onClick={()=>{props.click ? classAdd(`#${props.id}`, `${props.class}`) : classToggle(`#${props.id}`, `${props.class}`); RemoveOtherClass(`#${props.id}`, `${props.class}`, 'menu')}}>
       <span>
         { active.length > 0 ?  <> {active[0].svg} {active[0].txt} </> : <>{SupportSvg('BIG')} Message</>}</span>
       <div>

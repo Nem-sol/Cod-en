@@ -125,6 +125,7 @@
   width: 100%;
   column-gap: 2px;
   padding: 6.5px 15px;
+  justify-content: flex-end;
 }
 .fillerForm textarea{
   max-height: 150px;
@@ -181,10 +182,11 @@
   padding: 7px 14px;
   background-color: transparent;
 }
-.fillerForm #lang menu div{
+.fillerForm #lang menu div,
+.fillerForm .transcript menu div{
   gap: 5px;
   flex: auto;
-  opacity: 0;
+  opacity: 1;
   padding: 0;
   height: 0px;
   inset: auto;
@@ -194,6 +196,7 @@
   overflow: hidden;
   box-shadow: none;
   position: static;
+  pointer-events: all;
   border-radius: inherit;
   background-image: none;
   background-color: transparent;
@@ -208,11 +211,11 @@
 .fillerForm #lang menu.inView{
   padding: 7px;
 }
-.fillerForm #lang menu.inView div{
-  opacity: 1;
+.fillerForm #lang menu.inView div,
+.fillerForm .transcript menu .inView div{
+  top: 0;
   height: 115px;
   margin-top: 10px;
-  pointer-events: all;
 }
 .fillerForm .input.only input:focus,
 .fillerForm .input.only textArea:focus{
@@ -233,6 +236,7 @@
   flex: 1;
   width: 100%;
   padding: 0 5px;
+  transition: 0.3s;
   border-radius: 5px;
 }
 .fillerForm p{
@@ -311,6 +315,73 @@
   border-radius: 0;
   padding: 7px 20px;
   background-color: transparent;
+}
+.fillerForm .transcript{
+  gap: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row-reverse;
+}
+.fillerForm .transcript div{
+  display: flex;
+  flex-direction: column;
+}
+.fillerForm .transcript section{
+  flex-direction: column;
+}
+.fillerForm .transcript menu{
+  flex: 1;
+  display: flex;
+  max-width: 600px;
+  overflow: hidden;
+  border-radius: 15px;
+  flex-direction: column;
+  background-color: var(--sweetRed);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.282), 0 0px 3px rgba(0, 0, 0, 0.282);
+}
+.fillerForm .transcript menu menu,
+.fillerForm .transcript menu:last-child.active{
+  flex: auto;
+  box-shadow: none;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  background-color: transparent;
+}
+.fillerForm .transcript menu menu:last-child{
+  border-radius: 0;
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
+  border-top: 2px solid var(--changingPurple);
+}
+.fillerForm .transcript menu menu span{
+  padding: 12px 20px;
+  border-radius: inherit;
+  background-color: transparent;
+}
+.fillerForm .transcript menu div span{
+  border-radius: 0;
+  padding: 7px 15px;
+  box-shadow: none !important;
+}
+.fillerForm .transcript menu div{
+  border-radius: 0;
+  flex-direction: column;
+  margin-top: 0 !important;
+  background-color: var(--pageNav);
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.15), transparent);
+  box-shadow: inset 0px 2px 4px rgba(0, 0, 0, 0.282) !important;
+}
+.fillerForm .transcript menu menu:last-child div{
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+}
+.fillerForm .transcript menu .active div{
+  height: 250px;
+}
+.fillerForm .transcript h2 div{
+  min-width: 100px;
+  border-radius: 20px;
+  box-shadow: 0 3px 10px rgb(0, 0, 0 ,0.15);
 }
 .inView .details,
 .fillerForm menu.inView div{
@@ -447,6 +518,14 @@
   .autoFill svg{
     width: 18px;
     height: 18px;
+  }
+  .fillerForm #providers .input input:focus{
+    min-width: 100%;
+  }
+  .fillerForm #providers .input:focus span,
+  .fillerForm #providers .input input:focus + span{
+    width: 0;
+    overflow: hidden;
   }
   .fillerForm section div{
     padding: 10px;
