@@ -1,10 +1,10 @@
 import next from "next";
 import { Server } from "socket.io";
-import connect from "./src/utils/db.js";
 import { createServer } from "node:http";
 import { getToken } from "next-auth/jwt";
-import Inbox from "./src/models/Inbox.js";
-import Project from "./src/models/Project.js";
+import connect from "./../src/utils/db.js";
+import Inbox from "./../src/models/Inbox.js";
+import Project from "./../src/models/Project.js";
 
 type Msg = {
   _id: string;

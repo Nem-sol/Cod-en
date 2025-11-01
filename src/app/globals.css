@@ -38,7 +38,7 @@ body.dark{
   --background: rgb(50, 50, 50);
   --brilliant: rgb(164, 134, 74);
   --compliment: rgb(125, 97, 32);
-  --loadingBar: rgb(235, 222, 97);
+  --loadingBar: rgb(242, 255, 124);
   --sweetPurple: rgb(151, 89, 152);
   --translucent: rgb(247, 239, 189);
   --notifications: rgb(201, 173, 147);
@@ -283,6 +283,7 @@ header{
   font-weight: 600;
   transition: 0.5s;
   margin-top: auto;
+  max-width: 1200px;
   align-self: center;
   align-items: center;
   padding-inline: 10px;
@@ -532,6 +533,7 @@ nav .pagenav .hidden{
   border: none;
   display: flex;
   padding: 10px 0;
+  font-size: 14px;
   min-width: 165px;
   transition: 0.5s;
   max-width: 700px;

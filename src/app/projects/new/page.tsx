@@ -131,19 +131,30 @@ const NewProject = () => {
   const save = () => {
     setErr('')
     setError('')
+    const bLang = ['next', 'node', 'rust']
+    const fLang = ['react', 'html', 'next']
+    const bLoop = lang.filter((l: string) => bLang.includes(l))
+    const fLoop = lang.filter((l: string) => fLang.includes(l))
+    const loop = lang.filter((l: string) => langFrom.includes(l))
+    const fNot = langFrom.filter((l: string) => fLang.includes(l))
+    const bNot = langFrom.filter((l: string) => bLang.includes(l))
     setLang((prev: string[]) => prev.filter((l: string)=> l))
     setFeatures((prev: string[]) => prev.filter((f: string)=> f))
     if (!name) setErr('Project name is required')
     else if (!concept) setErr('Project concept is required')
     else if (!about) setErr('No information was given for project nature')
-    else if (!sector) setErr('Project sector is required. Either choose one or enter a custom sector')
+    else if (service !== 'transcript' && !sector) setErr('Project sector is required. Either choose one or enter a custom sector')
     else if (provider === 'github' && !url ) setErr("Url is a required field when provider is Github. Enter your project's repository or change provider")
     else if ((service.includes('quality') || service === 'upgrade' || service === 'contract') && !scale ) setErr(`Scale is required for ${FirstCase(service)} project`)
     else if (lang.length < 1 && (service.includes('application') || service === 'transcript')) {
-      service !== 'transcript' && mode === 'assist' ? Click(`.${style.auto}`) : setErr('Language is required')
+      service !== 'transcript' && mode === 'assist' ? Click(`.${style.auto}`) : setErr('Preferrred language is required')
     }
     else if (service === 'transcript' && langFrom.length < 1 ) setErr('Origin language required')
-    else if (lang.filter((l: string) => langFrom.includes(l)).length > 0) setErr('Code file cannot be transcripted to origin file language. Try quality-assurance testing for code improvement.')
+    else if (loop.length > 0) setErr(`Code file "${loop.slice(0, -1).join(', ')}${loop.length > 1 ? ' and ' : ''}${loop.slice(-1)[0]}" cannot be transcripted to origin file language. Try quality-assurance testing for code improvement.`)
+    else if (bLoop.length > 0 && bNot.length < 1) setErr(`No alternatve back-end language found for "${bLoop.slice(0, -1).join(', ')}${bLoop.length > 1 ? ' and ' : ''}${bLoop.slice(-1)[0]}"`)
+    else if (fLoop.length > 0 && fNot.length < 1) setErr(`No alternatve front-end language found for "${fLoop.slice(0, -1).join(', ')}${fLoop.length > 1 ? ' and ' : ''}${fLoop.slice(-1)[0]}"`)
+    else if (bLoop.length < 1 && bNot.length > 0) setErr(`No alternatve back-end language found for "${bNot.slice(0, -1).join(', ')}${bNot.length > 1 ? ' and ' : ''}${bNot.slice(-1)[0]}"`)
+    else if (fLoop.length < 1 && fNot.length > 0) setErr(`No alternatve front-end language found for "${fNot.slice(0, -1).join(', ')}${fNot.length > 1 ? ' and ' : ''}${fNot.slice(-1)[0]}"`)
     else if (!request) setRequest(true)
     else if (!ready) { setNotify(true); setReason('failed'); setError('Could not submit project details')}
     else{ setIsLoading(true); socket.emit("create-project", project )}
@@ -199,11 +210,15 @@ const NewProject = () => {
       setFeatures([''])
     }
     if (!request) setRead(false)
-    if (service === 'transcript') setLang((prev: string[]) => prev.filter((l: string) => l && l !== 'auto'))
+    if (service === 'transcript') {
+      classAdd('#flang', style.active)
+      classRemove('#tlang', style.active)
+      setLang((prev: string[]) => prev.filter((l: string) => l))
+    }
     else setLangFrom([])
-    if (classes === 'back') setLang((prev: string[]) => prev.filter((l: string) => !['react', 'html'].includes(l)))
-    if (classes !== 'front') setLang((prev: string[]) => prev.filter((l: string) => !['html'].includes(l)))
-    if (classes === 'front') setLang((prev: string[]) => prev.filter((l: string) => !['rust'].includes(l)))
+    if (classes === 'back' && service !== 'transcript') setLang((prev: string[]) => prev.filter((l: string) => !['react', 'html'].includes(l)))
+    if (classes !== 'front' && service !== 'transcript') setLang((prev: string[]) => prev.filter((l: string) => !['html'].includes(l)))
+    if (classes === 'front' && service !== 'transcript') setLang((prev: string[]) => prev.filter((l: string) => !['rust'].includes(l)))
     window.addEventListener('scroll', resizeCheck)
     window.addEventListener('resize', resizeCheck)
     return () => {
@@ -428,7 +443,7 @@ const NewProject = () => {
             </> :
             (service === 'transcript' || service.includes('quality')) ?  <>
               { service === 'transcript' && <div className={style.transcript}>
-                <div className='flex-1 min-w-50'>
+                <div className='flex-1 min-w-60 min-h-fit'>
                   <section className='min-h-20 flex-1'><p>Current</p>
                     <h2 className='flex w-full flex-wrap gap-2.5'>{langFrom.map((l: string, i: number) => <div key={i} className={`${style.input} ${style.only}`} onDoubleClick={()=>setLangFrom((prev: string[]) => [...prev.filter((lang: string) => lang && lang !== l)])}>{FirstCase(l)}</div>)}</h2>
                   </section>
@@ -436,7 +451,7 @@ const NewProject = () => {
                     <h2 className='flex w-full flex-wrap gap-2.5'>{lang.map((l: string, i: number) => <div key={i} className={`${style.input} ${style.only}`} onDoubleClick={()=>setLang((prev: string[]) => [...prev.filter((lang: string) => lang && lang !== l)])}>{FirstCase(l)}</div>)}</h2>
                   </section>
                 </div>
-                <menu className='min-w-50'>
+                <menu className='min-w-60'>
                   <NewDropSets props={{
                     query: '',
                     id: 'flang',
@@ -444,7 +459,7 @@ const NewProject = () => {
                     listen: true,
                     class: style.active,
                     buttons:[
-                      {txt: 'Add language', query: '', func: ()=>{}, svg: AddSvg()},
+                      {txt: 'Add current language', query: '', func: ()=>{}, svg: AddSvg()},
                       {txt: 'Next.js', query: 'next', func: ()=> setLangFrom((prev: string[]) => [...prev.filter((l: string) => l && l !== 'next'), 'next']), svg: Nextsvg()},{txt: 'HTML', query: 'html', func: ()=> setLangFrom((prev: string[]) => [...prev.filter((l: string) => l && l !== 'html'), 'html']), svg: HTMLsvg()},
                       {txt: 'Node + express', query: 'node', func: ()=> setLangFrom((prev: string[]) => [...prev.filter((l: string) => l && l !== 'node'), 'node']), svg: Nodesvg()},
                       {txt: 'Rust', query: 'rust', func: ()=> setLangFrom((prev: string[]) => [...prev.filter((l: string) => l && l !== 'rust'), 'rust']), svg: Rustsvg()},
@@ -458,7 +473,7 @@ const NewProject = () => {
                     listen: true,
                     class: style.active,
                     buttons:[
-                      {txt: 'Add language', query: '', func: ()=>{}, svg: AddSvg()},
+                      {txt: 'Add preffered language', query: '', func: ()=>{}, svg: AddSvg()},
                       {txt: 'Next.js', query: 'next', func: ()=> setLang((prev: string[]) => [...prev.filter((l: string) => l && l !== 'next'), 'next']), svg: Nextsvg()},{txt: 'HTML', query: 'html', func: ()=> setLang((prev: string[]) => [...prev.filter((l: string) => l && l !== 'html'), 'html']), svg: HTMLsvg()},
                       {txt: 'Node + express', query: 'node', func: ()=> setLang((prev: string[]) => [...prev.filter((l: string) => l && l !== 'node'), 'node']), svg: Nodesvg()},
                       {txt: 'Rust', query: 'rust', func: ()=> setLang((prev: string[]) => [...prev.filter((l: string) => l && l !== 'rust'), 'rust']), svg: Rustsvg()},
@@ -735,12 +750,14 @@ const NewProject = () => {
               <div>Project provider<span className={style.auto}>{FirstCase(provider)}</span></div>
               <div>Preferred url<span className={style.auto}>{provider === 'github' ? 'https://github/' : provider === 'domain' ? 'www.' : 'https://'}{FirstCase(url)}{provider === 'vercel' ? `.vercel.app` : '.com'}</span></div>
               <div>About project<span className={style.auto}>{FirstCase(about)}</span></div>
-              <div>Project sector<span className={style.auto}>{FirstCase(sector)}</span></div>
+              {service !== 'transcript' && <div>Project sector<span className={style.auto}>{FirstCase(sector)}</span></div>}
               {scale && <div>Project size<span className={style.auto}>{FirstCase(scale)}</span></div>}
               {rate && <div>Term duration<span className={style.auto}>{FirstCase(rate)}</span></div>}
               <div>Project class<span className={style.auto}>{FirstCase(classes.replace('full', 'full stack'))}</span></div>
               {pages && <div>Page-count<span className={style.auto}>{pages.replaceAll('<', 'Less than').replace('30 +', 'More than 30')}</span></div>}
-              {lang.length > 0 && <div>Preferred language{lang.length > 1 && 's'}<p className='flex flex-col gap-2.5 flex-1'>{lang.map((l: string, i: number) => <span key={i} className={style.auto}>{FirstCase(l.replace('auto', 'auto detect'))}</span>)}</p></div>}
+              {service === 'transcript' && <div>Current language
+                <p className='flex flex-col gap-2.5 flex-1'>{langFrom.map((l: string, i: number) => <span key={i} className={style.auto}>{FirstCase(l)}</span>)}</p></div>}
+              {lang.length > 0 && <div>Preferred language<p className='flex flex-col gap-2.5 flex-1'>{lang.map((l: string, i: number) => <span key={i} className={style.auto}>{FirstCase(l.replace('auto', 'auto detect'))}</span>)}</p></div>}
               {features.length > 0 && <div>Project features<p className='flex flex-col gap-2.5 flex-1'>{features.map((f: string, i: number) => <span key={i} className={style.auto}>{FirstCase(f)}</span>)}</p></div>}
               <div>Service<span className={style.auto}>{FirstCase(service)}</span></div>
             </div>

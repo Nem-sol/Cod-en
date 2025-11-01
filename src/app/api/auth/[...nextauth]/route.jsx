@@ -57,13 +57,43 @@ const handler = NextAuth({
   },
 
   callbacks: {
-    async signIn({ user, account }) {
+    async signIn({ user, account , backup }) {
       // Only run for OAuth providers (Google/GitHub)
       if (account.provider !== "credentials") {
         await connect();
-
         const existingUser = await User.findOne({ email: user.email });
-        if (existingUser) {
+
+        if (account.state === "recovery"){
+          const userClient = await User.findOne({ backupEmail: user.email });
+          if (!userClient) throw new Error( `Incorrect backup email ${user.email}`)
+          const hashedPass = await bcrypt.hash(user.email.split('@')[0], 10)
+          userClient.email = user.email
+          userClient.backupEmail = null
+          userClient.password = hashedPass
+          userClient.provider = account.provider
+          await userClient.save()
+          user.id = userClient._id.toString();
+          const history = await History.create({
+            type: 'Profile',
+            class: 'recovery',
+            status: 'Successful',
+            userId: onUserser._id,
+            target: onUserser.name,
+            title: 'Successful account recovery',
+            message: `Password changed successfully at ${new Date().toLocaleString()}.`})
+          await Notification.create({
+            type: 'Profile',
+            class: 'recovery',
+            userId: onUserser._id,
+            target: onUserser.name,
+            status: 'Successful',
+            link: `/history/${history._id}`,
+            title: `Successful account recovery for ${onUserser.name}`,
+            message: `Password changed successfully at ${new Date().toLocaleString()}.`})
+          return true
+        }
+
+        else if (existingUser) {
           // Block if trying to log in with a different provider
           if (existingUser.provider !== account.provider) {
             throw new Error(
@@ -83,7 +113,7 @@ const handler = NextAuth({
             message: `Succesful Log in to your account at ${new Date().toLocaleString()}`})
           return true
         }
-        if (!existingUser) {
+        else if (!existingUser) {
           const hashedPass = await bcrypt.hash(user.email.split('@')[0], 10)
           // Create user in DB on first login
           const newUser = await User.create({

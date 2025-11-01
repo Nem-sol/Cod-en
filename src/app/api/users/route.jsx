@@ -74,8 +74,12 @@ export const POST = async (req) => {
         message: `Backup-email change for ${updatedUser.name} failed due to invalid address`})
       return NextResponse.json({ error: 'Invalid backup-email address' }, { status: 400 })
     }
-    if (email && backup && (User.find({email}) || User.find({backupEmail: backup}) || user.find({email: backup}) || User.find({backupEmail: email}))) return NextResponse.json(
+    if (email && User.find({  $or: [{ backupEmail: email }, { email }]  }).length > 1) return NextResponse.json(
         { error: 'Email address already in use' },
+        { status: 400 }
+      )
+    if (backup && (await User.find({  $or: [{ backupEmail: backup }, { email: backup }]  })).length > 1) return NextResponse.json(
+        { error: 'Backup email address already in use' },
         { status: 400 }
       )
     if ( name && (name.trim().length < 4 || name.length > 40)) {
@@ -119,7 +123,7 @@ export const POST = async (req) => {
           s.question.trim().toLowerCase() === set.question.trim().toLowerCase())
         )
         .map(async (set) => {
-          const hashedAnswer = await bcrypt.hash(set.answer.trim(), 10);
+          const hashedAnswer = await bcrypt.hash(set.answer.toLocaleLowerCase().trim(), 10);
           return {
             question: set.question.trim(),
             answer: hashedAnswer

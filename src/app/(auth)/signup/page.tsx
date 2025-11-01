@@ -50,9 +50,7 @@ const Signup = () => {
     const { ok } = res
     const json = await res.json()
     if(!ok) setErr(json.error)
-    else {
-      await signIn('credentials', {email, password: pass})
-    }
+    else await signIn('credentials', {email, password: pass})
     setLoading(false)
   }
   const handleMouseMove = (e: React.MouseEvent) =>{

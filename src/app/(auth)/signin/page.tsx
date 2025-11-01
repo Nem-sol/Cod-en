@@ -13,10 +13,16 @@ const SignIn = () => {
   const [ email, setEmail ] = useState('')
   const [ loading, setLoading ] = useState(false)
   const GoogleSignIn = async () => {
-    await signIn('google')
+    setLoading(true)
+    const res = await signIn('google', { redirect: false })
+    if (res?.error) setErr(res.error)
+    setLoading(false)
   }
   const GithubSignIn = async () => {
-    await signIn('github')
+    setLoading(true)
+    const res = await signIn('github', { redirect: false })
+    if (res?.error) setErr(res.error)
+    setLoading(false)
   }
   const handleSubmit = async (e: React.FormEvent) => {
     setErr('')

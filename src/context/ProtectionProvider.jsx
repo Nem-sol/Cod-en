@@ -1,6 +1,5 @@
 "use client";
 import Navbar from "../components/Navbar"
-import Footer from "../components/Footer"
 import Heading from "../components/Header"
 import { useHelp } from './HelpProvider';
 import styles from '../app/main.module.css'
@@ -9,6 +8,7 @@ import styl from '../app/inbox/page.module.css'
 import LoadingBar from "../components/LoadingBar"
 import { createContext , useEffect } from "react"
 import style from '../app/contact/page.module.css'
+import styz from '../app/recovery/page.module.css'
 import { useProjectContext } from './ProjectContext'
 import stylez from '../app/projects/new/page.module.css'
 import { loaderCircleSvg } from "../components/svgPack";
@@ -66,6 +66,7 @@ export const ProtectorProvider = ({ children }) => {
       <Heading />
       <LoadingBar />
       <div className="root" style={{minHeight: status === 'loading' ? '0' : '100vh'}} onClick={(e) => {if (!['menu', 'menu div', 'menu button', 'menu span' ,`.${stylez.autoFill}`].some(sel => CheckIncludes(e, sel))) {
+        RemoveAllClass(styz.inView, 'menu')
         RemoveAllClass(styl.inView, 'menu')
         RemoveAllClass(style.inView, 'menu')
         RemoveAllClass(styles.inView, 'menu')

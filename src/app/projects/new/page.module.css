@@ -245,6 +245,7 @@
   transition: 0.5s;
   position: absolute;
   padding-inline: 15px;
+  pointer-events: none;
   background-color: var(--background);
 }
 .fillerForm div p{
@@ -318,6 +319,7 @@
 }
 .fillerForm .transcript{
   gap: 10px;
+  width: 100%;
   display: flex;
   flex-wrap: wrap;
   flex-direction: row-reverse;
@@ -336,13 +338,16 @@
   overflow: hidden;
   border-radius: 15px;
   flex-direction: column;
+  align-self: flex-start;
   background-color: var(--sweetRed);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.282), 0 0px 3px rgba(0, 0, 0, 0.282);
 }
 .fillerForm .transcript menu menu,
 .fillerForm .transcript menu:last-child.active{
   flex: auto;
+  min-width: 0;
   box-shadow: none;
+  align-self: stretch;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
   background-color: transparent;
