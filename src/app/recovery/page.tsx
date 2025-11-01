@@ -26,14 +26,14 @@ const Recovery = () => {
   const GoogleRecovery = async (e: React.FormEvent) => {
     setLoading(true)
     e.preventDefault()
-    const res = await signIn('google', { state: "recovery" , redirect: false })
+    const res = await signIn('google', { callbackUrl: "/?recovery=true" , redirect: false })
     if (res?.error) setErr(res.error)
     setLoading(false)
   }
   const GithubRecovery = async (e: React.FormEvent) => {
     setLoading(true)
     e.preventDefault()
-    const res = await signIn('github', { state: "recovery" , redirect: false })
+    const res = await signIn('github', { callbackUrl: "/?recovery=true" , redirect: false })
     if (res?.error) setErr(res.error)
     setLoading(false)
   }
@@ -62,7 +62,7 @@ const Recovery = () => {
       }
       const { ok } = res
       const json = await res.json()
-      if(!ok) setErr(json.error)
+      if(!ok) setErr(json.error || 'Unexpected server error. Try again later')
       if(ok) {
         await signIn('credentials', {
           redirect: false,

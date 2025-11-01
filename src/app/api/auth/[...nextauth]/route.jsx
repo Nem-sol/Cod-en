@@ -57,15 +57,17 @@ const handler = NextAuth({
   },
 
   callbacks: {
-    async signIn({ user, account , backup }) {
+    async signIn({ user, account }) {
+      const url = new URL(account?.callbackUrl || process.env.NEXTAUTH_URL);
+      const isRecovery = url.searchParams.get("recovery") === "true";
       // Only run for OAuth providers (Google/GitHub)
-      if (account.provider !== "credentials") {
+      if (account.provider !== 'credentials') {
         await connect();
         const existingUser = await User.findOne({ email: user.email });
 
-        if (account.state === "recovery"){
+        if (isRecovery){
           const userClient = await User.findOne({ backupEmail: user.email });
-          if (!userClient) throw new Error( `Incorrect backup email ${user.email}`)
+          if (!userClient) throw new Error( `Incorrect backup email "${user.email}"`)
           const hashedPass = await bcrypt.hash(user.email.split('@')[0], 10)
           userClient.email = user.email
           userClient.backupEmail = null
@@ -77,18 +79,18 @@ const handler = NextAuth({
             type: 'Profile',
             class: 'recovery',
             status: 'Successful',
-            userId: onUserser._id,
-            target: onUserser.name,
+            userId: userClient._id,
+            target: userClient.name,
             title: 'Successful account recovery',
             message: `Password changed successfully at ${new Date().toLocaleString()}.`})
           await Notification.create({
             type: 'Profile',
             class: 'recovery',
-            userId: onUserser._id,
-            target: onUserser.name,
             status: 'Successful',
+            userId: userClient._id,
+            target: userClient.name,
             link: `/history/${history._id}`,
-            title: `Successful account recovery for ${onUserser.name}`,
+            title: `Successful account recovery for ${userClient.name}`,
             message: `Password changed successfully at ${new Date().toLocaleString()}.`})
           return true
         }

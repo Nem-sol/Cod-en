@@ -1,5 +1,5 @@
 "use client";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { createContext, useContext, useState, useEffect } from "react";
 
 const UserContext = createContext();
@@ -29,9 +29,10 @@ export const UserProvider = ({ children }) => {
             setError(true)
             return
           }
-          !res.ok && setError(true)
           const extra = await res.json();
-          res.ok && setUserDetails({ ...session.user, ...extra });
+          if (!res.ok) setError(true)
+          if (extra.error === 'User not found') signOut()
+          if (res.ok) setUserDetails({ ...session.user, ...extra });
         } catch (err) {
           setError(err)
           console.error("Failed to fetch user details");
@@ -41,7 +42,7 @@ export const UserProvider = ({ children }) => {
     } else {
       setUserDetails(null);
     }
-  }, [session, status , refresh ]);
+  }, [ session , status , refresh ]);
 
   return (
     <UserContext.Provider value={{ userDetails, status, error, setUserDetails, status , setRefresh }}>

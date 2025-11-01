@@ -70,26 +70,33 @@ export const POST = async (req) => {
 }
 
 export const PATCH = async (req) => {
-  const { backup , email , question , answer } = req.json()
+  const { backup , email , question , answer } = await req.json()
   const usedEmail = email || backup
   connect()
 
-  const user = await User.findOne({ $or: [{ backupEmail }, { email }] });
+  const user = await User.findOne({ $or: [{ backupEmail: usedEmail }, { email: usedEmail }] });
   
   try {
     if (!answer) return NextResponse.json({ error: 'A recovery answer is required for account recovery.' }, { status: 400 })
     if (!question) return NextResponse.json({ error: 'A recovery question is required for account recovery.' }, { status: 400 })
     if (!backup && !email) return NextResponse.json({ error: 'An email or backup-email is required for account recovery.' }, { status: 400 })
 
-    if (!user) return NextResponse.json({ error: `Incorrect backup email ${user.email}` }, { status: 400 })
+    if (!user) return NextResponse.json({ error: `Incorrect ${usedEmail === backup ? 'backup' : ''} email ${user.email}` }, { status: 400 })
 
-    if (user.provider !== 'custom') return NextResponse.json({ error: 'User is assigned with  a custom account.' }, { status: 400 })
+    if (user.provider !== 'custom') return NextResponse.json({ error: 'User is not assigned with  a custom account.' }, { status: 400 })
 
-    const set = user.recoveryQuestion.filter( set => set.question === question)
+    const set = user.recoveryQuestions.filter( set => set.question === question)
     
     if (set.length < 1) return NextResponse.json({ error: 'Incorrect recovery question.' }, { status: 400 })
 
-    const isCorrect = await bcrypt.compare( answer.trim().toLocaleLowerCase() , set.answer )
+    let isCorrect = false
+    await Promise.all(
+      user.recoveryQuestions.map(async ( set ) => {
+        if (bcrypt.compare( answer.trim().toLocaleLowerCase() , set.answer )) {
+          isCorrect = true
+        }
+      })
+    )
 
     if (!isCorrect) return NextResponse.json({ error: 'Incorrect recovery answer.' }, { status: 400 })
     
@@ -113,7 +120,7 @@ export const PATCH = async (req) => {
       link: `/history/${history._id}`,
       title: `Successful account recovery for ${user.name}`,
       message: `Password changed successfully at ${new Date().toLocaleString()}.`})
-    return NextResponse.json({ email: user.email , password: user.email.split('@')[0] }, {status: 200 })
+    return NextResponse.json({ email: user.email , password: usedEmail.split('@')[0] }, {status: 200 })
   } catch (error) {
     if (user) await Notification.create({
     type: 'Profile',
