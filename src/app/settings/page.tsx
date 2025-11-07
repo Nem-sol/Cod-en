@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import style from './page.module.css'
 import styles from '../main.module.css'
-import { signOut } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
 import Footer from '@/src/components/Footer'
 import React, { useEffect, useState } from 'react'
 import { PasswordInput } from '@/src/components/ChatBox'
@@ -45,6 +45,7 @@ const Settings = () => {
   const [ changeArr , setChangeArr ] = useState([''])
   const [ recovery , setRecovery ] = useState([{question: '', answer: ''}])
   const { userDetails: user, error , setRefresh , setUserDetails } = useUserContext()
+  const { data: session } = useSession()
   const stringArr = changeArr.map((k: string, i: number) => i < changeArr.length - 1 ? k : '').filter((k: string)=> k !== '')
 
   const handleClick = (e: React.MouseEvent<HTMLFormElement>)=>{!CheckIncludes(e, `.${style.updator} menu`) && !CheckIncludes(e, `.${style.updator} input`) &&!CheckIncludes(e, `.${style.updator} menu span`) && setRecovery(( prev: sets[] )=> [...prev.filter((f: sets)=> f.question.trim() !== '' && f.answer.trim() !== '')])}
@@ -180,6 +181,7 @@ const Settings = () => {
       else {
         setSuccess(true)
         setErr('Updates successful')
+        session!.user!.email = result.email
         setUserDetails((prev: User) => { return { ...prev , ...result }})
       }
       setPass('')

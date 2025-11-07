@@ -20,6 +20,8 @@ export const GET = async (req) => {
 
     if (!userDetails) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
+    if (userDetails.requestLogout) return NextResponse({ email: null }, { status: 200 })
+
     return NextResponse.json({
       role: userDetails.role,
       name: userDetails.name,
@@ -49,17 +51,41 @@ export const POST = async (req) => {
   try {
     if (!user) return NextResponse.json({ error: 'Could not find user account' }, { status: 400 })
 
+    if (user.requestLogout) return NextResponse({ error: 'Could not update settings' }, { status: 400 })
+
     const passCorrect = await bcrypt.compare(
       password,
       user.password
     );
 
-    if (!passCorrect) return NextResponse.json({ error: 'Incorrect password'}, { status: 400 })
+    if (!passCorrect) {
+      await sendMail({
+        link: null,
+        to: user.email ,
+        text: `Profile update failure for ${user.name}` ,
+        subject : `Profile update failure  in for ${user.name}`,
+        messages: [
+          `User settings could not be updated due to incorrect password`,
+          'If this was not you, log into your account and change log-in details and request logout immediately'
+        ],
+      })
+      return NextResponse.json({ error: 'Incorrect password'}, { status: 400 })
+    }
 
     // Validate
     if (!email && !newPassword && !name && !backup && !recoveryQuestions ) return NextResponse.json({ error: 'Please include a property for changes' }, { status: 400 })
 
     if (email && !validator.isEmail(email)) {
+      await sendMail({
+        link: null,
+        to: user.email ,
+        text: `Profile update failure for ${user.name}` ,
+        subject : `Profile update failure  in for ${user.name}`,
+        messages: [
+          `User settings could not be updated`,
+          'If this was not you, log into your account and change log-in details and request logout immediately'
+        ],
+      })
       return NextResponse.json({ error: 'Invalid email address' }, { status: 400 })
     }
     if (backup && !validator.isEmail(backup)) {
@@ -72,16 +98,50 @@ export const POST = async (req) => {
         target: updatedUser.name,
         title: `Credential update failed`,
         message: `Backup-email change for ${updatedUser.name} failed due to invalid address`})
+      await sendMail({
+        link: null,
+        to: user.email ,
+        text: `Profile update failure for ${user.name}` ,
+        subject : `Profile update failure  in for ${user.name}`,
+        messages: [
+          `User settings could not be updated`,
+          'If this was not you, log into your account and change log-in details and request logout immediately'
+        ],
+      })
       return NextResponse.json({ error: 'Invalid backup-email address' }, { status: 400 })
     }
-    if (email && User.find({  $or: [{ backupEmail: email }, { email }]  }).length > 1) return NextResponse.json(
+    if (email && User.find({  $or: [{ backupEmail: email }, { email }]  }).length > 1) {
+      await sendMail({
+        link: null,
+        to: user.email ,
+        text: `Profile update failure for ${user.name}` ,
+        subject : `Profile update failure  in for ${user.name}`,
+        messages: [
+          `User settings could not be updated`,
+          'If this was not you, log into your account and change log-in details and request logout immediately'
+        ],
+      })
+      return NextResponse.json(
         { error: 'Email address already in use' },
         { status: 400 }
       )
-    if (backup && (await User.find({  $or: [{ backupEmail: backup }, { email: backup }]  })).length > 1) return NextResponse.json(
+    }
+    if (backup && (await User.find({  $or: [{ backupEmail: backup }, { email: backup }]  })).length > 1) {
+      await sendMail({
+        link: null,
+        to: user.email ,
+        text: `Profile update failure for ${user.name}` ,
+        subject : `Profile update failure  in for ${user.name}`,
+        messages: [
+          `User settings could not be updated`,
+          'If this was not you, log into your account and change log-in details and request logout immediately'
+        ],
+      })
+      return NextResponse.json(
         { error: 'Backup email address already in use' },
         { status: 400 }
       )
+    }
     if ( name && (name.trim().length < 4 || name.length > 40)) {
       return NextResponse.json(
         { error: 'Username must be between 4–40 characters' },
@@ -99,6 +159,16 @@ export const POST = async (req) => {
         target: updatedUser.name,
         title: `Credential update failed`,
         message: `Password change for ${updatedUser.name} failed. Password does not satisfy requirements.`})
+      await sendMail({
+        link: null,
+        to: user.email ,
+        text: `Profile update failure for ${user.name}` ,
+        subject : `Profile update failure  in for ${user.name}`,
+        messages: [
+          `User settings could not be updated`,
+          'If this was not you, log into your account and change log-in details and request logout immediately'
+        ],
+      })
       return NextResponse.json(
         { error: 'Password must be at least 6 characters' },
         { status: 400 }
@@ -151,6 +221,15 @@ export const POST = async (req) => {
       link: `/history/${history._id.toString()}`,
       title: `Successful credential updates for ${updatedUser.name}`,
       message: `Successful credential updates. User updated ${updateArr.join(', ')} successfully`})
+    await sendMail({
+      link: {cap: 'For more information, view ', address: `/history/${history._id}`, title: 'recovery history'},
+      to: user.email ,
+      text: `Successful credential updates for ${updatedUser.name}` ,
+      subject : `Successful credential updates for ${updatedUser.name}`,
+      messages: [
+        `User updated ${updateArr.join(', ')} successfully`,
+      ],
+    })
     return NextResponse.json({ 
       name: n,
       email: e,
@@ -200,10 +279,34 @@ export const DELETE = async (req) => {
       );
 
     const passCorrect = await bcrypt.compare(password, user.password);
-    if (!passCorrect)
+    if (!passCorrect){
+      await sendMail({
+        link: null,
+        to: user.email ,
+        text: `Profile update failure for ${user.name}` ,
+        subject : `Profile update failure  in for ${user.name}`,
+        messages: [
+          `Recovery question delete attempt failed due to incorrect password`,
+          'If this was not you, log into your account and change log-in details and request logout immediately'
+        ],
+      })
       return NextResponse.json({ error: "Incorrect password" }, { status: 400 });
+    }
 
-    console.log(typeof i)
+    if (user.requestLogout) {
+      await sendMail({
+        link: null,
+        to: user.email ,
+        text: `Profile update failure for ${user.name}` ,
+        subject : `Profile update failure  in for ${user.name}`,
+        messages: [
+          `Recovery question delete attempt failed due to user settings`,
+          'Kindly recover account to continue with Cod-en'
+        ],
+      })
+      return NextResponse({ error: 'Could not update settings' }, { status: 400 })
+    }
+
     if (typeof i !== 'number') return NextResponse.json({ error: 'Number should be a figurative value' }, { status: 400 })
       
     if (i >= 0 && i < user.recoveryQuestions.length) {
@@ -221,11 +324,33 @@ export const DELETE = async (req) => {
         message: `Recovery question deleted successfully at ${new Date().toLocaleString()}`,
       });
 
+      await sendMail({
+        link: null,
+        to: user.email ,
+        text: `Successful credential update for ${user.name}` ,
+        subject : `Successful credential update for ${user.name}`,
+        messages: [
+          `Recovery question deleted successfully at ${new Date().toLocaleString()}`,
+          'If this was not you, log into your account and change log-in details and request logout immediately'
+        ],
+      })
+
       return NextResponse.json(
         { message: "Recovery question deleted successfully" },
         { status: 200 }
       );
     } else {
+
+      await sendMail({
+        link: null,
+        to: user.email ,
+        text: `Successful credential update for ${user.name}` ,
+        subject : `Successful credential update for ${user.name}`,
+        messages: [
+          `Recovery question deleted successfully at ${new Date().toLocaleString()}`,
+          'If this was not you, log into your account and change log-in details and request logout immediately'
+        ],
+      })
       return NextResponse.json(
         { error: "Invalid recovery question index" },
         { status: 400 }
@@ -233,17 +358,6 @@ export const DELETE = async (req) => {
     }
   }
   catch (error) {
-    await Notification.create({
-      read: false,
-      important: true,
-      type: "Profile",
-      class: "update",
-      userId: undefined,
-      target: "Unknown user",
-      title: "Credential update failure",
-      message: `Could not delete recovery question: ${error.message}`,
-    });
-
     return NextResponse.json(
       { error: error.message || "Something went wrong. Please try again." },
       { status: 500 }

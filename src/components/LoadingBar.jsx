@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { usePathname } from "next/navigation";
 
 NProgress.configure({
-  speed: 500,
+  speed: 400,
   minimum: 0.1,
   trickle: true,
   trickleSpeed: 200,

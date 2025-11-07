@@ -1,18 +1,18 @@
 "use client";
+import { useHelp } from './HelpProvider'
 import Navbar from "../components/Navbar"
 import Heading from "../components/Header"
-import { useHelp } from './HelpProvider';
 import styles from '../app/main.module.css'
-import { useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react'
 import styl from '../app/inbox/page.module.css'
 import LoadingBar from "../components/LoadingBar"
-import { createContext , useEffect } from "react"
 import style from '../app/contact/page.module.css'
 import styz from '../app/recovery/page.module.css'
 import { useProjectContext } from './ProjectContext'
+import { loaderCircleSvg } from "../components/svgPack"
 import stylez from '../app/projects/new/page.module.css'
-import { loaderCircleSvg } from "../components/svgPack";
 import { useParams, usePathname , useRouter } from 'next/navigation';
+import { createContext , useContext, useEffect, useState } from "react"
 import { CheckIncludes, FirstCase, RemoveAllClass, translateText } from '../components/functions';
 
 const ProtectorContext = createContext();
@@ -23,6 +23,7 @@ export const ProtectorProvider = ({ children }) => {
   const { status } = useSession()
   const { id , slug } = useParams()
   const { help: helps } = useHelp()
+  const [ email , setEmail ] = useState()
   const help = helps.filter( p => p.slug === slug )
   const { project: projects } = useProjectContext()
   const project = projects.filter( p => p._id === id)[0]
@@ -62,10 +63,10 @@ export const ProtectorProvider = ({ children }) => {
   }, [ path , status ]);
 
   return (
-    <ProtectorContext.Provider value={{}}>
+    <ProtectorContext.Provider value={{ email , setEmail }}>
       <Heading />
       <LoadingBar />
-      <div className="root" style={{minHeight: status === 'loading' ? '0' : '100vh'}} onClick={(e) => {if (!['menu', 'menu div', 'menu button', 'menu span' ,`.${stylez.autoFill}`].some(sel => CheckIncludes(e, sel))) {
+      <div className="root" style={{minHeight: status === 'loading' ? '0' : '100vh', paddingBottom: status === 'unauthenticated' ? '0px' : ''}} onClick={(e) => {if (!['menu', 'menu div', 'menu button', 'menu span' ,`.${stylez.autoFill}`].some(sel => CheckIncludes(e, sel))) {
         RemoveAllClass(styz.inView, 'menu')
         RemoveAllClass(styl.inView, 'menu')
         RemoveAllClass(style.inView, 'menu')
@@ -87,3 +88,5 @@ export const ProtectorProvider = ({ children }) => {
     </ProtectorContext.Provider>
   );
 };
+
+export const useEmail = () => useContext(ProtectorContext)

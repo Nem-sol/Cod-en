@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt'
 import validator from 'validator'
 import connect from '@/src/utils/db'
+import sendMail from '@/src/utils/mailer'
 import { NextResponse } from 'next/server'
 import User from '../../../../models/User'
 import History from '../../../../models/History'
@@ -60,6 +61,17 @@ export const POST = async (req) => {
       link: `/history/${history._id.toString()}`,
       title: `Successful sign up for ${newUser.name}`,
       message: 'Welcome to Cod-en future of web development. Next up? Create Project  Get a tutorial pack   Read Coden Blogs!'})
+    await sendMail({
+      to: newUser.email ,
+      text: `Successful sign up to Cod-en` ,
+      subject : `Successful sign up for ${newUser.name}`,
+      messages: [
+        "Welcome to Cod-en - Future of web development",
+        `You signed up to cod-en at ${new Date().toLocaleString()}.`,
+        `Next up? Create Project\n Get a tutorial pack\n Read Coden Blogs!`
+      ],
+      link: {cap: 'For more information, view ', address: `/history/${history._id}`, title: 'sign up history'}
+    })
     return NextResponse.json(
       { id: newUser._id, name: newUser.name, email: newUser.email , provider: newUser.provider},
       { status: 201 }
@@ -100,6 +112,7 @@ export const PATCH = async (req) => {
 
     if (!isCorrect) return NextResponse.json({ error: 'Incorrect recovery answer.' }, { status: 400 })
     
+    user.requestLogout = false
     user.password = await bcrypt.hash(usedEmail.split('@')[0], 10)
 
     await user.save()
@@ -120,16 +133,27 @@ export const PATCH = async (req) => {
       link: `/history/${history._id}`,
       title: `Successful account recovery for ${user.name}`,
       message: `Password changed successfully at ${new Date().toLocaleString()}.`})
+    await sendMail({
+      to: user.email ,
+      text: "Successful account recovery" ,
+      subject : "Successful account recovery",
+      messages: [
+        `Account was recovered and password was changed successfully at ${new Date().toLocaleString()}.`
+      ],
+      link: {cap: 'For more information, view ', address: `/history/${history._id}`, title: 'recovery history'}
+    })
     return NextResponse.json({ email: user.email , password: usedEmail.split('@')[0] }, {status: 200 })
   } catch (error) {
-    if (user) await Notification.create({
-    type: 'Profile',
-    status: 'Failed',
-    userId: user._id,
-    target: user.name,
-    class: 'recovery',
-    title: `Failed account recovery for ${user.name}`,
-    message: `Password recovery attempt failed at ${new Date().toLocaleString()}.`})
+    if (user) await sendMail({
+      to: user.email ,
+      text: "Unsuccessful recovery attempt" ,
+      subject : "Unsuccessful recovery attempt",
+      messages: [
+        `Password recovery attempt failed at ${new Date().toLocaleString()}.`,
+        'If this was not you kindly ignore and ensure you secure log in credentials.'
+      ],
+      link: null
+    })
     return NextResponse.json({ error: 'Something went wrong. Please try again' }, { status: 500 })
   }
 }

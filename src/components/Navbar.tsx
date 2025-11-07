@@ -167,7 +167,7 @@ export default function Navbar() {
                 {tag: 'Help', link: '/help', svg: Helpsvg(), func: null},
                 {tag: 'Account recovery', link: '/recovery', svg: Padlocksvg('pb-0.5'), func: null},
                 {tag: 'Send a gift', link: '/payments/gift', svg: Packssvg('BIG'), func: null},
-                {tag: 'Cod-en apps', link: '/portfolio/apps', svg: AppSvg(), func: null},
+                {tag: 'Cod-en projects', link: '/portfolio/projects', svg: AppSvg(), func: null},
                 {tag: 'Follow us', link: '/portfolio/socials', svg: <>{Githubsvg('BIG')}{Facebooksvg()}</>, func: null},
               ]}}/>
           </div>
@@ -246,7 +246,7 @@ export default function Navbar() {
       <section className="links" onMouseEnter={()=> window.innerWidth > 650 && classAdd('nav', 'inView')}>
         <Link href='/dashboard'>{HomeSvg()}</Link>
         <Link href='/projects'>{ProjectSvg()}</Link>
-        <Link href='/notifications'>{NotificationSvg()}{unread > 0 && <span className='bg-[var(--error)] rounded-full aspect-square min-w-5.5 min-h-5.5 text-[15px] flex items-center justify-center text-white -top-[5px] -right-[3px]' style={{position: 'absolute', boxShadow: '0 1px 4px rgba(0, 0, 0, 0.3), 0 2px 3px rgba(0, 0, 0, 0.2)'}}>{unread > 9 ? '9' : unread}</span>}</Link>
+        <Link href='/notifications'>{NotificationSvg()}{unread > 0 && <span className='bg-[var(--error)] rounded-full aspect-square min-w-5.5 text-[15px] flex items-center justify-center text-white -top-[5px] -right-[3px]' style={{position: 'absolute', boxShadow: '0 1px 4px rgba(0, 0, 0, 0.3), 0 2px 3px rgba(0, 0, 0, 0.2)'}}>{unread > 9 ? '9' : unread}</span>}</Link>
         <Link href='/tutorials'>{TagSvg('BIG hover:rotate-90')}</Link>
         <Link href='/settings'>{SettingSvg('hover:rotate-90')}</Link>
         <Link href='/help'>{Helpsvg('hover:scale-[1.25]')}</Link>

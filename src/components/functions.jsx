@@ -1,4 +1,5 @@
 'use client'
+
 //Functions to be exported into other pages
 //Note:  This is not a next file!
 
@@ -40,6 +41,7 @@ export function classToggle(focus, factorclass = 'isShown'){
 }
 export function translateText(text, factor){
   let y = pick(factor)
+  if ( !y ) return
   y.innerText = text
 }
 export function animationTimeline(factor, focusclass, distance, focus= factor){
@@ -100,15 +102,15 @@ export function RemoveAllClass( focusClass, targetClass){
   //remove all class from similar item in the DOM
   focusArray.forEach( i => i.classList.remove(focusClass))
 }
-export function revAnimationTimeline(factor, focusclass, distance = 0, focus = factor){
-    let scrolltop = window.scrollY
-    let scrolltracker = pick('html').offsetHeight + distance - window.innerHeight - scrolltop
-    let topping = factor.offsetTop
-    let screenbottom = pick('html').offsetHeight - topping
-    if (scrolltracker <= screenbottom){
+export function revAnimationTimeline(factor, focusclass, top = 0, bottom = top , focus = factor){
+    const end = window.innerHeight - bottom
+    const scrolltracker = factor.getBoundingClientRect().y
+    if (scrolltracker > top){
+      focus.classList.remove(focusclass)
+    } else if (scrolltracker <= top && scrolltracker > end ){
       focus.classList.add(focusclass)
     }
-    else if (scrolltracker >= screenbottom){
+    else if (scrolltracker <= end ){
       focus.classList.remove(focusclass)
     }
 }
@@ -129,8 +131,8 @@ export const scrollCheck = (focus, parent, ancestor = parent) => {
   const padDown = parseInt(focalstyles.paddingBottom)
   const parpadDown = parseInt(parstyles.paddingBottom)
   const excess = ( padTop + padDown ) / 2 + parpadDown
-  const spacing = (window.innerHeight - focal.offsetHeight) / 2
-  const top = scrollH - topH - spacing - focusH
+  const spacing = Math.abs(window.innerHeight - focusH) / 2
+  const top = scrollH - topH - spacing - focusH + excess + window.innerHeight
   if ( top > 0 && top <= parentH - focusH - excess){
     focal.style.top = `${top}px`
     focal.style.position = 'relative'

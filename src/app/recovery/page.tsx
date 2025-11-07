@@ -10,10 +10,6 @@ import { PasswordInput } from '@/src/components/ChatBox'
 import { classToggle } from '@/src/components/functions'
 import { Githubsvg, GoogleG, loaderCircleSvg, Padlocksvg, Rocketsvg, Infosvg } from '@/src/components/svgPack'
 
-type details = {
-  email: string
-  password: string
-}
 
 const Recovery = () => {
   const [ err, setErr ] = useState('')
@@ -26,14 +22,22 @@ const Recovery = () => {
   const GoogleRecovery = async (e: React.FormEvent) => {
     setLoading(true)
     e.preventDefault()
-    const res = await signIn('google', { callbackUrl: "/?recovery=true" , redirect: false })
+    document.cookie = `recovery_mode=true; path=/; max-age=300`;
+    const res = await signIn('google', {
+      redirect: false,
+      callbackUrl: '/dashboard'
+    })
     if (res?.error) setErr(res.error)
     setLoading(false)
   }
   const GithubRecovery = async (e: React.FormEvent) => {
     setLoading(true)
     e.preventDefault()
-    const res = await signIn('github', { callbackUrl: "/?recovery=true" , redirect: false })
+    document.cookie = `recovery_mode=true; path=/; max-age=300`;
+    const res = await signIn('github', {
+      redirect: false,
+      callbackUrl: '/dashboard'
+    })
     if (res?.error) setErr(res.error)
     setLoading(false)
   }
@@ -73,7 +77,7 @@ const Recovery = () => {
       setLoading(false)
   }
   return (
-    <main className={`gap-7 flex flex-col justify-center items-center ${styles.main}`}>
+    <main className={`gap-7 flex flex-col justify-center items-center mx-auto ${styles.main}`}>
       <div className={stylez.background} ></div>
       <menu id={style.fill} onClick={()=>classToggle(`#${style.fill}`, style.inView)}>
       <button>{Infosvg()} Info</button>
@@ -81,7 +85,7 @@ const Recovery = () => {
         <span><svg></svg> Passwords are automatically reset to characters before the first &quot;@&quot; symbol of your email (or backup-email for non-custom accounts)</span>
         <span><svg></svg> Passwords are encrytped and cannot be retrieved even by Cod-en team except by recovery</span>
         <span><svg></svg> Keep passwords safe</span>
-        <span className='flex-wrap'><svg></svg> For more support visit <Link href='/help/recovery' className='pl-1 text-[var(--deepSweetPurple)]'>recovery help</Link></span>
+        <span><svg></svg> <span className='flex-wrap'>For more support visit <Link href='/help/recovery' className='pl-1 text-[var(--deepSweetPurple)]'>recovery help</Link></span></span>
       </section>
     </menu>
       <form className={style.form} onSubmit={handleRecover}>
@@ -115,9 +119,9 @@ const Recovery = () => {
         </section>
         <div className='justify-end'>
           <p className={style.error}>{err}</p>
-          <button onClick={handleRecover}> {loading ? loaderCircleSvg() : Rocketsvg('big')} Recover{loading && 'ing...'}</button>
+          <button onClick={handleRecover} disabled={loading}> {loading ? loaderCircleSvg() : Rocketsvg('big')} Recover{loading && 'ing...'}</button>
         </div>
-        <div className='flex-row-reverse justify-end'>
+        <div className='justify-between'>
           <button onClick={GoogleRecovery} disabled={loading}> {GoogleG('isBig')} Recover <span>Google account</span></button>
           <button onClick={GithubRecovery} disabled={loading}> {Githubsvg('BIG')} Recover <span>Github account</span></button>
           <button onClick={(e: React.FormEvent)=>{e.preventDefault(); setMode((prev: string) => prev ===  'email' ? 'backup' : 'email' )}} disabled={loading}>Use { mode === 'email' ? 'backup' : 'email' } instead</button>

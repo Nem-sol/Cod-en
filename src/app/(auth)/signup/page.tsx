@@ -1,27 +1,28 @@
 'use client'
 import Link from 'next/link'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styles from '../page.module.css'
 import { signIn } from 'next-auth/react'
 import Footer from '@/src/components/Footer'
 import { Githubsvg, GoogleG, loaderCircleSvg } from '@/src/components/svgPack'
 import { CheckIncludes, classAdd, classRemove, pick } from '@/src/components/functions'
+import { useEmail } from '@/src/context/ProtectionProvider'
 
 const Signup = () => {
   const [ err, setErr ] = useState('')
   const [ name, setName ] = useState('')
   const [ pass, setPass ] = useState('')
-  const [ email, setEmail ] = useState('')
+  const { email, setEmail } = useEmail()
   const [ loading, setLoading ] = useState(false)
   const [ label1, setLabel1 ] = useState('Username')
   const [ label2, setLabel2 ] = useState('you@example.com')
   const [ label3, setLabel3 ] = useState('Create password')
 
   const GoogleSignUp = async () => {
-    await signIn('google')
+    await signIn('google' , { redirect: false , callbackUrl: '/dashboard' })
   }
   const GithubSignUp = async () => {
-    await signIn('github')
+    await signIn('github' , { redirect: false , callbackUrl: '/dashboard' })
   }
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -37,7 +38,7 @@ const Signup = () => {
       headers: {
         'Content-Type':'application.json'
       },
-      body: JSON.stringify({name, email, password: pass})
+      body: JSON.stringify({name , email , password: pass })
     })
 
     const contentType = res.headers.get('content-type')
@@ -50,7 +51,7 @@ const Signup = () => {
     const { ok } = res
     const json = await res.json()
     if(!ok) setErr(json.error)
-    else await signIn('credentials', {email, password: pass})
+    else await signIn('credentials', { email , password: pass })
     setLoading(false)
   }
   const handleMouseMove = (e: React.MouseEvent) =>{
@@ -66,6 +67,8 @@ const Signup = () => {
       }
     }
   }
+  const checkStart = () =>{if (email) {classAdd('#email label', styles.inView); setLabel2('Enter email address')}}
+  useEffect(checkStart, [])
   return (
     <main className='gap-7 flex flex-col justify-center items-center' onMouseMove={handleMouseMove}>
       <form className={styles.form} onSubmit={handleSubmit}>

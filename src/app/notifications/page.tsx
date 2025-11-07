@@ -8,7 +8,7 @@ import { useUserContext } from '@/src/context/UserProvider'
 import { Defaultbg, NewFilterSets } from '@/src/components/pageParts'
 import { useNotificationContext } from '@/src/context/NotificationContext'
 import { CheckIncludes, classToggle, RemoveAllClass, RemoveOtherClass } from '@/src/components/functions'
-import { Backsvg, checkmarkSvg, dblChecksvg, DeleteSvg, HistorySvg, Inboxsvg, Linksvg, loaderCircleSvg, Moresvg, NotificationSvg, Searchsvg } from '@/src/components/svgPack'
+import { Backsvg, dblChecksvg, DeleteSvg, HistorySvg, Inboxsvg, Linksvg, loaderCircleSvg, Moresvg, NotificationSvg, Searchsvg } from '@/src/components/svgPack'
 
 type Notes = {
   _id: string
@@ -198,7 +198,7 @@ const Notification = () => {
           text: 'Please be patient while we get your notifications',
         }}/>}
         {(!isLoading || notifications.length > 0) && Filter(filters)}
-        {!error && unread > 0 && <button disabled={Loading} className={styles.floater} onClick={()=>handleMass('update')} style={isLoading ? { bottom : '170px'} : {}}>{(Loading && act === 'update') ? loaderCircleSvg() : checkmarkSvg()}</button>}
+        {!error && unread > 0 && <button disabled={Loading} className={styles.floater} onClick={()=>handleMass('update')} style={isLoading ? { bottom : '170px'} : {}}>{(Loading && act === 'update') ? loaderCircleSvg() : dblChecksvg()}</button>}
         {(error || isLoading ) && <button disabled={isLoading} className={styles.floater} onClick={()=>setRefresh((prev: boolean) => !prev )}>{isLoading ? loaderCircleSvg() : Backsvg()}</button>}
       </div>
       <Footer />

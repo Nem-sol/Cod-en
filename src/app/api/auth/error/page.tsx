@@ -1,9 +1,10 @@
 import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Back } from '@/src/components/pageParts'
+import Footer from '@/src/components/Footer'
 import styles from '../../.././contact/page.module.css'
-import { Helpsvg, LogInSvg } from '../../../../components/svgPack'
+import { Helpsvg } from '../../../../components/svgPack'
+import { Back, LogLink } from '@/src/components/pageParts'
 
 const Page = () => {
   return (
@@ -18,9 +19,10 @@ const Page = () => {
           <p className='w-full text-center'>This may be due to unstable internet connection, wrong url-entry or aborted verification.</p>
           <Back />
           <Link href='/help'>{Helpsvg()}<span>Help</span></Link>
-          <Link href='/signin'>{LogInSvg()}<span>Login</span></Link>
+          <LogLink />
         </div>
       </div>
+      <Footer />
     </main>
   )
 }

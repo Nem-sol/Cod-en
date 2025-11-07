@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "concurrently \"npm run dev:next\" \"npm run dev:socket\"",
     "dev:next": "next dev --turbopack",
-    "dev:socket": "ts-node --trace-warnings --no-warnings socket-server/tsconfig.server.json socket-server/socket.ts",
+    "dev:socket": "ts-node socket-server/tsconfig.server.json socket-server/socket.ts",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint"
