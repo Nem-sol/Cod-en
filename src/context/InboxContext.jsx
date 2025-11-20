@@ -7,13 +7,15 @@ export const InboxContext = createContext()
 
 export const InboxProvider = ({ children }) => {
   let unread = 0
+  const [ err, setErr ] = useState('')
   const { socket, ready } = useSocket()
   const [ inbox, setInbox ] = useState([])
   const [ error, setError ] = useState(false)
   const { userDetails: user } = useUserContext()
   const [ refresh, setRefresh ] = useState(false)
+  const [ loading, setLoading ] = useState(false)
   const [ isLoading, setIsLoading ] = useState(false)
-  inbox.forEach((inb)=> unread += inb.messages.filter((msg) => user.id === inb.userId ? !msg.sent : msg.sent).length)
+  inbox.forEach((inb)=> unread += inb.messages.filter((msg) => user.id === inb.userId ? !msg.sent && !msg.read : msg.sent && !msg.read ).length)
 
   // Fetch inbox on mount
   useEffect(() => {
@@ -44,39 +46,47 @@ export const InboxProvider = ({ children }) => {
   useEffect(()=>{
 
     if (!ready) return
-    socket.on('new-message', (msg)=> {
-      setInbox((prev) => prev.map( inb => inb._id === msg.inboxId ? { ...inb , messages: [...inb.messages, msg]} : inb))
+    socket.on('new-message', (inbx)=> {
+      setLoading(false)
+      setInbox((prev) => prev.map( inb => inb._id === inbx._id ? inbx : inb))
     })
-    socket.on('messages-read', ({ inboxId }) => {
+    
+    socket.on('messages-read', ({ inboxId , me }) => {
       setInbox(prev => prev.map(inb => inb._id === inboxId ? {
           ...inb,
-          messages: inb.messages.map(msg => ({ ...msg, read: true })),
+          messages: inb.messages.map( msg => {
+            if ( me && !msg.sent ) return { ...msg, read: true }
+            else if ( !me && msg.sent ) return { ...msg, read: true }
+            else return msg
+          }),
         } : inb
       ));
+    })
+    
+    socket.on('message-error', ( err ) => {
+      setLoading(false)
+      setErr(err?.message)
     });
 
-    return () => {socket.off('new-message'); socket.off('messages-read')}
-  }, [ socket ])
+    return () => {socket.off('new-message'); socket.off('messages-read'); socket.off('message-error')}
+  }, [ ready ])
   
   const sendMessage = ( inboxId , msg ) => {
+    setErr('')
     const activeInbox = inbox.find( inb => inb._id === inboxId )
-    const message = {
-      content: msg,
-      sent: activeInbox.userId === user._id ? true : false
-    }
-    socket.emit("send-message", { inboxId, message });
+    if (!activeInbox) return setErr('Parent inbox not found')
+    socket.emit("send-message",  { inboxId, msg });
+    setLoading(true)
   };
+  
   const readMessages = ( inboxId ) => {
-    socket.emit("read-message", { inboxId } )
-    setInbox((prev)=> prev.map( inb => inb._id === inboxId ? {
-      ...inb,
-      messages: [...inb.messages.map((msg)=>{ return user.id === inb.userId ?
-        !msg.sent ? {...msg, read: true } : msg
-      : user.role === 'admin' && msg.sent ? {...msg, read: true} : msg})]
-    } : inb ))
+    setErr('')
+    const activeInbox = inbox.find( inb => inb._id === inboxId )
+    if (!activeInbox) return setErr('Parent inbox not found')
+    socket.emit("read-message", inboxId )
   }
   return(
-    <InboxContext.Provider value={{ unread , inbox, setInbox, isLoading, error , sendMessage, setRefresh , readMessages}}>
+    <InboxContext.Provider value={{ unread , loading , err , inbox, setInbox, isLoading, error , sendMessage, setRefresh , readMessages}}>
       { children }
     </InboxContext.Provider>
   )

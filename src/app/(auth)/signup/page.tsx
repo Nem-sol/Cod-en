@@ -1,28 +1,32 @@
 'use client'
 import Link from 'next/link'
-import React, { useEffect, useState } from 'react'
 import styles from '../page.module.css'
 import { signIn } from 'next-auth/react'
 import Footer from '@/src/components/Footer'
+import style from '../../settings/page.module.css'
+import React, { useEffect, useState } from 'react'
+import { PasswordInput } from '@/src/components/ChatBox'
+import { useEmail } from '@/src/context/ProtectionProvider'
 import { Githubsvg, GoogleG, loaderCircleSvg } from '@/src/components/svgPack'
 import { CheckIncludes, classAdd, classRemove, pick } from '@/src/components/functions'
-import { useEmail } from '@/src/context/ProtectionProvider'
 
 const Signup = () => {
   const [ err, setErr ] = useState('')
+  const [ code, setCode ] = useState('')
   const [ name, setName ] = useState('')
   const [ pass, setPass ] = useState('')
   const { email, setEmail } = useEmail()
+  const [ verify, setVerify ] = useState(false)
   const [ loading, setLoading ] = useState(false)
   const [ label1, setLabel1 ] = useState('Username')
   const [ label2, setLabel2 ] = useState('you@example.com')
   const [ label3, setLabel3 ] = useState('Create password')
 
   const GoogleSignUp = async () => {
-    await signIn('google' , { redirect: false , callbackUrl: '/dashboard' })
+    await signIn('google' , { redirect: false })
   }
   const GithubSignUp = async () => {
-    await signIn('github' , { redirect: false , callbackUrl: '/dashboard' })
+    await signIn('github' , { redirect: false })
   }
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,7 +42,7 @@ const Signup = () => {
       headers: {
         'Content-Type':'application.json'
       },
-      body: JSON.stringify({name , email , password: pass })
+      body: JSON.stringify({name , email , password: pass , code })
     })
 
     const contentType = res.headers.get('content-type')
@@ -50,10 +54,42 @@ const Signup = () => {
     }
     const { ok } = res
     const json = await res.json()
-    if(!ok) setErr(json.error)
+    if(!ok) {
+      if (json.error === 'OTP sent to email sucessfully') setVerify(true)
+      else setErr(json.error)
+    }
     else await signIn('credentials', { email , password: pass })
     setLoading(false)
   }
+
+  
+  const handleVerify = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const codes = e.target.value.trim().toUpperCase()
+    setCode(e.target.value.trim().toUpperCase())
+    if (codes.length === 8 ) {
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type':'application.json'
+        },
+        body: JSON.stringify({name , email , password: pass , code })
+      })
+
+      const contentType = res.headers.get('content-type')
+
+      if (!contentType || !contentType.includes('application/json')) {
+        setLoading(false)
+        setErr('Unexpected server error. Try again later')
+        return
+      }
+      const { ok } = res
+      const json = await res.json()
+      if(!ok) setErr(json.error)
+      else await signIn('credentials', { email , password: pass })
+      setLoading(false)
+    }
+  }
+
   const handleMouseMove = (e: React.MouseEvent) =>{
     if(!CheckIncludes(e, `.${styles.inputPack}`) && !CheckIncludes(e, `.${styles.inputPack} input`)){
       if(!name && !pick('#name input:focus')){
@@ -86,7 +122,7 @@ const Signup = () => {
         <div className={styles.inputPack} id='password'
           onMouseMove={()=>{classAdd('#password label', styles.inView); setLabel3('Use at least six characters')}}>
           <label htmlFor='password'>{label3}</label>
-          <input name='password' type="text" autoComplete='true' autoCorrect='true' value={pass} onChange={(e: React.ChangeEvent<HTMLInputElement>)=>{setPass(e.target.value.trim()); setErr('')}}  onFocus={()=>{classAdd('#password label', styles.inView); setLabel3('Use at least six characters')}}/>
+          <input type="text" autoComplete='true' autoCorrect='true' value={pass} onChange={(e: React.ChangeEvent<HTMLInputElement>)=>{setPass(e.target.value.trim()); setErr('')}}  onFocus={()=>{classAdd('#password label', styles.inView); setLabel3('Use at least six characters')}}/>
         </div>
         <p style={{color: 'var(--changingPurple)'}}>Password cannot be retrieved after initialization. Store passwords carefully!</p>
         <div className='flex gap-1 w-full flex-wrap'>
@@ -99,6 +135,16 @@ const Signup = () => {
         <button onClick={()=>GithubSignUp()} disabled={loading}>{Githubsvg()} Sign up <span>with Github</span></button>
       </div>
       <p className='text-end pr-14 max-w-2xl w-full'>Have an account? <Link href='/signin' style={{color: 'var(--compliment)'}}>Log in</Link> </p>
+      { verify  && <>
+        <div className={style.mask}></div>
+        <div className={styles.verify}>
+          <h2>Verify email with Otp</h2>
+          <p>OTP has been sent to email successfuly</p>
+          <PasswordInput placeholder='Enter OTP' value={code} onChange={handleVerify} classes={styles.inputs}/>
+          <span>Resend Otp</span>
+          <p>{err}</p>
+        </div>
+      </>}
       <Footer />
     </main>
   )

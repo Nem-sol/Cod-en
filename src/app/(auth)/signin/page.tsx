@@ -14,13 +14,13 @@ const SignIn = () => {
   const [ loading, setLoading ] = useState(false)
   const GoogleSignIn = async () => {
     setLoading(true)
-    const res = await signIn('google', { redirect: false , callbackUrl: '/dashboard'})
+    const res = await signIn('google', { redirect: false })
     if (res?.error) setErr(res.error)
     setLoading(false)
   }
   const GithubSignIn = async () => {
     setLoading(true)
-    const res = await signIn('github', { redirect: false , callbackUrl: '/dashboard'})
+    const res = await signIn('github', { redirect: false })
     if (res?.error) setErr(res.error)
     setLoading(false)
   }

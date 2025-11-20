@@ -1,14 +1,15 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import AuthProvider from "../context/AuthProvider";
+import { UserProvider } from '../context/UserProvider'
 import { HelpProvider } from '../context/HelpProvider'
 import { ThemeProvider } from '../context/ThemeContext'
-import { UserProvider } from "../context/UserProvider";
-import { InboxProvider } from "../context/InboxContext";
-import { SocketProvider } from "../context/SocketContext";
+import { InboxProvider } from "../context/InboxContext"
+import { SocketProvider } from "../context/SocketContext"
+import { ContactProvider } from '../context/MessageContext'
 import { HistoryProvider } from '../context/HistoryContext'
-import { ProjectProvider } from "../context/ProjectContext";
-import { ProtectorProvider } from "../context/ProtectionProvider";
+import { ProjectProvider } from "../context/ProjectContext"
+import { ProtectorProvider } from "../context/ProtectionProvider"
 import { NotificationProvider } from '../context/NotificationContext'
 
 export const metadata: Metadata = {
@@ -31,11 +32,13 @@ export default function RootLayout({
                 <ProjectProvider>
                   <InboxProvider>
                     <HelpProvider>
-                      <ThemeProvider>
-                        <ProtectorProvider>
-                          {children}
-                        </ProtectorProvider>
-                      </ThemeProvider>
+                      <ContactProvider>
+                        <ThemeProvider>
+                          <ProtectorProvider>
+                            {children}
+                          </ProtectorProvider>
+                        </ThemeProvider>
+                      </ContactProvider>
                     </HelpProvider>
                   </InboxProvider>
                 </ProjectProvider>

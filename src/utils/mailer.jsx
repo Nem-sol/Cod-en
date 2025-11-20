@@ -34,7 +34,7 @@ const genrateTemplate = ({
         table { border-spacing: 0; }
         td { padding: 0; }
         img { border: 0; }
-        * { font-family: 'Poppins', Arial, Helvetica, sans-serif !important; }
+        * { font-family: 'Poppins' !important; }
       </style>
     </head>
     <body style="margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; background-color: #f4f4f4;">
@@ -56,7 +56,7 @@ const genrateTemplate = ({
               <tr>
                 <td style="padding: 20px 30px 20px 30px;">
                   ${title ? `
-                    <h1 style="margin: 0 0 20px 0; color: #000000; font-size: 24px; font-weight: 600; line-height: 1.4;">
+                    <h1 style="margin: 0 0 20px 0; color: #bb6a5e; font-size: 24px; font-weight: 600; line-height: 1.4;">
                       ${title}
                     </h1>
                   ` : ""}
@@ -227,11 +227,11 @@ const genrateTemplate = ({
 export default async function sendMail({
   to,
   text,
-  code,
   link,
-  types,
   subject,
   messages,
+  types = '',
+  code = null,
   title = null,
 }) {
   try {

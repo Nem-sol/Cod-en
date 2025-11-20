@@ -1,8 +1,9 @@
 import bcrypt from 'bcrypt'
 import validator from 'validator'
 import connect from '@/src/utils/db'
-import { getToken } from 'next-auth/jwt'
 import User from '../../../models/User'
+import { getToken } from 'next-auth/jwt'
+import sendMail from '@/src/utils/mailer'
 import { NextResponse } from 'next/server'
 import History from '../../../models/History'
 import Notification from '../../../models/Notification'
@@ -174,6 +175,29 @@ export const POST = async (req) => {
         { status: 400 }
       )
     }
+    
+    // Compute expiration time safely (no timezone issues)
+    // updatedAt is stored as UTC in MongoDB by default
+    const nowUTC = Date.now(); // also UTC
+    const expiryUTC = updatedAtUTC + 3 * 60 * 60 * 1000;
+    const updatedAtUTC = new Date(user.updatedAt).getTime();
+
+    if (nowUTC < expiryUTC) {
+      await sendMail({
+        to: user.email ,
+        subject : `Profile settings alert`,
+        text: `Profile update failure for ${user.name}` ,
+        link: {cap: 'For more security advice, view ', address: `/help/security}`, title: 'cod-en security approach'},
+        messages: [
+          `Unusual attempt to change settings for ${user.name} has been noticed.`,
+          'If this was not you, log into your account and change log-in details and request logout immediately'
+        ],
+      })
+      return NextResponse.json(
+        { error: 'User settings was changed just recently' },
+        { status: 400 }
+      )
+    }
 
     let updateArr = []
     name && updateArr.push('name')
@@ -240,7 +264,17 @@ export const POST = async (req) => {
     { status: 201 }
     )
   } catch (error) {
-    if (user) await Notification.create({
+    if (user) {
+      await sendMail({
+        link: null,
+        to: user.email ,
+        text: `Credential updates failure for ${user.name}` ,
+        subject : `Credential updates failure`,
+        messages: [
+          'Could not update credentials due to unknown error. Try again later!',
+        ],
+      })
+      await Notification.create({
       read: false,
       important: true,
       type: 'Profile',
@@ -249,6 +283,8 @@ export const POST = async (req) => {
       target: user.name,
       title: 'Credential updates failure',
       message: 'Could not update credentials due to unknown error. Try again later!'})
+    }
+    console.log(error)
     return NextResponse.json({ error: 'Something went wrong. Please try again' }, { status: 500 })
   }
 }
@@ -308,6 +344,27 @@ export const DELETE = async (req) => {
     }
 
     if (typeof i !== 'number') return NextResponse.json({ error: 'Number should be a figurative value' }, { status: 400 })
+
+    const nowUTC = Date.now();
+    const updatedAtUTC = new Date(user.updatedAt).getTime();
+    const expiryUTC = updatedAtUTC + 3 * 60 * 60 * 1000;
+
+    if (nowUTC < expiryUTC) {
+      await sendMail({
+        to: user.email ,
+        subject : `Profile settings alert`,
+        text: `Profile update failure for ${user.name}` ,
+        link: {cap: 'For more security advice, view ', address: `/help/security}`, title: 'cod-en security approach'},
+        messages: [
+          `Unusual attempt to change settings for ${user.name} has been noticed.`,
+          'If this was not you, log into your account and change log-in details and request logout immediately'
+        ],
+      })
+      return NextResponse.json(
+        { error: 'User settings was changed just recently' },
+        { status: 400 }
+      )
+    }
       
     if (i >= 0 && i < user.recoveryQuestions.length) {
       user.recoveryQuestions.splice(i, 1);

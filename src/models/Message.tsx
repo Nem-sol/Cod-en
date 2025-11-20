@@ -13,6 +13,16 @@ const MessageSchema = new Schema({
     required: true,
     default: 'message',
   },
+  isUser: {
+    type: Boolean,
+    default: false,
+  },
+  replies: {
+    min: 0,
+    default: 0,
+    type: Number,
+    required: true,
+  },
   email: {
     type: String,
     required: true,

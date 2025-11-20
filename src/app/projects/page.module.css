@@ -1,0 +1,87 @@
+.project{
+  gap: 10px;
+  width: 95%;
+  display: flex;
+  cursor: default;
+  max-width: 900px;
+  transition: 0.3s;
+  font-weight: 600;
+  min-height: 200px;
+  padding: 10px 20px;
+  border-radius: 30px;
+  flex-direction: column;
+  justify-content: space-between;
+  border-bottom-left-radius: 8px;
+  background-color: var(--pageNav);
+  box-shadow: 0 5px 10px var(--mild-dark)
+}
+.project svg{
+  width: 22px;
+  height: 22px;
+}
+.active{ color: rgb(118, 157, 51); }
+.complete{ color: rgb(118, 157, 51); }
+.terminated{ color: var(--error) }
+.waiting{ color: rgb(200, 138, 24) }
+.project h2{
+  gap: 15px;
+  display: flex;
+  font-weight: 700;
+  font-size: 1.25em;
+  border-bottom: solid 2px;
+  justify-content: space-between;
+}
+.project p{
+  gap: 20px;
+  opacity: 0.8;
+  display: flex;
+  transition: 0.5s;
+  color: var(--black);
+  justify-content: space-between;
+}
+.project div{
+  gap: 5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.project a{
+  padding: 3px;
+  font-size: 14px;
+  border-radius: 15px;
+}
+.project a:hover{
+  background-color: var(--mild-dark);
+}
+.project a.pay{
+  gap: 7px;
+  display: flex;
+  padding-inline: 10px;
+  color: var(--translucent);
+  background-color: var(--noti);
+  background-image: linear-gradient( to top right, var(--mild-dark), transparent);
+}
+.project .signed{
+  gap: 10px;
+  opacity: 0.8;
+  display: flex;
+  cursor: pointer;
+  transition: 0.5s;
+  padding: 5px 10px;
+  width: fit-content;
+  border-radius: 20px;
+  padding-right: 15px;
+  align-items: center;
+  background-color: var(--noti);
+  border-bottom-left-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.282), 0 2px 5px rgba(0, 0, 0, 0.282);
+}
+.project .signed svg{
+  width: 19px;
+  height: 19px;
+  border: solid 7px;
+  border-radius: 100%;
+}
+.project:last-child{
+  margin-bottom: 40px;
+}

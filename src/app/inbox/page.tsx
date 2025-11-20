@@ -1,138 +1,51 @@
 'use client'
 import Link from 'next/link'
-import { format } from 'date-fns'
 import style from './page.module.css'
-import React, { useState } from 'react'
+import { Inboxes, Msg } from '@/types'
 import styles from './../main.module.css'
+import { format, isSameDay } from 'date-fns'
 import Footer from '@/src/components/Footer'
 import ChatInput from '@/src/components/ChatBox'
-import { Defaultbg } from '@/src/components/pageParts'
+import React, { useEffect, useState } from 'react'
 import { useSocket } from '@/src/context/SocketContext'
 import { useUserContext } from '@/src/context/UserProvider'
 import { useInboxContext } from '@/src/context/InboxContext'
-import { Backsvg, HistorySvg, Inboxsvg, loaderCircleSvg, Moresvg, ProjectSvg, Rocketsvg, Searchsvg, SupportSvg } from '@/src/components/svgPack'
+import { Copier, Defaultbg } from '@/src/components/pageParts'
 import { classRemove, classToggle, FirstCase } from '@/src/components/functions'
-
-type Msg = {
-  _id: string
-  sent: boolean
-  read: boolean
-  content: string
-  createdAt: string
-  updatedAt: string
-}
-
-type Inboxes = {
-  _id: string
-  title: string
-  status: string
-  userId: string
-  messages: Msg[]
-  createdAt: string
-  updatedAt: string
-  projectId: string
-  receiverId: string
-}
+import { Backsvg, checkmarkSvg, dblChecksvg, HistorySvg, Inboxsvg, loaderCircleSvg, Moresvg, ProjectSvg, Rocketsvg, Searchsvg, SupportSvg } from '@/src/components/svgPack'
 
 type InboxPacks = {
   inb: Inboxes[]
 }
 
 const Inbox = () => {
-  const { ready } = useSocket()
   const [ id , setId ] = useState('')
+  const [ msg , setMsg ] = useState('')
+  const { ready , setRetry } = useSocket()
+  const [ errors , setErrors ] = useState('')
   const [ filters, setFilters ] = useState('')
-  const { inbox , error, setRefresh, isLoading, sendMessage } = useInboxContext()
+  const { userDetails: user } = useUserContext()
+  const { inbox , error, unread, loading , err, readMessages, setRefresh, isLoading, sendMessage } = useInboxContext()
+  const active = inbox.find(( inb: Inboxes) => inb._id === id) || null
 
-  const active = inbox.length > 0 ? inbox.filter(( inb: Inboxes) => inb._id === id)[0] || null : null
-
-  function InboxPack({inb}: InboxPacks){
-    const [ msg , setMsg ] = useState('')
-    const [ error , setError ] = useState('')
-    const { userDetails: user } = useUserContext()
-    const [ loading , setLoading ] = useState(false)
-
-    const handleSendMessage = async () => {
-      if (msg.trim() === '') return
-      setLoading(true)
-      if (ready) {
-        sendMessage( id , msg )
-        setMsg('')
-      } else setError('Internet connection lost.')
-      setLoading(false)
+  const handleSendMessage = async () => {
+    if (msg.trim() === '') return
+    if (ready) {
+      setMsg('')
+      sendMessage( id , msg )
+      return
     }
-
-    return(
-      <div className={style.inboxPack}>
-        <div className={style.all}>
-          {inb.length > 0 ? inb.map((i: Inboxes, n: number)=>(
-            <section key={n} onClick={()=>{setId(i._id)}}>
-              <h2>{Inboxsvg('BIG')} {i.title} {id === i._id && <span>In view</span>}</h2>
-              <p style={{backgroundColor: i.status === 'active' ? 'var(--success)' : i.status === 'completed' ? 'var(--error)' : 'var(--mild-dark)'}}>{i.status}</p>
-            </section>
-          )) : <Defaultbg props={{
-            styles: style,
-            img: '/homehero.png',
-            h2: 'You have no matcing inbox',
-            text: 'Try turning off filters or refreshing the page',
-          }}/>}
-        </div>
-        <div className={style.one}>
-          <div style={{paddingInline: '20px', boxShadow: '0 5px 10px var(--sweetRed)', zIndex: 1}} className={style.bar}>
-            <h2 className='font-bold text-[18px] flex-1'>{active ? active.title : 'Inbox'}</h2>
-            {inbox.length > 0 && <button onClick={()=>{classToggle(`.${style.hidden}`, style.inView); classRemove(`.hidden2`, style.inView)}}>{ProjectSvg()}
-              <section className={style.hidden}>
-                {inbox.map(( i: Inboxes, n: number )=>(
-                  <span key={n} onClick={()=>setId(i._id)}>{i.title}</span>
-                ))}
-              </section>
-            </button>}
-            {id && <button onClick={()=>{classToggle('.hidden2', style.inView); classRemove(`.${style.hidden}`, style.inView)}}>
-              {Moresvg()}
-              <section className={`${style.hidden} hidden2`}>
-                <span>{active?._id}</span>
-                <span>{active?.title}</span>
-                <span>{FirstCase(active?.status)}</span>
-                <span>Unread - {active?.messages.filter((msg: Msg) => user.id === active.userId ? !msg.sent : msg.sent).length}</span>
-                <span>{format(active!.createdAt, "do MMMM, yyyy")}</span>
-              </section>
-            </button>}
-          </div>
-          <section className={style.section}>
-            {inbox.length < 1 && <Defaultbg props={{            
-              styles: style,
-              img: '/homehero.png',
-              h2: 'You have no inbox',
-              text: 'Create an active project to view inbox or switch inbox from toolbar.',
-            }}/>}
-            {inbox.length > 0 && !active && <Defaultbg props={{            
-              styles: style,
-              img: '/homehero.png',
-              h2: 'No message to display',
-              text: 'Select an inbox to view and update messages',
-            }}/>}
-            {active && active.messages && active.messages.length > 0 && active.messages.map(( mes: Msg , i: number) => (
-              <section key={i} className={mes.sent ? (user.role === 'user' ? 'sent' : style.received) : (user.role !== 'user' ? style.received : 'sent')}>
-                <div><span>{mes.content}</span></div>
-                <p>{format(mes.updatedAt, 'h:mm a')}</p>
-              </section>
-            ))}
-            { active && active.messages.length < 1 && <Defaultbg props={{            
-              styles: style,
-              img: '/homehero.png',
-              h2: 'You have no messages',
-              text: 'Send a message and begin conversation. Messages deemed unimportant may be ignored',
-            }} />}
-            <p className='text-[var(--error)] text-end font-medium px-2.5 self-end my-1'>{error}</p>
-          </section>
-          {active && <div className={`${style.input} ${style.bar}`}>
-            <ChatInput value={msg} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMsg(e.target.value)}/>
-            <button disabled={loading} className='bg-[var(--success)!important] text-[white!important]' onClick={()=> msg.trim() !== '' && handleSendMessage()}>{ loading ? loaderCircleSvg() : Rocketsvg('BIG')}</button>
-          </div>}
-        </div>
-      </div>
-    )
+    setRetry(true)
+    setErrors('Internet connection lost. Reconnecting...')
   }
+
+  useEffect(()=>{
+    if ( unread > 0 && id ) readMessages(id)
+  }, [ unread ])
+
+  useEffect(()=>{
+    if ( !isLoading && inbox.length < 1 ) setRefresh(true)
+  }, [ ])
 
   function Filter(filters: string){
     let filtered
@@ -143,7 +56,83 @@ const Inbox = () => {
     if (filter.trim() === '') filtered = inbox
     else filtered = filtered.filter(( inb: Inboxes )=> inb.title.toLocaleLowerCase().includes(filter))
 
-    if (inbox && inbox.length > 0) return <InboxPack inb={filtered}/>
+    if (inbox && inbox.length > 0) return <div className={style.inboxPack}>
+      <div className={style.all}>
+        {inbox.length > 0 ? inbox.map((i: Inboxes, n: number)=>(
+          <section key={n} onClick={()=>{setId(i._id); readMessages(i._id)}}>
+            <h2>{Inboxsvg('BIG')} {i.title} {id === i._id && <span>In view</span>}</h2>
+            <p style={{backgroundColor: i.status === 'active' ? 'var(--success)' : i.status === 'completed' ? 'var(--error)' : 'var(--mild-dark)'}}>{i.status}</p>
+          </section>
+        )) : <Defaultbg props={{
+          styles: style,
+          img: '/homehero.png',
+          h2: 'You have no matcing inbox',
+          text: 'Try turning off filters or refreshing the page',
+        }}/>}
+      </div>
+      <div className={style.one}>
+        <div style={{paddingInline: '20px', boxShadow: '0 5px 10px var(--sweetRed)', zIndex: 1}} className={style.bar}>
+          <h2 className='font-bold text-[18px] flex-1'>{active ? active.title : 'Inbox'}</h2>
+          {inbox.length > 0 && <button onClick={()=>{classToggle(`.${style.hidden}`, style.inView); classRemove(`.hidden2`, style.inView)}}>{ProjectSvg()}
+            <section className={style.hidden}>
+              {inbox.map(( i: Inboxes, n: number )=>(
+                <span key={n} onClick={()=>{setId(i._id); readMessages(i._id)}}>{i.title}</span>
+              ))}
+            </section>
+          </button>}
+          {id && <button onClick={()=>{classToggle('.hidden2', style.inView); classRemove(`.${style.hidden}`, style.inView)}}>
+            {Moresvg()}
+            <section className={`${style.hidden} hidden2`}>
+              <span>{active?.title}</span>
+              <span>{FirstCase(active?.status)}</span>
+              <span>Unread - {active?.messages.filter((msg: Msg) => user.id === active.userId ? !msg.sent : msg.sent).length}</span>
+              <span>{format(active!.createdAt, "do MMMM, yyyy")}</span>
+              <span>{active?._id}</span>
+            </section>
+          </button>}
+        </div>
+        <section className={style.section}>
+          {inbox.length < 1 && <Defaultbg props={{            
+            styles: style,
+            img: '/homehero.png',
+            h2: 'You have no inbox',
+            text: 'Create an active project to view inbox or switch inbox from toolbar.',
+          }}/>}
+          {inbox.length > 0 && !active && <Defaultbg props={{            
+            styles: style,
+            img: '/homehero.png',
+            h2: 'No message to display',
+            text: 'Select an inbox to view and update messages',
+          }}/>}
+          {active && active.messages && active.messages.length > 0 && active.messages.map(( mes: Msg , i: number) => {
+            const next: Msg = active.messages[i + 1]
+            const isOwner = user.id === active.userId
+            const isToday = !next || isSameDay(new Date(next.createdAt) , new Date(mes?.createdAt))
+            return <>
+              <section key={i} className={`${ isOwner ? !mes.sent ? style.received : 'sent' : mes.sent ? style.received : 'sent'}`}>
+                <div className={`${(!next || next.sent !== mes.sent || !isToday) ? style.last : ''}`}><span>{mes.content}</span></div>
+                <p>{format(mes.updatedAt, 'h:mm a')} <Copier props={{text: mes?.content}}/> { isOwner ? (mes.sent ?
+                mes.read ? dblChecksvg('text-blue-500') : checkmarkSvg() : <></> ) :
+                !mes.sent ?
+                mes.read ? dblChecksvg('text-blue-500') : checkmarkSvg() : <></> }</p>
+              </section>
+              {!isToday && <menu className={style.date}>{format(next?.createdAt, 'do, MMMM, yy')}</menu>}
+            </>}
+          )}
+          { active && active.messages.length < 1 && <Defaultbg props={{            
+            styles: style,
+            img: '/homehero.png',
+            h2: 'You have no messages',
+            text: 'Send a message and begin conversation. Messages deemed unimportant may be ignored',
+          }} />}
+        </section>
+        <p className='text-[var(--error)] text-end font-medium px-2.5 self-end my-1'>{err || errors}</p>
+        {active && <div className={`${style.input} ${style.bar}`}>
+          <ChatInput value={msg} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMsg(e.target.value)}/>
+          <button disabled={loading} className='bg-[var(--success)!important] text-[white!important]' onClick={()=> msg.trim() !== '' && handleSendMessage()}>{ loading ? loaderCircleSvg() : Rocketsvg('BIG')}</button>
+        </div>}
+      </div>
+    </div>
 
     else if (inbox.length < 1 && !error) return (
       <Defaultbg props={{

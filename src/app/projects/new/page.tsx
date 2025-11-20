@@ -1,5 +1,6 @@
 "use client"
 import Link from 'next/link'
+import { Projects } from '@/types'
 import style from './page.module.css'
 import styles from './../../main.module.css'
 import Footer from '@/src/components/Footer'
@@ -9,13 +10,7 @@ import React, { ReactNode, useEffect, useState } from 'react'
 import { NewDropSets, Notify } from '@/src/components/pageParts'
 import { useProjectContext } from '@/src/context/ProjectContext'
 import { classAdd, classRemove, classToggle, Click, FirstCase, pick, RemoveOtherClass } from '@/src/components/functions'
-import { AddProjectsvg, AddSvg, Buildsvg, Cloudsvg, Devsvg, FolderSvg, Githubsvg, Helpsvg, HTMLsvg, Leftsvg, loaderCircleSvg, Nextsvg, Nodesvg, ProjectSvg, Reactsvg, Rocketsvg, Rustsvg, TagSvg } from '../../../components/svgPack'
-
-type btn = {
-  txt: string
-  query: string
-  svg: ReactNode
-}
+import { AddProjectsvg, AddSvg, Buildsvg, Cloudsvg, Devsvg, FolderSvg, Githubsvg, Helpsvg, HTMLsvg, Leftsvg, loaderCircleSvg, Nextsvg, Nodesvg, ProjectSvg, Reactsvg, Rocketsvg, Rustsvg, TagSvg, Vercelsvg } from '../../../components/svgPack'
 
 type Blogs = {
   props: {
@@ -25,22 +20,10 @@ type Blogs = {
   }
 }
 
-type projct = {
-  _id: string
-  type: string
-  class: string
-  title: string
-  target: string
-  status: string
-  userId: string
-  message: string
-  createdAt: string
-  updatedAt: string
-}
-
 const NewProject = () => {
   const [ err, setErr ] = useState('')
   const [ url, setUrl ] = useState('')
+  const { socket , ready } = useSocket()
   const [ name, setName ] = useState('')
   const [ rate, setRate ] = useState('')
   const [ error, setError ] = useState('')
@@ -57,15 +40,14 @@ const NewProject = () => {
   const [ concept, setConcept ] = useState('')
   const [ service , setService ] = useState('')
   const [ notify , setNotify ] = useState(false)
-  const [ langFrom , setLangFrom ] = useState([''])
   const [ request , setRequest ] = useState(false)
   const [ classes, setClasses ] = useState('full')
   const [ features, setFeatures ] = useState([''])
+  const [ langFrom , setLangFrom ] = useState([''])
+  const { project , setRefresh } = useProjectContext()
   const [ isLoading , setIsLoading ] = useState(false)
   const [ provider, setProvider ] = useState('domain')
   const sectArr = ['e-commerce', 'sol', 'docs']
-  const { project } = useProjectContext()
-  const { socket , ready } = useSocket()
   const [ fill , setFill ]: [string | boolean, React.Dispatch<React.SetStateAction<string>>]= useState('')
 
   function TypeSects ({props}: Blogs) {
@@ -157,11 +139,29 @@ const NewProject = () => {
     else if (fLoop.length < 1 && fNot.length > 0) setErr(`No alternatve front-end language found for "${fNot.slice(0, -1).join(', ')}${fNot.length > 1 ? ' and ' : ''}${fNot.slice(-1)[0]}"`)
     else if (!request) setRequest(true)
     else if (!ready) { setNotify(true); setReason('failed'); setError('Could not submit project details')}
-    else{ setIsLoading(true); socket.emit("create-project", project )}
+    else {
+      setIsLoading(true);
+      if ( error ) setRefresh(true)
+      socket.emit("create-project", {
+        name,
+        type,
+        lang,
+        about,
+        sector,
+        service,
+        concept,
+        features,
+        provider,
+        class: classes,
+        rate: rate || null,
+        pages: pages || null,
+        scale: scale || null,
+        langFrom: langFrom || null,
+        url: `${provider === 'github' ? 'https://github/' : provider === 'domain' ? 'www.' : 'https://'}${url}${provider === 'vercel' ? '.vercel.app' : '.com'}` || null,
+      })
+    }
     return
   }
-
-  if(ready) socket.on("project-created", ()=> setIsLoading(false))
 
   const resizeCheck = () => {
     const holder = pick(`.${style.holder}`).style
@@ -180,10 +180,23 @@ const NewProject = () => {
   }
 
   useEffect(()=>{
+    if(ready) {
+      socket.on("project-created", ()=> setIsLoading(false))
+    }
     return () => {
       mode === 'assist' && autoSave()
     }
-  }, [])
+  }, [ ])
+
+  useEffect(()=>{
+    if(!ready) return
+    socket.on("project-created", ()=> setIsLoading(false))
+    socket.on("project-error", ( error: {message: string} )=> {
+      setIsLoading(false)
+      setError('Could not create project')
+      setErr(`${error?.message}. Please try again`)
+    })
+  }, [ ready ])
   
   useEffect(()=>{
     if (lang.includes('auto')) classAdd('#flang', style.inActive)
@@ -396,10 +409,10 @@ const NewProject = () => {
                     buttons:  service === 'software application' ? [
                       {svg: Githubsvg('p-0.5'), txt: 'Github', query: 'github', func: ()=>setProvider('github')}
                     ] : type !== 'part' ? [
-                      {txt: 'Vercel', query: 'vercel', func: ()=>setProvider('vercel')},
+                      {svg: Vercelsvg('p-0.5'), txt: 'Vercel', query: 'vercel', func: ()=>setProvider('vercel')},
                       {svg: Cloudsvg(), txt: 'Domain', query: 'domain', func: ()=>setProvider('domain')}
                     ] : [
-                      {txt: 'Vercel', query: 'vercel', func: ()=>setProvider('vercel')},
+                      {svg: Vercelsvg('p-0.5'), txt: 'Vercel', query: 'vercel', func: ()=>setProvider('vercel')},
                       {svg: Cloudsvg(), txt: 'Domain', query: 'domain', func: ()=>setProvider('domain')},
                       {svg: Githubsvg('p-0.5'), txt: 'Github', query: 'github', func: ()=>setProvider('github')}
                     ]
@@ -731,8 +744,8 @@ const NewProject = () => {
                       query: classes,
                       class: style.inView,
                       buttons:  [
-                        ...project.map((p: projct,  i: number) => {
-                          return {txt: p.title, query: p.title, func: ()=>setClasses(p.title)}
+                        ...project.map((p: Projects,  i: number) => {
+                          return {txt: p.name, query: p.name, func: ()=>setClasses(p.name)}
                       })]
                     }}/>
                     }

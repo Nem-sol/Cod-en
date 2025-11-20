@@ -1,5 +1,4 @@
 "use client";
-import { Notify } from "../components/pageParts";
 import { signOut, useSession } from "next-auth/react";
 import { createContext, useContext, useState, useEffect } from "react";
 
@@ -10,7 +9,6 @@ export const UserProvider = ({ children }) => {
   const { data: session , status } = useSession()
   const [ refresh , setRefresh ] = useState(true)
   const [ deleted , setDeleted ] = useState(false)
-  const [ changed , setChanged ] = useState(false)
   const [ userDetails , setUserDetails ] = useState(null);
 
   useEffect(() => {
@@ -38,17 +36,10 @@ export const UserProvider = ({ children }) => {
             if (extra.error === 'User not found') {
               signOut()
               setDeleted(true)
-              setChanged(false)
+              router.push('/signup')
             }
           }
-          else {
-            if (extra.provider !== session.user.provider || extra.email !== session.user.email){
-              signOut()
-              setChanged(true)
-              setDeleted(false)
-            }
-            else setUserDetails({ ...session.user, ...extra })
-          }
+          else setUserDetails({ ...session.user, ...extra })
         } catch (err) {
           setError(err)
           console.error("Failed to fetch user details");
@@ -61,9 +52,7 @@ export const UserProvider = ({ children }) => {
   }, [ session , status , refresh ]);
 
   return (
-    <UserContext.Provider value={{ userDetails, status, error, setUserDetails, status , setRefresh }}>
-      { deleted && <Notify message='User does not exist or may have been deleted' setCondition={setDeleted(false)} types='error' />}
-      { changed && <Notify message='User settings changed across sessions. Please validate account ownership.' setCondition={setChanged(false)} types='error' />}
+    <UserContext.Provider value={{ userDetails, status, error, setUserDetails, deleted , setRefresh, setDeleted }}>
       {children}
     </UserContext.Provider>
   );

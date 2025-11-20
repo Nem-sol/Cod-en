@@ -708,7 +708,6 @@
 }
 .big section a span{
   font-size: 16px;
-  font-size: 16px;
   transition: 0.3s;
   padding: 5px 25px;
   border-radius: 25px;
@@ -975,6 +974,14 @@
     97.7%{ width: 175px; opacity: 1;}
     98.3%{ width: 175px; opacity: 1;}
     100%{ width: 0px; opacity: 0;}
+  }
+}
+@media screen and (max-width: 460px) {
+  .hero h2 p{
+    min-height: 126px;
+  }
+  .hero h2 strong{
+    min-height: 76px;
   }
 }
 @media screen and (max-width: 400px) {

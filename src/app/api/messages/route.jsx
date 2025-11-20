@@ -1,7 +1,32 @@
 import validator from 'validator'
 import connect from '@/src/utils/db'
+import User from '../../../models/User'
+import { getToken } from 'next-auth/jwt'
 import { NextResponse } from 'next/server'
 import Message from '../../../models/Message'
+
+export const GET = async ( req ) => {
+  try{
+    await connect()
+    
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+
+    if (!token) return NextResponse.json({ error: 'Unauthorized request declined' }, { status: 401 })
+
+    const user = await User.findById(token.id)
+
+    if (user.role !== 'admin') return NextResponse.json({error: 'You have no messages'}, {status: 400})
+
+    const messages = await Message.find({}).sort({createdAt: -1})
+
+    if (!messages || messages.length === 0) return NextResponse.json([], { status: 200 })
+
+    return NextResponse.json(messages, {status: 200})
+  }
+  catch(err){
+    return NextResponse.json({error: err}, {status: 400})
+  }
+}
 
 export const POST = async ( req ) => {
 

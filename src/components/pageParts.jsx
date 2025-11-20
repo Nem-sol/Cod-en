@@ -1,15 +1,15 @@
 'use client'
 import Link from 'next/link'
 import Image from 'next/image'
-import validator from 'validator'
-import { signOut } from "next-auth/react";
 import { useRouter } from 'next/navigation';
+import { signOut, useSession } from "next-auth/react"
 import { ThemeContext } from '../context/ThemeContext'
 import { useContext, useEffect, useState } from 'react'
-import { useEmail } from '../context/ProtectionProvider';
-import { useUserContext } from '../context/UserProvider';
+import { useEmail } from '../context/ProtectionProvider'
+import { useUserContext } from '../context/UserProvider'
+import { useInboxContext } from '../context/InboxContext'
 import { CheckIncludes, classAdd, classRemove, classToggle, FirstCase, pick, pickAll, RemoveLikeClass, RemoveOtherClass, revAnimationTimeline, scrollCheck } from './functions'
-import { Backsvg, Blogsvg, cancelSvg, Bugsvg, Csssvg, FolderSvg, Helpsvg, Inboxsvg, Javascriptsvg, Leftsvg, LogInSvg, LogoutSvg, Mailsvg, Nextsvg, Nightsvg, Nodesvg, ProjectSvg, Pythonsvg, Reactsvg, Rocketsvg, Rustsvg, SettingSvg, Sunsvg, SupportSvg, TagSvg, loaderCircleSvg, TypeScriptsvg, Copysvg, checkmarkSvg, Devsvg, Linksvg, HTMLsvg, AppSvg, HomeSvg, dblRightArrowsvg } from './svgPack'
+import { Backsvg, Blogsvg, cancelSvg, Helpsvg, Inboxsvg, Javascriptsvg, Leftsvg, LogInSvg, LogoutSvg, Mailsvg, Nextsvg, Nightsvg, Nodesvg, ProjectSvg, Reactsvg, Rocketsvg, Rustsvg, Sunsvg, SupportSvg, TagSvg, loaderCircleSvg, TypeScriptsvg, Copysvg, checkmarkSvg, Devsvg, Linksvg, HTMLsvg, AppSvg, HomeSvg, dblRightArrowsvg } from './svgPack'
 
 
 export function Back(){
@@ -42,6 +42,7 @@ const ThemeToggle = () => {
 }
 
 export function UserNav(){
+  const { unread } = useInboxContext()
   const { userDetails: user } = useUserContext()
   if (!user) return(
     <div className="user_pack">
@@ -54,7 +55,10 @@ export function UserNav(){
   else if (user) return(
     <div className="user_pack">
       <p>{user.name}</p>
-      <button className='button' onClick={()=>{classAdd('nav', 'inView'), classAdd('nav', 'inb')}}>{Inboxsvg('isBig')} Inbox</button>
+      <button className='button' onClick={()=>{classAdd('nav', 'inView'), classAdd('nav', 'inb')}}>
+        {unread > 0 && <span className='bg-[var(--error)] rounded-full aspect-square min-w-5.5 text-[15px] flex items-center justify-center text-white -top-[5px] -right-[3px]' style={{position: 'absolute', boxShadow: '0 1px 4px rgba(0, 0, 0, 0.3), 0 2px 3px rgba(0, 0, 0, 0.2)'}}>{unread > 9 ? '9' : unread}</span>}
+        {Inboxsvg('isBig')} Inbox
+      </button>
       <button className='button' onClick={()=>signOut()} style={{color: 'var(--error)'}}>{LogoutSvg()}Log out</button>
       <ThemeToggle />
     </div>
@@ -75,25 +79,37 @@ export function GuestNav(){
 }
 
 export function DropButton({props}) {
-  const { userDetails: user } = useUserContext()
+  const { status } = useSession()
+  const isAuth = status === 'authenticated'
 
   const handleClick = (e) => {
-    if ( user ) window.removeEventListener('click', handleClick)
-    !CheckIncludes(e, '.link_pack') && classRemove('.link_pack', 'inView')
+    !CheckIncludes(e, '.link_pack') && !CheckIncludes(e, '.guest-button') && classRemove('.link_pack', 'inView')
   }
 
   useEffect(() => {
     window.addEventListener('click', handleClick)
+    if( isAuth ) window.removeEventListener('click', handleClick)
     return () => window.removeEventListener('click', handleClick)
-  }, [ user ])
+  }, [status ])
 
   return (
-    <button onClick={()=>{
-        if (!user){
+    <button className='guest-button' onClick={()=>{
+        if (!isAuth){
           classToggle('.link_pack', 'inView');
         } else classToggle('nav', 'inView')
       }}>
       {props.text}
+    </button>
+  )
+}
+
+export function DropUserButton() {
+  const { unread } = useInboxContext()
+  const { userDetails: user } = useUserContext()
+  return (
+    <button style={{height: '34px', width: '44px', backgroundColor: 'var(--sweetPurple)'}} onClick={()=>{classToggle('.user_pack', 'inView'); window.addEventListener('click', (e)=>{!CheckIncludes(e, '.user_pack') && !CheckIncludes(e, '.user_pack button') && !CheckIncludes(e, 'header div button:last-child') && classRemove('.user_pack', 'inView')})}}>
+      {unread > 0 && <span className='bg-[var(--error)] rounded-full aspect-square min-w-5.5 text-[15px] flex items-center justify-center text-white -top-[5px] -right-[3px]' style={{position: 'absolute', boxShadow: '0 1px 4px rgba(0, 0, 0, 0.3), 0 2px 3px rgba(0, 0, 0, 0.2)'}}>{unread > 9 ? '9' : unread}</span>}
+      <span className="pointer-events-none">{user ? user.name[0].toLocaleUpperCase() : 'G'}</span>
     </button>
   )
 }
@@ -147,8 +163,10 @@ export function Notify({ condition = true, setCondition, timer = 5000 , message 
     opacity: 1,
     top: '80px',
     right: '20px',
+    maxWidth: '80%',
     fontWeight: 600,
     fontSize: '15px',
+    minWidth: '200px',
     position: 'fixed',
     padding: '10px 15px',
     borderRadius: '25px',
@@ -181,15 +199,6 @@ export function NewDropSets({props}){
   )
 }
 
-export function DropUserButton() {
-  const { userDetails: user } = useUserContext()
-  return (
-    <button style={{height: '34px', width: '44px', backgroundColor: 'var(--sweetPurple)'}} onClick={()=>{classToggle('.user_pack', 'inView'); window.addEventListener('click', (e)=>{!CheckIncludes(e, '.user_pack') && !CheckIncludes(e, '.user_pack button') && !CheckIncludes(e, 'header div button:last-child') && classRemove('.user_pack', 'inView')})}}>
-      <span className="pointer-events-none">{user ? user.name[0].toLocaleUpperCase() : 'G'}</span>
-    </button>
-  )
-}
-
 export const Defaultbg = ({props}) => {
   return (
     <div className={props.styles.default_bg}>
@@ -212,86 +221,6 @@ export function DashboardSection({props}){
       <div>
         {props.text}
         <Link href={props.address || '/dashboard'}>{props.link ? props.link : fallbackLink}</Link>
-      </div>
-    </section>
-  )
-}
-
-export function ContactForm({props}){
-  const [ msg, setMsg ] = useState('')
-  const [ error, setError ] = useState('')
-  const [ type, setType ] = useState('Message')
-  const { userDetails: user } = useUserContext()
-  const [ success, setSuccess ] = useState(false)
-  const [ loading, setLoading ] = useState(false)
-  const [ name, setName ] = useState( user ? user.name : '')
-  const [ email, setEmail ] = useState( user ? user.email : '')
-  const handleSubmit = async (e) =>{
-    setError('')
-    e.preventDefault()
-    if (!user && !validator.isEmail(email)){
-      setError('Please enter a valid email address')
-      return
-    }
-    if (!user && !name.trim()) setError('User name required')
-    if (!msg.trim()) {
-      setError('A message content is required')
-      return
-    }
-    setLoading(true)
-    try {
-      const res = await fetch('/api/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ msg , name: user ? user.name : name , email: user ? user.email : email , type })
-      });
-
-      const contentType = res.headers.get('content-type')
-
-      if (!contentType || !contentType.includes('application/json')) {
-        setLoading(false)
-        setError('Unexpected server error. Try again later')
-        return
-      }
-
-      const result = await res.json()
-
-      if (!res.ok) setError( result.error || `Could not send ${type.toLocaleLowerCase()}`)
-      else {
-        setSuccess(true)
-        setError(`${FirstCase(type)} ${type !== 'message' && message} sent successfully. Cod-en will reach out to you shortly.`)
-        setTimeout(()=>{ setSuccess(false) ; setError('') ; setMsg('') }, 3000)
-      }
-    } catch (err) {
-      setError(err?.message || 'Something went wrong')
-    }
-    setLoading(false)
-  }
-  return(
-    <section className={props.form}>
-      <input name='name' value={name} type="text" autoComplete='true' autoCorrect='true' placeholder={user ? user.name : 'John Michael'} onChange={(e)=> !user ? setName(e.target.value) : setName(user.name)} onKeyDown={()=> user && setName(user.name)}/>
-      <input name='email' value={email} type="text" autoComplete='true' autoCorrect='true' placeholder={user ? user.email : 'you@example.com'} onChange={(e)=> !user ? setEmail(e.target.value) : setEmail(user.email)} onKeyDown={()=> user && setEmail(user.email)}/>
-      <textarea name='message' value={msg} autoComplete='true' autoCorrect='true' placeholder='Start your message...' onChange={(e)=> setMsg(e.target.value)}/>
-      {!user && <span>Access convenient comunication when you <Link href='/signup' style={{color: 'var(--compliment)', fontWeight: '700', whiteSpace: 'nowrap'}}>sign up</Link></span>}
-      {error && <p className='text-[var(--error)] font-medium' style={success ? {color: 'var(--success)'} : {}}>{error}</p>}
-      <div className='flex gap-x-2.5'>
-        <div className='flex-1'><NewDropSets props={{
-          query: type,
-          id: props.contact,
-          class: props.inView,
-          buttons: user ? [
-              {svg: Helpsvg(), txt: 'Enquiry', query: 'enquiry', func: ()=>setType('enquiry')},
-              {svg: FolderSvg(), txt: 'Deals', query: 'deals', func: ()=>setType('deals')},
-              {svg: SupportSvg('isBig'), txt: 'Message', query: 'message', func: ()=>setType('message')},
-              {svg: Bugsvg(), txt: 'Report', query: 'report', func: ()=>setType('report')},
-              {svg: SupportSvg('isBig'), txt: 'Feedback', query: 'feeds', func: ()=>setType('feeds')}
-            ] : [
-            {svg: Helpsvg(), txt: 'Enquiry', query: 'enquiry', func: ()=>setType('enquiry')},
-            {svg: FolderSvg(), txt: 'Business deals', query: 'deals', func: ()=>setType('deals')},
-            {svg: SupportSvg('BIG'), txt: 'Message', query: 'message', func: ()=>setType('message')}
-          ]
-        }}/></div>
-        <button disabled={loading} onClick={handleSubmit}>{success ? 'Sent' : !loading ? 'Send' : 'Sending...'} {success ? checkmarkSvg(success ? 'min-w-6 opacity-[1!important] inset-auto' : '') : !loading ? Leftsvg('big') : loaderCircleSvg(loading ? 'min-w-6 opacity-[1!important] inset-auto' : '')}</button>
       </div>
     </section>
   )
@@ -539,7 +468,7 @@ export function ServiceHero({props}){
           </div>
           ))}
         </div>
-        <Link href={prop.address} className={props.more}>View more {Leftsvg('big')}</Link>
+        <Link href={prop.address} className={props.more}>{ prop.link !== 'tutorials' ? 'View more' : 'Coming soon'} {Leftsvg('big')}</Link>
       </section>
     )
   }
@@ -554,7 +483,7 @@ export function ServiceHero({props}){
         <div className={props.servicesPack}>
           <ServicePack prop={{
             svg: TagSvg(),
-            link: 'tutorial',
+            link: 'tutorials',
             address: '/blog/tutorials',
             content: [
               {link: 'CSS'},
@@ -632,7 +561,7 @@ export function FeaturesBanner({props}){
         <h2>Make secured in-app payments with Paystack and Flutterwave</h2>
         <div>
           <p>Secured payments</p>
-          <Link href="/help/payments">Check it out {Leftsvg()}</Link>
+          <Link href="/payments">Check it out {Leftsvg()}</Link>
         </div>
       </section>
     )
@@ -690,7 +619,7 @@ export function Trigger({props}){
       <h2>{Rocketsvg()} Get started</h2>
       <form className={props.input} onSubmit={(e)=>{e.preventDefault(); router.push('/signup')}}>
         <input type="email" name='email' value={em} autoComplete='true' placeholder='Enter email' onChange={(e)=>{setEmail(e.target.value); setEm(e.target.value)}}/>
-        {Mailsvg()}
+        <button>{Mailsvg()}</button>
       </form>
       <section>
         <Link href='/contact'> {SupportSvg()} <span>Contact</span></Link>

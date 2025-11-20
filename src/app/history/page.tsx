@@ -1,27 +1,16 @@
 'use client'
 import Link from 'next/link'
 import { format } from 'date-fns'
+import { Histories } from '@/types'
 import styles from '../main.module.css'
-import React, { useState } from 'react'
 import Footer from '@/src/components/Footer'
+import React, { useEffect, useState } from 'react'
 import { Copier } from '../../components/pageParts'
 import { useUserContext } from '@/src/context/UserProvider'
 import { useHistoryContext } from '@/src/context/HistoryContext'
 import { Defaultbg, NewFilterSets } from '@/src/components/pageParts'
 import { Backsvg, HistorySvg, Inboxsvg, Linksvg, loaderCircleSvg, NotificationSvg, Searchsvg } from '@/src/components/svgPack'
 
-type Histories = {
-  _id: string
-  type: string
-  class: string
-  title: string
-  target: string
-  status: string
-  userId: string
-  message: string
-  createdAt: string
-  updatedAt: string
-}
 type HistoryPacks = {
   history: Histories
 }
@@ -49,6 +38,7 @@ const History = () => {
       </div>
     )
   }
+
   function Filter(filters:  string){
     let result
     let filtered
@@ -89,6 +79,10 @@ const History = () => {
         text: 'Try restoring internet connection or refreshing the page',
       }}/>)
   }
+
+  useEffect(()=>{
+    if ( !isLoading && history.length < 1 ) setRefresh(true)
+  }, [])
 
   return (
     <main id={styles.main}>

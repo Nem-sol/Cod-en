@@ -6,10 +6,11 @@ import { NextResponse } from 'next/server'
 import User from '../../../../models/User'
 import History from '../../../../models/History'
 import Notification from '../../../../models/Notification'
+import { generateOTP, validateOTP } from '@/src/utils/Otp'
 
 
 export const POST = async (req) => {
-  const { name , email , password } = await req.json()
+  const { name , email , password , code } = await req.json()
   await connect()
 
   // Validate
@@ -36,6 +37,27 @@ export const POST = async (req) => {
   // Unique checks
   const emailExists = await User.findOne({ email }).select('_id')
   if (emailExists) return NextResponse.json({ error: 'Email already in use' }, { status: 400 })
+
+  if ( !code ) {
+    const code = generateOTP( email )
+
+    await sendMail({
+      code,
+      to: email,
+      text: `Email verification otp for ${email}` ,
+      subject : `Email verification otp for ${email}`,
+      link: {cap: 'For more information on Cod-en signup process, view ', address: '/help/account', title: 'sign up help page'},
+      messages: [
+        `Your email verification otp is shown below`,
+        'This OTP lasts for only five minutes. Use it quick before it expires'
+      ],
+    })
+    return NextResponse.json({ error: 'OTP sent to email sucessfully' }, { status: 400 })
+  }
+
+  const valid = validateOTP( email , code )
+
+  if ( !valid ) return NextResponse.json({ error: 'OTP is not correct. Check email for OTP or resend' }, { status: 400 })
 
   // Hash password
   const hashedPassword = await bcrypt.hash(password.trim(), 10)

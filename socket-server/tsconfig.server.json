@@ -1,13 +1,16 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "module": "commonJS",
+    "module": "ESNext",
     "target": "ES2017",
     "outDir": "./dist",
     "moduleResolution": "Node",
     "strict": true,
     "noEmit": false,
-    "isolatedModules": false
+    "isolatedModules": false,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
   },
-  "include": ["socket.ts"]
+  "include": ["socket-server/**/*.ts"],
+  "exclude": ["node_modules"]
 }

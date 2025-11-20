@@ -2,29 +2,18 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { format } from 'date-fns'
-import React, { useState } from 'react'
+import { Histories } from '@/types'
 import styles from '../../main.module.css'
 import { useParams } from 'next/navigation'
 import Footer from '@/src/components/Footer'
+import React, { useEffect, useState } from 'react'
 import { FirstCase } from '@/src/components/functions'
 import { Copier } from '../../../components/pageParts'
 import { useHistoryContext } from '@/src/context/HistoryContext'
 import { Backsvg, HistorySvg, Inboxsvg, loaderCircleSvg, NotificationSvg, Searchsvg } from '@/src/components/svgPack'
 
-type History = {
-  _id: string
-  type: string
-  class: string
-  title: string
-  target: string
-  status: string
-  userId: string
-  message: string
-  createdAt: string
-  updatedAt: string
-}
 type HistoryPacks = {
-  history: History
+  history: Histories
 }
 
 const HistoryPack = () => {
@@ -32,7 +21,7 @@ const HistoryPack = () => {
   const ID = Number(id) || 12345
   const [ filter , setFilter ] = useState('')
   const { history, error, setRefresh, isLoading } = useHistoryContext()
-  const content = history.find((h: History)=> h._id === id ) || history[ID]
+  const content = history.find((h: Histories)=> h._id === id ) || history[ID]
 
   const searchParams = (txt: string) => {
     const splitTxt = filter ? txt.toLocaleLowerCase().split(filter.toLocaleLowerCase()) : [txt]
@@ -73,6 +62,11 @@ const HistoryPack = () => {
       </div>
     )
   }
+  
+  useEffect(()=>{
+    if ( !isLoading && history.length < 1 ) setRefresh(true)
+  }, [])
+
   return (
     <main id={styles.main}>
       <div className={styles.main}>

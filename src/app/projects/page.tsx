@@ -1,76 +1,36 @@
 'use client'
 import Link from 'next/link'
+import { format } from 'date-fns'
+import { Projects } from '@/types'
+import style from './page.module.css'
 import styles from '../main.module.css'
-import React, { useState } from 'react'
 import Footer from '@/src/components/Footer'
+import React, { useEffect, useState } from 'react'
+import { FirstCase } from '@/src/components/functions'
 import { useProjectContext } from '@/src/context/ProjectContext'
 import { Defaultbg, NewFilterSets } from '@/src/components/pageParts'
-import { Inboxsvg, Linksvg, loaderCircleSvg, Moresvg, ProjectSvg, Refreshsvg, Rocketsvg, Searchsvg, SupportSvg } from '@/src/components/svgPack'
+import { Cloudsvg, Githubsvg, Inboxsvg, Linksvg, loaderCircleSvg, ProjectSvg, Refreshsvg, Rocketsvg, Searchsvg, SupportSvg, TagSvg } from '@/src/components/svgPack'
 
-// type process = {
-//   _id: string
-//   title: string,
-//   phase: {
-//     type: string,
-//     completed: boolean
-//   }
-// }
-
-// type projct = {
-//   _id: string
-//   type: string
-//   name: string
-//   price: number
-//   class: string
-//   about: string
-//   status: string
-//   sector: string
-//   userId: string
-//   signed: boolean
-//   concept: string
-//   provider: string
-//   createdAt: string
-//   updatedAt: string
-//   process: process[]
-//   features: string[]
-//   link: string | null
-//   paymentLevel: number
-// }
-
-// type ProjectPack ={
-//   project: projct
-// }
-
-type projct = {
-  _id: string
-  type: string
-  class: string
-  title: string
-  target: string
-  status: string
-  userId: string
-  message: string
-  createdAt: string
-  updatedAt: string
-}
-type ProjectPack = {
-  project: projct
-}
-
-function ProjectPacks({project}: ProjectPack) {
-  const date = project.createdAt
+function ProjectPacks({project}: {project: Projects}) {
+  const provider = project.provider
+  const date = format(project.createdAt, 'do MMMM, yyyy')
   return (
-    <div  className={project.status + styles.hist} id={project._id}>
+    <div className={style.project}>
       <div>
-        <p>{date}</p>
-        <p>{project.title}</p>
-        <p>{project.target}</p>
-        <p>{project.status}</p>
+        <h2>
+          <span>{project.name}</span>
+          <span style={{fontSize: '15px', fontWeight: 600}}>{project.sector}</span>
+        </h2>
+        <p>{FirstCase(project.service)}</p>
+        {project.reason && <p>{project.reason}</p>}
+        <p><span>{date}</span> <span className={style[project.status]}>{project.status}</span></p>
+        <span className={`${style.signed} ${project.signed ? 'text-[var(--success)]' : 'text-[var(--error)]'}`}> <svg ></svg>{project.signed ? 'Signed' : 'Not signed'}</span>
+        <p style={{gap: '10px', justifyContent: 'flex-end'}}>{provider === 'github' ? Githubsvg('BIG') : provider === 'domain'  && Cloudsvg()}{FirstCase(provider)}</p>
       </div>
-      <div>
+      <p style={{justifyContent: 'flex-end'}}>
         <Link href={'/project/'+project._id}>{Linksvg()}</Link>
-        <button>{Moresvg()}</button>
-      </div>
+        <Link href={"/payments/"+project._id} className={style.pay}> {TagSvg('p-0.5')} Make payment</Link>
+      </p>
     </div>
   )
 }
@@ -88,11 +48,11 @@ const ProjectPack = () => {
 
     if (!project) result = null
     else if (filter.trim() === '') filtered = project
-    else if(filter === 'part' || filter === 'full') filtered = filtered.filter(( proj: projct )=> proj.type === filters)
-    else if(filter === 'active' || filter === 'waiting' || filter === 'successful' || filter === 'terminated') filtered = filtered.filter(( proj: projct )=> proj.status.toLocaleLowerCase().includes(filter))
-    else filtered = filtered.filter(( proj: projct )=> proj.title.toLocaleLowerCase().includes(filter))
+    else if(filter === 'part' || filter === 'full') filtered = filtered.filter(( proj: Projects )=> proj.type === filters)
+    else if(filter === 'active' || filter === 'waiting' || filter === 'successful' || filter === 'terminated') filtered = filtered.filter(( proj: Projects )=> proj.status.toLocaleLowerCase().includes(filter))
+    else filtered = filtered.filter(( proj: Projects )=> proj.name.toLocaleLowerCase().includes(filter))
 
-    if (filtered && filtered.length > 0) result = filtered.map((proj: projct, i: number)=> <ProjectPacks key={i} project={proj}/>)
+    if (filtered && filtered.length > 0) result = filtered.map((proj: Projects, i: number)=> <ProjectPacks key={i} project={proj}/>)
 
     if (project && project.length < 1 && error ) return (
       <Defaultbg props={{
@@ -101,10 +61,7 @@ const ProjectPack = () => {
         h2: 'Could not get projects',
         text: 'Try restoring internet connection or refreshing the page',
       }}/>)
-    else return result ? (
-      <div className={styles.noti}>
-        {result}
-      </div>) : (
+    else return result ? result : (
       <Defaultbg props={{
         styles: styles,
         img: '/homehero.png',
@@ -112,6 +69,10 @@ const ProjectPack = () => {
         text: 'Try restoring internet connection or refreshing the page',
       }}/>)
   }
+
+  useEffect(()=>{
+    if ( !isLoading && project.length < 1 && error ) setRefresh(true)
+  }, [])
 
   return (
     <main id={styles.main}>
@@ -148,7 +109,7 @@ const ProjectPack = () => {
           h2: 'Getting projects ...',
           text: 'Please be patient while we get your projects',
         }}/>}
-        {(!isLoading || project.length < 1) && Filter(filters)}
+        {(!isLoading || project.length > 0) && Filter(filters)}
         {error && <button disabled={isLoading} className={styles.floater} onClick={()=>setRefresh((prev: boolean) => !prev )}>{isLoading ? loaderCircleSvg() : Refreshsvg()}</button>}
       </div>
       <Footer />

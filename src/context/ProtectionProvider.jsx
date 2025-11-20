@@ -8,6 +8,7 @@ import styl from '../app/inbox/page.module.css'
 import LoadingBar from "../components/LoadingBar"
 import style from '../app/contact/page.module.css'
 import styz from '../app/recovery/page.module.css'
+import stylz from '../app/payments/page.module.css'
 import { useProjectContext } from './ProjectContext'
 import { loaderCircleSvg } from "../components/svgPack"
 import stylez from '../app/projects/new/page.module.css'
@@ -70,13 +71,14 @@ export const ProtectorProvider = ({ children }) => {
         RemoveAllClass(styz.inView, 'menu')
         RemoveAllClass(styl.inView, 'menu')
         RemoveAllClass(style.inView, 'menu')
+        RemoveAllClass(stylz.inView, 'menu')
         RemoveAllClass(styles.inView, 'menu')
         RemoveAllClass(stylez.inView, 'menu')
         RemoveAllClass('inView', 'menu')
       }}}>
         <Navbar />
         {status === 'loading' ? (
-          <main id={styles.main}>
+          <main id={styles.main} style={{alignSelf: 'center'}}>
             <div className={`${styles.main} ${styles.default_bg}`}>
               <section className={style.background}></section>
               <h2 className='flex items-center gap-5 scale-[1.2]'>{loaderCircleSvg()} Loading Cod-en+ ... </h2>

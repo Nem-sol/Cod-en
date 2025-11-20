@@ -13,11 +13,9 @@ export const GET = async (req) => {
 
     if (!token) return NextResponse.json({ error: 'Unauthorized requet declined' }, { status: 401 })
 
-    const userRole = await User.findById(token.id).role
+    const user = await User.findById(token.id).select('role')
 
-    const inbox = userRole === 'admin' ? 
-      await Inbox.find({status: 'active'}).sort({createdAt: -1}) : 
-      await Inbox.find({userId: token.id}).sort({createdAt: -1})
+    const inbox = await Inbox.find(user?.role === 'admin' ? {} : {userId: token.id}).sort({createdAt: -1})
 
     if (!inbox || inbox.length === 0) return NextResponse.json([], { status: 200 })
 

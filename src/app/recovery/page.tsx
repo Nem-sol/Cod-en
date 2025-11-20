@@ -4,6 +4,7 @@ import style from './page.module.css'
 import React, { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import styles from './../main.module.css'
+import { useRouter } from 'next/navigation'
 import Footer from '@/src/components/Footer'
 import stylez from './../contact/page.module.css'
 import { PasswordInput } from '@/src/components/ChatBox'
@@ -12,6 +13,7 @@ import { Githubsvg, GoogleG, loaderCircleSvg, Padlocksvg, Rocketsvg, Infosvg } f
 
 
 const Recovery = () => {
+  const router = useRouter()
   const [ err, setErr ] = useState('')
   const [ email, setEmail ] = useState('')
   const [ backup, setBackup ] = useState('')
@@ -23,10 +25,7 @@ const Recovery = () => {
     setLoading(true)
     e.preventDefault()
     document.cookie = `recovery_mode=true; path=/; max-age=300`;
-    const res = await signIn('google', {
-      redirect: false,
-      callbackUrl: '/dashboard'
-    })
+    const res = await signIn('google', { redirect: false })
     if (res?.error) setErr(res.error)
     setLoading(false)
   }
@@ -34,10 +33,7 @@ const Recovery = () => {
     setLoading(true)
     e.preventDefault()
     document.cookie = `recovery_mode=true; path=/; max-age=300`;
-    const res = await signIn('github', {
-      redirect: false,
-      callbackUrl: '/dashboard'
-    })
+    const res = await signIn('github', { redirect: false })
     if (res?.error) setErr(res.error)
     setLoading(false)
   }
@@ -72,6 +68,7 @@ const Recovery = () => {
           redirect: false,
           email: json.email,
           password: json.password,
+          callbackUrl: '/dashboard'
         })
       }
       setLoading(false)

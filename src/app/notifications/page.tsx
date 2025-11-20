@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import { Notes } from '@/types'
 import styles from '../main.module.css'
 import Footer from '@/src/components/Footer'
 import { formatDistanceToNow } from 'date-fns'
@@ -9,21 +10,6 @@ import { Defaultbg, NewFilterSets } from '@/src/components/pageParts'
 import { useNotificationContext } from '@/src/context/NotificationContext'
 import { CheckIncludes, classToggle, RemoveAllClass, RemoveOtherClass } from '@/src/components/functions'
 import { Backsvg, dblChecksvg, DeleteSvg, HistorySvg, Inboxsvg, Linksvg, loaderCircleSvg, Moresvg, NotificationSvg, Searchsvg } from '@/src/components/svgPack'
-
-type Notes = {
-  _id: string
-  type: string
-  link: string
-  read: boolean
-  class: string
-  title: string
-  target: string
-  userId: string
-  message: string
-  createdAt: string
-  updatedAt: string
-  important: boolean
-}
 
 type NotificationPack = {
   notification: Notes
@@ -95,13 +81,16 @@ const Notification = () => {
     const [ act , setAct ] = useState('')
     const [ loading , setLoading ] = useState(false)
     const [ friendlyDate , setDate ] = useState(formatDistanceToNow(new Date(date), {addSuffix: true}))
+
     useEffect(()=>{
+      if ( !isLoading && notifications.length < 1 ) setRefresh(true)
       window.addEventListener('resize', ()=> setSmall(window.innerWidth <= 700))
       const interval = setTimeout(()=>setDate(formatDistanceToNow(new Date(date), {addSuffix: true})), 60000)
     return ()=>{
       clearTimeout(interval)
       window.removeEventListener('resize', ()=> setSmall(window.innerWidth <= 675))
-    }})
+    }}, [])
+
     return (
       <div className={styles.noti} id={`n${notification._id}`}>
         {!notification.read && <span></span>}

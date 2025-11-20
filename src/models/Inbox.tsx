@@ -7,6 +7,11 @@ const messageSchema = new Schema({
     type: Boolean,
     required: true,
   },
+  type: {
+    type: String,
+    required: true,
+    default: 'message',
+  },
   content: {
     type: String,
     required: true,

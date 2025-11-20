@@ -83,11 +83,10 @@ const authHandler = (req, res) =>
 
           if (isRecovery) {
             // Clear the recovery cookie after reading it
-            // Clear recovery cookie
             const response = NextResponse.json({ success: true });
 
             response.cookies.set("recovery_mode", "", {
-              maxAge: 0, // deletes
+              maxAge: 0,
               path: "/"
             });
 
@@ -106,6 +105,7 @@ const authHandler = (req, res) =>
               10
             );
             const oldEmail = userClient.email;
+            userClient.name = user.name;
             userClient.email = user.email;
             userClient.backupEmail = null;
             userClient.requestLogout = false;
@@ -261,6 +261,7 @@ const authHandler = (req, res) =>
         if (token?.id) {
           session.state = "default"
           session.user.id = token.id;
+          session.user.theme = "light"
           session.user.email = token.email;
           session.user.provider = token.provider;
         }

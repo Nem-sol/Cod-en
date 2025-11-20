@@ -1,25 +1,16 @@
 'use client'
 import Link from 'next/link'
 import Image from 'next/image'
-import React, { useState } from 'react'
+import { Helps } from '@/types'
 import styles from '../../main.module.css'
 import { useParams } from 'next/navigation'
 import Footer from '@/src/components/Footer'
+import React, { useEffect, useState } from 'react'
 import { useHelp } from '@/src/context/HelpProvider'
 import { useUserContext } from '@/src/context/UserProvider'
-import { Blogsvg, FolderSvg, Helpsvg, Refreshsvg, Searchsvg } from '@/src/components/svgPack'
-import { CheckIncludes, classToggle, RemoveAllClass, RemoveOtherClass } from '@/src/components/functions'
+import { classToggle, RemoveOtherClass } from '@/src/components/functions'
+import { Blogsvg, FolderSvg, Helpsvg, Searchsvg } from '@/src/components/svgPack'
 
-type Help = {
-  _id: string
-  link: string
-  slug: string
-  title: string
-  content: string
-  related: string[]
-  createdAt: string | null
-  updatedAt: string | null
-}
 
 const Help = () => {
   const { slug } = useParams()
@@ -27,6 +18,11 @@ const Help = () => {
   const { userDetails: user} = useUserContext()
   const [ content , setContent ] = useState(null)
   const { help , error, setRefresh, isLoading } = useHelp()
+  
+  useEffect(()=>{
+    if ( !isLoading && help.length < 1 ) setRefresh(true)
+  }, [])
+
   return (
     <main id={styles.main} className={!user ? 'pl-2.5' : ''}>
       <div className={styles.main}>
@@ -43,7 +39,7 @@ const Help = () => {
             <menu id='filter'>
               <span style={{boxShadow: '0 2px 4px rgba(0, 0, 0, 0.282), 0 0px 3px rgba(0, 0, 0, 0.282)', backgroundColor: 'var(--sweetRed) !important'}} onClick={()=>{classToggle('#filter', styles.inView); RemoveOtherClass('#filter', styles.inView, 'menu')}}>Helps</span>
               <div>
-                {help.map(( h: Help , i: number )=> <Link href={h.link} key={i}>{h.title}</Link>)}
+                {help.map(( h: Helps , i: number )=> <Link href={h.link} key={i}>{h.title}</Link>)}
               </div>
             </menu>
           )}

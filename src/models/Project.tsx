@@ -20,37 +20,13 @@ const StageSchema = new Schema({
 })
 
 const ProjectSchema = new Schema({
-  name: {
-    type: String,
-    unique: true,
-    required: true,
-  },
-  price: {
-    type: Number,
-    required: true,
-  },
+  ico: String, // project icon
+  url: String, // this is the root file location,
+  link: String, // this is the web location
+  pages: String,
+  reason: String,
+  langFrom:  [ String ],
   userId: {
-    type: String,
-    required: true,
-  },
-  paymentLevel: {
-    default: 0,
-    type: Number,
-    required: true,
-  },
-  link: {
-    type: String
-  },
-  signed: {
-    type: Boolean,
-    required: true,
-    default: false,
-  },
-  class: {
-    type: String,
-    required: true,
-  },
-  concept: {
     type: String,
     required: true,
   },
@@ -58,23 +34,83 @@ const ProjectSchema = new Schema({
     type: String,
     required: true,
   },
-  status: {
+  concept: {
     type: String,
     required: true,
-    default: 'waiting',
+  },
+  name: {
+    type: String,
+    unique: true,
+    required: true,
+  },
+  price: {
+    min: 0,
+    default: 0,
+    type: Number,
+    required: true,
   },
   sector: {
     type: String,
     required: true,
   },
-  provider: {
-    type: String,
+  signed: {
+    type: Boolean,
     required: true,
-    default: 'custom',
+    default: false,
+  },
+  rate: {
+    type: String,
+    enum: ['monthly', 'quarterly', 'yearly'],
+  },
+  scale: {
+    type: String,
+    enum: ['large', 'small', 'medium'],
   },
   type: {
     type: String,
     required: true,
+    enum: ['full', 'part'],
+  },
+  provider: {
+    type: String,
+    required: true,
+    default: 'custom',
+    enum: ['custom', 'domain', 'vercel', 'github'],
+  },
+  class: {
+    type: String,
+    required: true,
+    enum: ['front', 'back', 'full', 'os', 'ms', 'androids'],
+  },
+  lang: {
+    required: true,
+    type: [ String ],
+    default: ['auto'],
+  },
+  paymentLevel: {
+    min: 0,
+    max: 100,
+    default: 0,
+    type: Number,
+    required: true,
+  },
+  status: {
+    type: String,
+    required: true,
+    default: 'waiting',
+    enum: ['waiting', 'terminated', 'completed', 'active'],
+  },
+  service: {
+    type: String,
+    required: true,
+    enum: [
+      'upgrade',
+      'contract',
+      'transcript',
+      'web application',
+      'software application',
+      'quality-assurance testing'
+    ],
   },
   features: {
     default: [],
