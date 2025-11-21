@@ -261,7 +261,6 @@ const authHandler = (req, res) =>
         if (token?.id) {
           session.state = "default"
           session.user.id = token.id;
-          session.user.theme = "light"
           session.user.email = token.email;
           session.user.provider = token.provider;
         }

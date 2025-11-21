@@ -33,22 +33,26 @@ export const ThemeProvider: React.FC<{children: React.ReactNode}> = ({children})
   const { setInbox } = useInboxContext()
   const { setProject } = useProjectContext()
   const [ reason, setReason ] = useState('')
-  const [ mode, setMode ] = useState( 'light' )
+  const [ mode, setMode ] = useState( session?.user?.theme || 'light' )
   const [ notify , setNotify ] = useState(false)
   const [ changed , setChanged ] = useState(false)
   const { userDetails: user , error , deleted , setDeleted } = useUserContext()
 
   const toggle = () => {
-    setMode(( prev: string ) => prev === 'light' ? 'dark' : 'light')
+    const now = mode
+    const next = now === 'light' ? 'dark' : 'light'
+    setMode( next )
+    if (session?.user) session.user.theme = next
   }
 
   useEffect(()=>{
     if ( !user ) return
-    if ( user.provider !== session?.user?.provider || user.email !== session?.user?.email && !error ){
+    if ( !error && (user.provider !== session?.user?.provider || user.email !== session?.user?.email) ){
       signOut()
       setChanged(true)
       router.push('/signin')
     }
+    setMode( session?.user?.theme || 'dark' )
   }, [ user ])
 
   useEffect(()=>{
