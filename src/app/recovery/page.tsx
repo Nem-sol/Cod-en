@@ -4,7 +4,6 @@ import style from './page.module.css'
 import React, { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import styles from './../main.module.css'
-import { useRouter } from 'next/navigation'
 import Footer from '@/src/components/Footer'
 import stylez from './../contact/page.module.css'
 import { PasswordInput } from '@/src/components/ChatBox'
@@ -13,7 +12,6 @@ import { Githubsvg, GoogleG, loaderCircleSvg, Padlocksvg, Rocketsvg, Infosvg } f
 
 
 const Recovery = () => {
-  const router = useRouter()
   const [ err, setErr ] = useState('')
   const [ email, setEmail ] = useState('')
   const [ backup, setBackup ] = useState('')

@@ -39,7 +39,7 @@ export const ContactProvider = ({ children }) => {
   }, [ refresh , user ])
 
   return(
-    <Contact.Provider value={{contact, isLoading, error, setRefresh}}>
+    <Contact.Provider value={{ contact, isLoading, error, setRefresh , setContact }}>
       { children }
     </Contact.Provider>
   )

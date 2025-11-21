@@ -525,13 +525,13 @@ const NewProject = () => {
                   }}/>
                 </div> : <h2 className='flex gap-2.5 flex-wrap whitespace-nowrap pt-5 border-t-[var(--sweetPurple)] border-t-2 scales'>
                     <p>Project scale</p>
-                    <div className={style.auto} style={scale === 'small' ? {color: '#2ba12b', opacity: 1} : {}} onClick={(e: React.MouseEvent<HTMLDivElement>)=>setScale('small')}>
+                    <div className={style.auto} style={scale === 'small' ? {color: '#2ba12b', opacity: 1} : {}} onClick={()=>setScale('small')}>
                       <svg></svg> Small
                     </div>
-                    <div className={style.auto} style={scale === 'medium' ? {color: '#2ba12b', opacity: 1} : {}} onClick={(e: React.MouseEvent<HTMLDivElement>)=>setScale('medium')}>
+                    <div className={style.auto} style={scale === 'medium' ? {color: '#2ba12b', opacity: 1} : {}} onClick={()=>setScale('medium')}>
                       <svg></svg> Medium
                     </div>
-                    <div className={style.auto} style={scale === 'large' ? {color: '#2ba12b', opacity: 1} : {}} onClick={(e: React.MouseEvent<HTMLDivElement>)=>setScale('large')}>
+                    <div className={style.auto} style={scale === 'large' ? {color: '#2ba12b', opacity: 1} : {}} onClick={()=>setScale('large')}>
                       <svg></svg> Large
                     </div>
                   </h2>}
@@ -606,13 +606,13 @@ const NewProject = () => {
                   </div>
                   <h2 className='flex gap-2.5 flex-wrap whitespace-nowrap pt-5 border-t-[var(--sweetPurple)] border-t-2 scales'>
                     <p>Project scale</p>
-                    <div className={style.auto} style={scale === 'small' ? {color: '#2ba12b', opacity: 1} : {}} onClick={(e: React.MouseEvent<HTMLDivElement>)=>setScale('small')}>
+                    <div className={style.auto} style={scale === 'small' ? {color: '#2ba12b', opacity: 1} : {}} onClick={()=>setScale('small')}>
                       <svg></svg> Small
                     </div>
-                    <div className={style.auto} style={scale === 'medium' ? {color: '#2ba12b', opacity: 1} : {}} onClick={(e: React.MouseEvent<HTMLDivElement>)=>setScale('medium')}>
+                    <div className={style.auto} style={scale === 'medium' ? {color: '#2ba12b', opacity: 1} : {}} onClick={()=>setScale('medium')}>
                       <svg></svg> Medium
                     </div>
-                    <div className={style.auto} style={scale === 'large' ? {color: '#2ba12b', opacity: 1} : {}} onClick={(e: React.MouseEvent<HTMLDivElement>)=>setScale('large')}>
+                    <div className={style.auto} style={scale === 'large' ? {color: '#2ba12b', opacity: 1} : {}} onClick={()=>setScale('large')}>
                       <svg></svg> Large
                     </div>
                   </h2>
@@ -700,13 +700,13 @@ const NewProject = () => {
                   </div>
                   <h2 className='flex gap-2.5 flex-wrap whitespace-nowrap pt-5 border-t-[var(--sweetPurple)] border-t-2 scales'>
                     <p>Project scale</p>
-                    <div className={style.auto} style={scale === 'small' ? {color: '#2ba12b', opacity: 1} : {}} onClick={(e: React.MouseEvent<HTMLDivElement>)=>setScale('small')}>
+                    <div className={style.auto} style={scale === 'small' ? {color: '#2ba12b', opacity: 1} : {}} onClick={()=>setScale('small')}>
                       <svg></svg> Small
                     </div>
-                    <div className={style.auto} style={scale === 'medium' ? {color: '#2ba12b', opacity: 1} : {}} onClick={(e: React.MouseEvent<HTMLDivElement>)=>setScale('medium')}>
+                    <div className={style.auto} style={scale === 'medium' ? {color: '#2ba12b', opacity: 1} : {}} onClick={()=>setScale('medium')}>
                       <svg></svg> Medium
                     </div>
-                    <div className={style.auto} style={scale === 'large' ? {color: '#2ba12b', opacity: 1} : {}} onClick={(e: React.MouseEvent<HTMLDivElement>)=>setScale('large')}>
+                    <div className={style.auto} style={scale === 'large' ? {color: '#2ba12b', opacity: 1} : {}} onClick={()=>setScale('large')}>
                       <svg></svg> Large
                     </div>
                   </h2>
@@ -744,7 +744,7 @@ const NewProject = () => {
                       query: classes,
                       class: style.inView,
                       buttons:  [
-                        ...project.map((p: Projects,  i: number) => {
+                        ...project.map(( p: Projects ) => {
                           return {txt: p.name, query: p.name, func: ()=>setClasses(p.name)}
                       })]
                     }}/>
@@ -778,7 +778,7 @@ const NewProject = () => {
             <menu>
               <button className='bg-[var(--success)]' onClick={(e: React.FormEvent)=>{e.preventDefault(), save()}} disabled={service === ''|| !request || !read || isLoading}>{isLoading ? loaderCircleSvg() : Rocketsvg('BIG')} {isLoading ? 'Finishing...' : 'Finish'}</button>
               <button className='bg-[var(--success)]' onClick={(e: React.FormEvent)=>{e.preventDefault(), setRequest(false)}} disabled={service === '' || !request || isLoading}>{Leftsvg('rotate-180 p-1')} Back</button>
-              <span className={style.check} onClick={(e: React.MouseEvent)=>setRead((prev: boolean)=> !prev)} style={read ? {color: '#73a222'} : {}}><svg></svg>I consent to all data provided</span>
+              <span className={style.check} onClick={()=>setRead((prev: boolean)=> !prev)} style={read ? {color: '#73a222'} : {}}><svg></svg>I consent to all data provided</span>
             </menu>
           </form>
         </div>

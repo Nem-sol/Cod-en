@@ -9,6 +9,7 @@ import { useProjectContext } from "./ProjectContext"
 import { Inboxes, Message, Projects } from '@/types';
 import { signOut, useSession } from "next-auth/react";
 import { createContext, useEffect, useState } from "react"
+import { useContact } from './MessageContext';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -25,20 +26,20 @@ export const ThemeContext = createContext({})
 
 export const ThemeProvider: React.FC<{children: React.ReactNode}> = ({children}) =>{
   const router = useRouter()
+  const { setContact } = useContact()
   const [ err, setErr ] = useState('')
   const { socket, ready } = useSocket()
   const { data: session } = useSession()
   const { setInbox } = useInboxContext()
   const { setProject } = useProjectContext()
   const [ reason, setReason ] = useState('')
+  const [ mode, setMode ] = useState( 'light' )
   const [ notify , setNotify ] = useState(false)
   const [ changed , setChanged ] = useState(false)
-  const [ mode, setMode ] = useState( session?.user?.theme || 'light')
   const { userDetails: user , error , deleted , setDeleted } = useUserContext()
 
   const toggle = () => {
     setMode(( prev: string ) => prev === 'light' ? 'dark' : 'light')
-    if (session?.user) session.user.theme = mode
   }
 
   useEffect(()=>{
@@ -48,7 +49,6 @@ export const ThemeProvider: React.FC<{children: React.ReactNode}> = ({children})
       setChanged(true)
       router.push('/signin')
     }
-    setMode(session?.user?.theme)
   }, [ user ])
 
   useEffect(()=>{
@@ -72,6 +72,7 @@ export const ThemeProvider: React.FC<{children: React.ReactNode}> = ({children})
     socket.on('new-contact', ( message : Message ) => {
       setNotify(true)
       setReason('message')
+      setContact((prev: Message[]) => [...prev , message])
     })
 
     socket.on("project-error", ( error: {message: string} )=> {
