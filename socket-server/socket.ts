@@ -1,108 +1,111 @@
-import dotenv from "dotenv";
-import { Msg } from "@/types.js";
-import { Server } from "socket.io";
-import { createServer } from "node:http";
-import User from "@/src/models/User.jsx";
-import connect from "../src/utils/db.js";
-import Inbox from "../src/models/Inbox.js";
-import Project from "../src/models/Project.js";
-import sendMail from "@/src/utils/mailer.jsx";
-import Message from "@/src/models/Message.jsx";
+import dotenv from "dotenv"
+import bcrypt from "bcrypt"
+import { Server } from "socket.io"
+import { createServer } from "node:http"
+import User from "@/src/models/User.jsx"
+import connect from "../src/utils/db.js"
+import Inbox from "../src/models/Inbox.js"
+import sendMail from "@/src/utils/mailer.js"
+import Message from "@/src/models/Message.js"
+import Project from "../src/models/Project.js"
+import { Message as Messages, Msg } from "@/types.js"
 
-dotenv.config();
+dotenv.config()
 
-const hostname = process.env.HOSTNAME || "localhost";
-const port = parseInt(process.env.PORT || "4000", 10);
+const url = process.env.NEXTAUTH_URL || ""
+const hostname = process.env.HOSTNAME || "localhost"
+const port = parseInt(process.env.PORT || "4000", 10)
 
-(async () => {
-  await connect();
+const app = async () => {
+  await connect()
 
-  const httpServer = createServer();
+  const httpServer = createServer()
   const io = new Server(httpServer, {
     cors: {
-      origin: [process.env.NEXTAUTH_URL || ""],
+      origin: [ url || ""],
       credentials: true,
     },
-  });
+  })
 
   io.on("connection", async (socket) => {
     try {
-      console.log("Socket connected:", socket.id);
+      console.log("Socket connected:", socket.id)
 
-      const token = socket.handshake.auth;
+      const token = socket.handshake.auth
       const user = await User.findById(token.id)
       if (!token || !token.id || !user) {
-        console.warn("Unauthorized socket attempt");
-        return socket.disconnect(true);
+        console.warn("Unauthorized socket attempt")
+        return socket.disconnect(true)
       }
 
-      const userId = token.id;
-      const isAdmin = user.role === "admin" || false;
+      const userId = token.id
+      const isAdmin = user.role === "admin" || false
 
-      const userProjects = await Project.find(isAdmin ? {} : { userId }).select("_id");
+      const userProjects = await Project.find(isAdmin ? {} : { userId }).select("_id")
       const userInboxes = await Inbox.find({
         projectId: { $in: userProjects.map((p) => p._id) },
-      }).select("_id userId");
+      }).select("_id userId")
 
-      userProjects.forEach((p) => socket.join(`project:${p._id}`));
-      userInboxes.forEach((i) => socket.join(`inbox:${i._id}`));
+      userProjects.forEach((p) => socket.join(`project:${p._id}`))
+      userInboxes.forEach((i) => socket.join(`inbox:${i._id}`))
+
       if (isAdmin) socket.join('admin')
 
       socket.on("send-message", async ({ inboxId, msg, type = "message" }) => {
         try {
-          if (!inboxId || !msg) return socket.emit("message-error", { message: "Invalid message data" });
+          if (!inboxId || !msg) return socket.emit("message-error", { message: "Invalid message data" })
 
           if (!socket.rooms.has(`inbox:${inboxId}`))
-            return socket.emit("message-error", { message: "Unauthorized inbox" });
+            return socket.emit("message-error", { message: "Unauthorized inbox" })
 
-          const inbox = await Inbox.findById(inboxId);
-          if (!inbox) return socket.emit("message-error", { message: "Inbox not found" });
+          const inbox = await Inbox.findById(inboxId)
+          if (!inbox) return socket.emit("message-error", { message: "Inbox not found" })
 
-          const sent = userId === String(inbox.userId);
+          const sent = userId === String(inbox.userId)
 
           inbox.messages.push({
             type,
             sent,
             read: false,
             content: msg,
-          });
+          })
 
-          await inbox.save();
-          io.to(`inbox:${inboxId}`).emit("new-message", inbox);
+          await inbox.save()
+          io.to(`inbox:${inboxId}`).emit("new-message", inbox)
         } catch {
-          socket.emit("message-error", { message: "Failed to send message" });
+          socket.emit("message-error", { message: "Failed to send message" })
         }
-      });
+      })
 
       socket.on("read-message", async (inboxId) => {
         try {
           if (!socket.rooms.has(`inbox:${inboxId}`))
-            return socket.emit("message-error", { message: "Unauthorized inbox" });
+            return socket.emit("message-error", { message: "Unauthorized inbox" })
 
-          const inbox = await Inbox.findById(inboxId);
-          if (!inbox) return;
+          const inbox = await Inbox.findById(inboxId)
+          if (!inbox) return
           const me = userId === String(inbox.userId)
 
           inbox.messages = inbox.messages.map((m: Msg) => {
-            if (me && !m.sent) return { ...m, read: true };
-            else if (isAdmin && m.sent) return { ...m, read: true };
-            return m;
-          });
+            if (me && !m.sent) return { ...m, read: true }
+            else if (isAdmin && m.sent) return { ...m, read: true }
+            return m
+          })
 
-          await inbox.save();
-          io.to(`inbox:${inboxId}`).emit("messages-read", {inboxId , me });
+          await inbox.save()
+          io.to(`inbox:${inboxId}`).emit("messages-read", {inboxId , me })
         } catch {
-          socket.emit("message-error", { message: "Failed to mark messages as read" });
+          socket.emit("message-error", { message: "Failed to mark messages as read" })
         }
-      });
+      })
 
       socket.on("create-project", async (project) => {
         try {
-          const existsByName = await Project.findOne({ name: project.name });
+          const existsByName = await Project.findOne({ name: project.name })
           if (user.role === 'admin') return socket.emit("project-error", {message: "You are not allowed to create projects"})
 
           if (existsByName)
-            return socket.emit("project-error", { message: "Project name already exists" });
+            return socket.emit("project-error", { message: "Project name already exists" })
 
           const similar = await Project.find({
             url: project.url,
@@ -114,16 +117,16 @@ const port = parseInt(process.env.PORT || "4000", 10);
             concept: project.concept,
             langFrom: project.langFrom,
             provider: project.provider,
-          });
+          })
 
           if (similar.length > 0 && project.service !== "upgrade")
-            return socket.emit("project-error", { message: "Very similar project already exists" });
+            return socket.emit("project-error", { message: "Very similar project already exists" })
 
           const newProject = await Project.create({
             userId,
             ...project,
             reason: "Cod-en is setting up project process and costs based on submitted details",
-          });
+          })
 
           await sendMail({
             to: user.email,
@@ -157,31 +160,111 @@ const port = parseInt(process.env.PORT || "4000", 10);
                 content: "Messages unrelated to your project may be ignored.",
               },
             ] : []
-          });
+          })
 
-          socket.join(`project:${newProject._id}`);
-          socket.join(`inbox:${newInbox._id}`);
+          socket.join(`project:${newProject._id}`)
+          socket.join(`inbox:${newInbox._id}`)
 
-          socket.emit("inbox-created", newInbox);
-          socket.emit("project-created", newProject);
+          socket.emit("inbox-created", newInbox)
+          socket.emit("project-created", newProject)
         } catch (err) {
-          console.log(err);
-          socket.emit("project-error", { message: "Failed to create project" });
+          console.log(err)
+          socket.emit("project-error", { message: "Failed to create project" })
         }
-      });
+      })
 
       socket.on("update-project", async ({ projectId, update }) => {
         try {
           if (!socket.rooms.has(`project:${projectId}`))
-            return socket.emit("project-error", { message: "Unauthorized project" });
+            return socket.emit("project-error", { message: "Unauthorized project" })
 
-          const project = await Project.findByIdAndUpdate(projectId, update, { new: true });
+          const project = await Project.findByIdAndUpdate(projectId, update, { new: true })
 
-          if (project) io.to(`project:${projectId}`).emit("project-updated", project);
+          if (project) io.to(`project:${projectId}`).emit("project-updated", project)
         } catch {
-          socket.emit("project-error", { message: "Failed to update project" });
+          socket.emit("project-error", { message: "Failed to update project" })
         }
-      });
+      })
+
+      socket.on("mail-to-one", async({ msg , pass , id }) => {
+        const isCorrect = await bcrypt.compare( pass , user.password )
+        const contact: Messages | null | any = await Message.find((mes: Messages) => mes._id === id )
+
+        if (!id) socket.emit("failed-to-mail", { id , message: "Contact id should not be an empty string."})
+          
+        else if (msg.find((m: string) => !m.trim())) socket.emit("failed-to-mail", { id , message: "No empty messages allowed."})
+
+        else if (!contact || user.role !== "admin" ) socket.emit("failed-to-mail", { id , message: "Contact message not found."})
+
+        else if (!isCorrect) socket.emit("failed-to-mail", { id , message: "Incorrect pasword"})
+
+        else {
+          const sent = await sendMail({
+            title: null,
+            messages: msg,
+            to: contact.email,
+            text: `Cod-en reply to ${contact.name}'${contact.name.endsWith('s') ? "" : "s"} ${contact.type}`,
+            subject: `Reply to ${contact.name}'${contact.name.endsWith('s') ? "" : "s"} ${contact.type}`,
+            link: {
+              address: `${url}/contact`,
+              title: "Cod-en support page",
+              cap: "For more support, visit ", 
+            } 
+          })
+          if (!sent ) {
+            socket.emit("failed-to-mail", { id , message: "Could not send reply. Try again later"})
+            return
+          }
+          contact.replies++
+          await contact.save()
+          socket.emit("mailed-to-one", { contact })
+        }
+      })
+
+      socket.on("mail", async({ messages , summary , subject , password , link }) => {
+        const isCorrect = await bcrypt.compare( password , user.password )
+          
+        if (!summary.trim()) socket.emit("failed-to-mail", { message: "Summary should not be empty."})
+
+        else if (!subject.trim()) socket.emit("failed-to-mail", { message: "Subject should not be empty."})
+
+        else if ( messages.length === 0 || !messages.trim()) socket.emit("failed-to-mail", { message: "Subject should not be empty."})
+
+        else if (messages.find((m: string) => !m.trim())) socket.emit("failed-to-mail", { message: "No empty messages allowed."})
+
+        else if ( user.role !== "admin" ) socket.emit("failed-to-mail", { message: "Contact message not found."})
+
+        else if (!isCorrect) socket.emit("failed-to-mail", { message: "Incorrect pasword"})
+
+        else {
+          try {
+            const users = await User.find({
+              $or: [
+                { role: "user" }, 
+                { role: "worker" }
+              ]
+            }).select( "email" )
+
+            users.forEach( async (user) => 
+              await sendMail({
+                subject,
+                messages,
+                title: null,
+                text: summary,
+                to: user.email,
+                link: link || {
+                  address: `${url}/contact`,
+                  title: "Cod-en support page",
+                  cap: "For more support, visit ", 
+                } 
+            }))
+
+            socket.emit("mailed-to-all")
+          } catch (error) {
+            socket.emit("failed-to-mail", { message: "Could not send reply. Try again later"})
+          }
+        }
+      })
 
       socket.on("send-contact", async ({ name , email , msg , type })=>{
         try{
@@ -205,15 +288,17 @@ const port = parseInt(process.env.PORT || "4000", 10);
       })
 
       socket.on("disconnect", () => {
-        console.log("Socket disconnected:", socket.id);
-      });
+        console.log("Socket disconnected:", socket.id)
+      })
     } catch (err) {
-      console.error("Socket error:", err);
-      socket.disconnect(true);
+      console.error("Socket error:", err)
+      socket.disconnect(true)
     }
-  });
+  })
 
   httpServer.listen(port, () => {
-    console.log(`Socket server running on http://${hostname}:${port}`);
-  });
-})();
+    console.log(`Socket server running on http://${hostname}:${port}`)
+  })
+}
+
+app()

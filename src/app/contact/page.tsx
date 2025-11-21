@@ -15,11 +15,11 @@ import { Message } from '@/types'
 import ChatInput, { PasswordInput } from '@/src/components/ChatBox'
 
 const Contact = () => {
+  const { socket , ready } = useSocket()
   const { userDetails: user} = useUserContext()
 
   function ContactForm(){
     const [ msg, setMsg ] = useState('')
-    const { socket , ready } = useSocket()
     const [ error, setError ] = useState('')
     const [ type, setType ] = useState('Message')
     const { userDetails: user } = useUserContext()
@@ -64,8 +64,8 @@ const Contact = () => {
             setError(`${FirstCase(type)} ${type !== 'message' && 'message'} sent successfully. Cod-en will reach out to you shortly.`)
             setTimeout(()=>{ setSuccess(false) ; setError('') ; setMsg('') }, 3000)
           }
-        } catch (err: any | { message: string }) {
-          setError( err || err?.message || 'Something went wrong')
+        } catch (err: unknown | { message: string } ) {
+          if ( err instanceof Error ) setError( String( err?.message || err || 'Something went wrong' ))
         } finally {
           setLoading(false)
         }
@@ -132,14 +132,17 @@ const Contact = () => {
   }
 
   function MessagePage(){
+    const [ id , setId ] = useState('')
     const [ err , setErr ] = useState('')
     const [ text , setText ] = useState('')
     const [ all , sendAll ] = useState(false)
+    const [ errors , setErrors ] = useState('')
     const [ subject , setSubject ] = useState('')
     const [ filters , setFilters ] = useState('')
     const [ password , setPassword ] = useState('')
     const [ message , setMessages ] = useState([''])
-    const { contact , isLoading , error , setRefresh } = useContact()
+    const [ onLoading , setOnLoading ] = useState(false)
+    const { contact , isLoading , error , setRefresh , setInbox } = useContact()
     const empty = message.find((i: string) => !i.trim()) ? true : false
 
     const handleSendAll = () => {
@@ -147,30 +150,81 @@ const Contact = () => {
       if ( !subject.trim() ) setErr('Please fill in the subject field')
       else if ( !text.trim() ) setErr('Please put an email summary')
       else if ( empty ) setErr('No empty points allowed')
+      else if ( message.length === 0 ) setErr('Mass emails must include a point')
       else if ( password.length < 6 ) setErr('Incorrect password')
+      else if (!ready) setErr("Restore internet connection")
+      else {
+        setOnLoading(true)
+        socket.emit('mail', { subject, password , summary: text , messages: message })
+      }
     }
 
+    useEffect(()=>{
+
+      socket.on("mailed-to-all", ()=> setOnLoading( false ))
+      socket.on('failed-to-mail', ( errors : { message: string , id: string | null }) => {
+        setId(errors.id || '')
+        if ( errors.id ) setErrors(errors.message)
+        else {
+          setOnLoading(false)
+          setErr(errors.message)
+        }
+      })
+
+      socket.on('mailed-to-one', ({ contact }: { contact : Message} )=>{
+        setErrors('')
+        setId(contact?._id)
+        setInbox(( prev: Message[]) => prev.map((mes: Message) => mes._id === contact?._id ? contact : mes ))
+      })
+      return () => {
+        socket.off('mailed-to-one')
+        socket.off('mailed-to-all')
+        socket.off('failed-to-mail')
+      }
+    }, [ socket ])
+
     function ContactPacks({ message }: {message: Message}) {
+      const type = message.type.toLowerCase()
       const [ msg , setMsg ] = useState([''])
       const [ pass , setPass ] = useState('')
       const [ req , setReq ] = useState(false)
       const [ error , setError ] = useState('')
       const [ loading , setLoading ] = useState(false)
       const [ validate , setValidate ] = useState(false)
-      const empty = msg.find((i: string) => !i.trim()) ? true : false
+      const empty = msg.filter((i: string) => !i.trim()).length > 0 ? true : false
       const handleReply = () => {
         setError('')
         if (!req) setReq(true)
         else if (!validate) setValidate(true)
-        else if ( pass.length < 6 ) return
+        else if ( pass.length < 6 ) setError('Incorrect password')
         else if ( empty ) setError('No empty replies allowed')
+        else if ( msg.length === 0 ) setErr('Replies must include a point')
+        else if (!ready) setError("Restore internet connection")
+        else {
+          setLoading(true)
+          socket.emit('mail-to-one', { msg , pass , id: message._id })
+        }
       }
+      
+      useEffect(()=>{
+        if ( id !== message._id ) return
+        setLoading(false)
+        setError(errors)
+        setId('')
+      })
+
       return (
         <section className={styles.pass}>
-          <p>{message.name} <span>{message.type}</span></p>
+          <p className='font-[600]'>{message.name} <span className='flex gap-2.5 items-center font-[500]'>{
+            type === 'deals' ? FolderSvg() :
+            type === 'report' ? Bugsvg() :
+            type === 'enquiry' ? Helpsvg() :
+            type === 'feedback' ? SupportSvg() : SupportSvg()
+            }
+            {FirstCase(type)}</span></p>
           <p>{message.content}</p>
           { req && <section>
-            {msg.map((mes: string, i: number)=> <div className={styles.input} key={i} onDoubleClick={()=>setMsg((prev: string[]) => [...prev.filter((m: string) => m && m !== prev[i])])}>
+            {msg.map((mes: string, i: number)=> <div className={styles.input} key={i} onDoubleClick={()=> i > 0 && setMsg((prev: string[]) => [...prev.filter((m: string) => m && m !== prev[i])])}>
               <ChatInput 
                 value={mes}
                 maxHeight='150px'
@@ -189,9 +243,10 @@ const Contact = () => {
           </section>}
           <p className={styles.error}>{error}</p>
           <div>
-            <span className={styles.button}>{message.replies || 'No'} replies</span>
-            <button disabled={ validate && pass.length < 6 || req && empty || loading} onClick={handleReply} className={styles.button}>Reply</button>
-            {req && <button disabled={loading} onClick={()=>{ setReq(false), setValidate(false) ; setMsg([''])}} className={styles.button}>Cancel reply</button>}
+            <span className={styles.button} style={{backgroundColor: 'var(--natural)'}}>{message.replies || 'No'} replies</span>
+            <button disabled={ validate && pass.length < 6 || req && empty || loading} onClick={handleReply} className={styles.button}>
+              {loading && loaderCircleSvg()}{loading ? 'Sending' : 'Reply'}</button>
+            {req && <button disabled={loading} onClick={()=>{ setReq(false), setValidate(false) ; setPass(''); setMsg([''])}} className={styles.button} style={{color: 'white',backgroundColor: 'var(--error)'}}>Cancel reply</button>}
           </div>
         </section>
       )
@@ -264,10 +319,10 @@ const Contact = () => {
             text: 'Please be patient while we get your contact messages',
           }}/>}
 
-          {all && <div className={styles.mask}></div> }
+          {all && <div className={styles.mask} aria-disabled={isLoading} onClick={()=>{ setText(''); setSubject(''); setPassword(''); sendAll(false); setMessages(['']) }}></div> }
 
           { all && <section className={styles.all}>
-            <button className={styles.cancel} onClick={()=> sendAll(false)}>{cancelSvg()}</button>
+            <button className={styles.cancel} disabled={onLoading} onClick={()=>{ setText(''); setSubject(''); setPassword(''); sendAll(false); setMessages([''])}}>{cancelSvg()}</button>
             <div className={styles.input}>
               <p>Subject</p>
               <input type="text" name="subject" value={subject} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSubject(e.target.value)} placeholder=''/>
@@ -306,7 +361,7 @@ const Contact = () => {
       </main>
     )
   }
-  if ( user?.role === 'admin' || true ) return <MessagePage />
+  if ( user?.role === 'admin' ) return <MessagePage />
   else return <ContactForm />
 }
 

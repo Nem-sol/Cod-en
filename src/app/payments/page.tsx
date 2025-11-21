@@ -144,7 +144,7 @@ const Payments = () => {
       <menu id={stylez.fill} onClick={()=>classToggle(`#${stylez.fill}`, stylez.inView)}>
         <button>{Infosvg()} Info</button>
         <section className={stylez.autoFill}>
-          <span><svg></svg> Payee's name and email should be of the account owner from which money is to be sent</span>
+          <span><svg></svg> Payee&apos;s name and email should be of the account owner from which money is to be sent</span>
           <span><svg></svg> Payment errors should not cause a deduction in your account balance except stated specifically</span>
           <span><svg></svg> Please do not close or refresh page when a transaction is in progress</span>
           <span><svg></svg> <span className='flex-wrap'>For more support visit <Link href='/help/payments' className='pl-1 text-[var(--deepSweetPurple)]'>payments help</Link></span></span>

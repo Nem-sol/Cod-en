@@ -1,0 +1,22 @@
+{
+  "name": "cod-en-socket-server",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "socket.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node socket.js"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.2.3",
+    "mongoose": "^8.19.1",
+    "next-auth": "^4.24.11",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.9.3"
+  }
+}

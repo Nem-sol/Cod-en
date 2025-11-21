@@ -205,7 +205,7 @@
   padding: 20px;
   font-size: 15px;
   transition: 0.5s;
-  min-height: 125px;
+  min-height: 150px;
   border-radius: 25px;
   flex-direction: column;
   color: var(--translucent);
@@ -213,6 +213,10 @@
   justify-content: space-between;
   border-bottom-right-radius: 5px;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.282)
+}
+.pass span svg{
+  width: 20px;
+  height: 20px;
 }
 .pass p{
   display: flex;
@@ -222,9 +226,11 @@
 .pass div{
   gap: 15px;
   display: flex;
+  flex-wrap: wrap;
 }
 .pass .button{
   gap: 10px;
+  display: flex;
   font-weight: 600;
   transition: 0.5s;
   padding: 5px 10px;
@@ -263,14 +269,13 @@
 }
 .input{
   gap: 10px;
-  width: 100%;
   display: flex;
   transition: 0.5s;
   font-weight: 600;
   transition: 0.5s;
-  align-self: center;
   border-radius: 20px;
   justify-content: flex-end;
+  width: calc( 100% - 20px );
   border-bottom-right-radius: 5px;
   border: solid var(--sweetPurple) 2px;
 }
@@ -339,7 +344,7 @@
   border-top: solid var(--sweetPurple) 2px;
 }
 .all section .input{
-  width: calc( 100% - 20px );
+  align-self: center;
   border-bottom-left-radius: 5px;
   border-bottom-right-radius: 17px;
   box-shadow: 0 3px 10px rgb(0, 0, 0 ,0.15);

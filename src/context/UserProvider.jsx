@@ -15,7 +15,7 @@ export const UserProvider = ({ children }) => {
     if (status === "authenticated" && session.user) {
       const fetchExtraUserData = async () => {
         setError(false)
-        setUserDetails({...session.user, role: 'user', backupEmail: null, recoveryQuestions: []})
+        setUserDetails({ ...session.user, role: 'user', backupEmail: null, recoveryQuestions: [] })
         try {
           const res = await fetch('/api/users/', {
             headers: {

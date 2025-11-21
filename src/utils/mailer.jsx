@@ -246,9 +246,9 @@ export default async function sendMail({
         messages, 
         title: title || subject , 
         link: link || { 
+          title: "Cod-en help",
           cap: "For more information, visit ", 
-          address: "/help", 
-          title: "Cod-en help" 
+          address: `${process.env.NEXTAUTH_URL}/help`, 
         } 
       }),
     });
