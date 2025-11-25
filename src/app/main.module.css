@@ -2,7 +2,6 @@
   display: flex;
   transition: 0.5s;
   margin-inline: auto;
-  justify-content: center;
   max-width: calc( 100% - 80px );
 }
 .main{

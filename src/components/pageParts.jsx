@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { signOut, useSession } from "next-auth/react"
 import { ThemeContext } from '../context/ThemeContext'
 import { useContext, useEffect, useState } from 'react'
@@ -30,6 +30,14 @@ export const LogLink = () => {
 }
 
 export const year = new Date().getFullYear()
+
+export const ParamsText = ({ search , fallback, extra = '' }) => {
+  const param = useSearchParams()
+  const text = param.get( search || '' )
+  
+  return <p className='w-full text-center'> { text || fallback || "Failed to search params" } { extra } </p>
+}
+
 const ThemeToggle = () => {
   const { toggle , mode } = useContext(ThemeContext)
   return(

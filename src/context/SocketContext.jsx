@@ -17,7 +17,7 @@ export function SocketProvider({ children }) {
     const connectSocket = async () => {
       if (socket) return
       try {
-        const s = io( process.env.NEXT_PUBLIC_socketURL || 'http://localhost:4000' , {
+        const s = io( process.env.socketURL || 'http://localhost:4000' , {
           autoConnect: true,
           reconnection: true,
           withCredentials: true,

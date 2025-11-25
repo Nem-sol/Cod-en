@@ -270,6 +270,7 @@ const app = async () => {
 
       socket.on("send-contact", async ({ name , email , msg , type })=>{
         try{
+          if (isAdmin) return socket.emit("contact-error", { message: 'Admin can only send reply messages' })
       
           if (!name.trim()) socket.emit("contact-error", {message: "Please submit message with a name entry."})
       

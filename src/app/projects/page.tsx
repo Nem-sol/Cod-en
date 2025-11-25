@@ -28,7 +28,7 @@ function ProjectPacks({project}: {project: Projects}) {
         <p style={{gap: '10px', justifyContent: 'flex-end'}}>{provider === 'github' ? Githubsvg('BIG') : provider === 'domain'  && Cloudsvg()}{FirstCase(provider)}</p>
       </div>
       <p style={{justifyContent: 'flex-end'}}>
-        <Link href={'/project/'+project._id}>{Linksvg()}</Link>
+        <Link href={'/projects/'+project._id}>{Linksvg()}</Link>
         <Link href={"/payments/"+project._id} className={style.pay}> {TagSvg('p-0.5')} Make payment</Link>
       </p>
     </div>
@@ -51,13 +51,12 @@ const ProjectPack = () => {
     if (!project) result = null
     else if (filter.trim() === '') filtered = project
     else if(filter === 'part' || filter === 'full') filtered = filtered.filter(( proj: Projects )=> proj.type === filters)
+    else if(filter === 'software' || filter === 'web' || filter === 'transcript' || filter === 'upgrade' || filter === 'contract' || filter === 'q a testing' ) filtered = filtered.filter(( proj: Projects )=> proj.service.toLocaleLowerCase().includes(filter))
     else filtered = filtered.filter(( proj: Projects )=> proj.name.toLocaleLowerCase().includes(filter))
 
     if ( sub && sub !== 'not' ) filtered = filtered.filter(( proj: Projects ) => proj.status.toLocaleLowerCase().includes(sub))
 
     if (filtered && filtered.length > 0) result = filtered.map((proj: Projects, i: number)=> <ProjectPacks key={i} project={proj}/>)
-
-    console.log(filter , sub)
 
     if (project && project.length < 1 && error ) return (
       <Defaultbg props={{
@@ -100,6 +99,12 @@ const ProjectPack = () => {
             buttons: [
               {txt: 'Full projects', reset: ()=>setFilters('full'), query: 'full'},
               {txt: 'Part projects', reset: ()=>setFilters('part'), query: 'part'},
+              {txt: 'Web application', reset: ()=>setFilters('web'), query: 'web'},
+              {txt: 'Software applications', reset: ()=>setFilters('software'), query: 'software'},
+              {txt: 'Transcript', reset: ()=>setFilters('transcript'), query: 'transcript'},
+              {txt: 'Upgrades', reset: ()=>setFilters('upgrade'), query: 'upgrade'},
+              {txt: 'Contracts', reset: ()=>setFilters('contract'), query: 'contract'},
+              {txt: 'Quality assurance', reset: ()=>setFilters('Q A testing'), query: 'Q A testing'},
             ]
           }} />
         </div>

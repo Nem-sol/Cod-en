@@ -30,6 +30,7 @@ const Signup = () => {
   }
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if ( verify ) return setErr('Please verify email or cancel process.')
     if (!name) return setErr('Please fill in name field')
     if (!email) return setErr('Please fill in email field')
     if (!pass) return setErr('Please fill in password field')
@@ -42,7 +43,7 @@ const Signup = () => {
       headers: {
         'Content-Type':'application.json'
       },
-      body: JSON.stringify({name , email , password: pass , code })
+      body: JSON.stringify({ name , email , password: pass , code })
     })
 
     const contentType = res.headers.get('content-type')
@@ -64,9 +65,11 @@ const Signup = () => {
 
   
   const handleVerify = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if ( loading ) return
     const codes = e.target.value.trim().toUpperCase()
     setCode(e.target.value.trim().toUpperCase())
     if (codes.length === 8 ) {
+      setLoading(true)
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: {
@@ -136,13 +139,13 @@ const Signup = () => {
       </div>
       <p className='text-end pr-14 max-w-2xl w-full'>Have an account? <Link href='/signin' style={{color: 'var(--compliment)'}}>Log in</Link> </p>
       { verify  && <>
-        <div className={style.mask}></div>
+        <div className={style.mask} onClick={()=>{setVerify(false); setCode('')}}></div>
         <div className={styles.verify}>
           <h2>Verify email with Otp</h2>
-          <p>OTP has been sent to email successfuly</p>
-          <PasswordInput placeholder='Enter OTP' value={code} onChange={handleVerify} classes={styles.inputs}/>
-          <span>Resend Otp</span>
-          <p>{err}</p>
+          <p>{ loading ? 'Sending...' : 'OTP has been sent to email successfuly'}</p>
+          <PasswordInput placeholder='Enter OTP' value={code} onChange={handleVerify} classes={styles.password}/>
+          <p style={{ color: 'var(--error)' }}>{err}</p>
+          <button onClick={handleSubmit} disabled={loading}>Resend Otp</button>
         </div>
       </>}
       <Footer />

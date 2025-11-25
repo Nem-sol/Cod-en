@@ -10,6 +10,7 @@ import { generateOTP, validateOTP } from '@/src/utils/Otp'
 
 
 export const POST = async (req) => {
+  
   const { name , email , password , code } = await req.json()
   await connect()
 
@@ -55,7 +56,7 @@ export const POST = async (req) => {
     return NextResponse.json({ error: 'OTP sent to email sucessfully' }, { status: 400 })
   }
 
-  const valid = validateOTP( email , code )
+  const valid = await validateOTP( email , code )
 
   if ( !valid ) return NextResponse.json({ error: 'OTP is not correct. Check email for OTP or resend' }, { status: 400 })
 

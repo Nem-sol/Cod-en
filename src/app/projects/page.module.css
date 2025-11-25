@@ -1,6 +1,5 @@
 .project{
   gap: 10px;
-  width: 95%;
   display: flex;
   cursor: default;
   max-width: 900px;

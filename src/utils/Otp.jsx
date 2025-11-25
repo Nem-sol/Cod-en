@@ -22,13 +22,18 @@ export const generateOTP = async ( userId , validity = 10 ) => {
   return code;
 }
 
-export const validateOTP = async ( userId , code ) => {
+export const validateOTP = async ( checker , code ) => {
   try {
     await connect()
 
-    if (!userId) throw new Error('User not found')
+    if (!checker) throw new Error('User not found')
 
-    const otp = OTP.find({ userId }).sort({createdAt: -1}).limit(1)
+    const otp = OTP.find({  
+      $or: [
+        { userId: checker }, 
+        { email: checker }
+      ]
+    }).sort({createdAt: -1}).limit(1)
 
     if ( !otp || otp.length === 0 ) throw new Error('No OTP generated for user')
 

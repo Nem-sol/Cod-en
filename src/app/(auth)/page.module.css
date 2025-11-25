@@ -104,6 +104,61 @@
 .options button:hover{
   background-color: rgb(21, 21, 21);
 }
+.verify{
+  gap: 20px;
+  z-index: 5;
+  padding: 20px;
+  display: flex;
+  inset: 25% 15%;
+  position: fixed;
+  max-width: 700px;
+  min-width: 250px;
+  font-weight: 500;
+  min-height: 150px;
+  align-items: center;
+  flex-direction: column;
+  justify-content: space-around;
+  border-radius: 25px 10px 10px;
+  background-color: var(--input)
+}
+.verify h2{
+  font-size: 1.2em;
+  font-weight: 600;
+}
+.verify .password{
+  width: 95%;
+  padding: 3px;
+  column-gap: 2px;
+  font-weight: 600;
+  max-width: 700px;
+  border-radius: 30px;
+  border-bottom-right-radius: 7px;
+  border: solid var(--sweetPurple) 2px;
+  box-shadow: 0 3px 10px rgb(0, 0, 0 ,0.15);
+}
+.verify .password input{
+  flex: 1;
+  width: 100%;
+  padding: 5px 15px;
+  border-radius: inherit;
+}
+.verify button{
+  gap: 10px;
+  display: flex;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.5s;
+  padding: 7px 20px;
+  align-items: center;
+  border-radius: 25px;
+  color: rgb( 50, 50, 50);
+  border-bottom-left-radius: 10px;
+  background-color: var(--natural);
+  box-shadow: 0 3px 8px 2px rgb(0, 0, 0 ,0.15);
+}
+.helps .clicked{
+  color: rgb(254, 246, 197);
+}
 @media screen and (max-width: 500px) {
   .options button span{
     width: 0;
