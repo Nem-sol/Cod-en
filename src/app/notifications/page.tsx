@@ -8,7 +8,7 @@ import React, { useEffect, useState } from 'react'
 import { useUserContext } from '@/src/context/UserProvider'
 import { Defaultbg, NewFilterSets } from '@/src/components/pageParts'
 import { useNotificationContext } from '@/src/context/NotificationContext'
-import { CheckIncludes, classToggle, RemoveAllClass, RemoveOtherClass } from '@/src/components/functions'
+import { CheckIncludes, classToggle, RemoveAllClass, RemoveLikeClass, RemoveOtherClass, Toggle } from '@/src/components/functions'
 import { Backsvg, dblChecksvg, DeleteSvg, HistorySvg, Inboxsvg, Linksvg, loaderCircleSvg, Moresvg, NotificationSvg, Searchsvg } from '@/src/components/svgPack'
 
 type NotificationPack = {
@@ -17,6 +17,7 @@ type NotificationPack = {
 
 const Notification = () => {
   const [ act, setAct ] = useState('')
+  const [ filter, setFilter ] = useState('')
   const [ filters, setFilters ] = useState('')
   const { userDetails: user } = useUserContext()
   const [ Loading , setIsLoading ] = useState(false)
@@ -118,19 +119,22 @@ const Notification = () => {
     )
   }
 
-  function Filter(filters: string){
+  function Filter( filters: string , check: string = '' ){
     let result
     let filtered
+    const sub = check.toLocaleLowerCase()
     const filter = filters.toLocaleLowerCase()
 
     filtered = notifications
 
     if (!notifications) result = null
     else if (filter.trim() === '') filtered = notifications
-    else if(filter === 'unread') filtered = filtered.filter(( note: Notes )=> note.read === false)
-    else if (filters === 'payment') filtered = filtered.filter(( note: Notes )=> note.class.toLocaleLowerCase() === 'payment')
-    else if (filters === 'project' || filters === 'log in' || filters === 'profile' || filters === 'subscription') filtered = filtered.filter(( note: Notes )=> note.type.toLocaleLowerCase() === filters)
+    else if (filter === 'payment') filtered = filtered.filter(( note: Notes )=> note.class.toLocaleLowerCase() === 'payment')
+    else if (filter === 'project' || filter === 'log in' || filter === 'profile' || filters === 'subscription') filtered = filtered.filter(( note: Notes )=> note.type.toLocaleLowerCase() === filter )
     else filtered = filtered.filter(( note: Notes )=> note.message.toLocaleLowerCase().includes(filter))
+
+    if (sub === 'unread') filtered = filtered.filter(( note: Notes )=> !note.read )
+    else if (sub === 'read') filtered = filtered.filter(( note: Notes )=> note.read )
 
     if (filtered && filtered.length > 0) result = filtered.map((not: Notes, i: number)=> <NotificationPacks key={i} notification={not}/>)
     if (notifications && notifications.length < 1 && error ) return (
@@ -144,7 +148,7 @@ const Notification = () => {
       <Defaultbg props={{
         styles: styles,
         img: '/homehero.png',
-        h2: `You have no ${filter.trim() === '' ? 'new' : 'matching' } notifications`,
+        h2: `You have no ${ filter.trim() === '' && sub.trim() === '' ? 'new' : 'matching' } notifications`,
         text: 'Try restoring internet connection or refreshing the page',
       }}/>)
   }
@@ -175,9 +179,12 @@ const Notification = () => {
               {txt: 'Profile', reset: ()=>setFilters('profile'), query: 'profile'},
               {txt: 'Projects', reset: ()=>setFilters('project'), query: 'project'},
               {txt: 'Subscriptions', reset: ()=>setFilters('subscription'), query: 'subscription'},
-              {txt: 'Unread', reset: ()=>setFilters('unread'), query: 'unread'},
             ]
           }} />
+        </div>
+        <div className={styles.helps}>
+          <span onClick={(e: React.MouseEvent<HTMLSpanElement>)=>{setFilter((prev: string) => prev === 'unread' ? '' : 'unread' ); Toggle( e , styles.clicked ); RemoveLikeClass(e, styles.clicked , `.${styles.helps} span`)}}>Unread</span>
+          <span onClick={(e: React.MouseEvent<HTMLSpanElement>)=>{setFilter((prev: string) => prev === 'read' ? '' : 'read' ); Toggle( e , styles.clicked ); RemoveLikeClass(e, styles.clicked , `.${styles.helps} span`)}}>Read</span>
         </div>
         {isLoading && notifications.length < 1 && 
         <Defaultbg props={{
@@ -186,7 +193,7 @@ const Notification = () => {
           h2: 'Getting notifications ...',
           text: 'Please be patient while we get your notifications',
         }}/>}
-        {(!isLoading || notifications.length > 0) && Filter(filters)}
+        {(!isLoading || notifications.length > 0) && Filter( filters , filter )}
         {!error && unread > 0 && <button disabled={Loading} className={styles.floater} onClick={()=>handleMass('update')} style={isLoading ? { bottom : '170px'} : {}}>{(Loading && act === 'update') ? loaderCircleSvg() : dblChecksvg()}</button>}
         {(error || isLoading ) && <button disabled={isLoading} className={styles.floater} onClick={()=>setRefresh((prev: boolean) => !prev )}>{isLoading ? loaderCircleSvg() : Backsvg()}</button>}
       </div>

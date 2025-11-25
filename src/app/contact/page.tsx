@@ -1,18 +1,18 @@
 "use client"
 import Link from 'next/link'
 import Image from 'next/image'
+import { Message } from '@/types'
 import styles from './page.module.css'
 import style from './../main.module.css'
 import Footer from '@/src/components/Footer'
 import React, { useEffect, useState } from 'react'
-import { FirstCase } from '@/src/components/functions'
+import { FirstCase, RemoveLikeClass, Toggle } from '@/src/components/functions'
 import { useSocket } from '@/src/context/SocketContext'
 import { useUserContext } from '@/src/context/UserProvider'
 import { useContact } from '@/src/context/MessageContext'
-import { Defaultbg, NewDropSets, NewFilterSets } from '@/src/components/pageParts'
-import { AddSvg, Bugsvg, cancelSvg, checkmarkSvg, FolderSvg, Helpsvg, Inboxsvg, Leftsvg, loaderCircleSvg, Refreshsvg, Searchsvg, SupportSvg } from '@/src/components/svgPack'
-import { Message } from '@/types'
 import ChatInput, { PasswordInput } from '@/src/components/ChatBox'
+import { Defaultbg, NewDropSets, NewFilterSets , Notify } from '@/src/components/pageParts'
+import { AddSvg, Bugsvg, cancelSvg, checkmarkSvg, FolderSvg, Helpsvg, Inboxsvg, Leftsvg, loaderCircleSvg, Refreshsvg, Searchsvg, SupportSvg } from '@/src/components/svgPack'
 
 const Contact = () => {
   const { socket , ready } = useSocket()
@@ -137,13 +137,30 @@ const Contact = () => {
     const [ text , setText ] = useState('')
     const [ all , sendAll ] = useState(false)
     const [ errors , setErrors ] = useState('')
+    const [ filter , setFilter ] = useState('')
     const [ subject , setSubject ] = useState('')
     const [ filters , setFilters ] = useState('')
+    const [ notify , setNotify ] = useState(false)
     const [ password , setPassword ] = useState('')
     const [ message , setMessages ] = useState([''])
     const [ onLoading , setOnLoading ] = useState(false)
-    const { contact , isLoading , error , setRefresh , setInbox } = useContact()
+    const { contact , isLoading , error , setRefresh , setContact } = useContact()
     const empty = message.find((i: string) => !i.trim()) ? true : false
+
+    const handleDraft = () => {
+      const draft = { text, subject, message }
+      localStorage.setItem('mass-mail-draft', JSON.stringify(draft))
+    }
+
+    const handleLoad = () => {
+      setErr('')
+      const raw = localStorage.getItem('mass-mail-draft')
+      if (!raw) return setErr("Couldn't load draft")
+      const draft = JSON.parse(raw)
+      setText(draft.text)
+      setSubject(draft.subject)
+      setMessages(draft.message)
+    }
 
     const handleSendAll = () => {
       setErr('')
@@ -160,8 +177,16 @@ const Contact = () => {
     }
 
     useEffect(()=>{
-
-      socket.on("mailed-to-all", ()=> setOnLoading( false ))
+      if (!socket) return
+      socket.on("mailed-to-all", ()=>{
+        setText('')
+        sendAll(false)
+        setSubject('')
+        setPassword('')
+        setNotify(true)
+        setMessages([''])
+        setOnLoading( false )
+      })
       socket.on('failed-to-mail', ( errors : { message: string , id: string | null }) => {
         setId(errors.id || '')
         if ( errors.id ) setErrors(errors.message)
@@ -174,7 +199,7 @@ const Contact = () => {
       socket.on('mailed-to-one', ({ contact }: { contact : Message} )=>{
         setErrors('')
         setId(contact?._id)
-        setInbox(( prev: Message[]) => prev.map((mes: Message) => mes._id === contact?._id ? contact : mes ))
+        setContact(( prev: Message[]) => prev.map((mes: Message) => mes._id === contact?._id ? contact : mes ))
       })
       return () => {
         socket.off('mailed-to-one')
@@ -192,6 +217,7 @@ const Contact = () => {
       const [ loading , setLoading ] = useState(false)
       const [ validate , setValidate ] = useState(false)
       const empty = msg.filter((i: string) => !i.trim()).length > 0 ? true : false
+
       const handleReply = () => {
         setError('')
         if (!req) setReq(true)
@@ -211,11 +237,13 @@ const Contact = () => {
         setLoading(false)
         setError(errors)
         setId('')
-      })
+      }, [ id , errors ])
 
       return (
         <section className={styles.pass}>
-          <p className='font-[600]'>{message.name} <span className='flex gap-2.5 items-center font-[500]'>{
+          <p className='font-[600] gap-2.5'>
+            <span title={message.name} style={{ overflow: 'hidden',  whiteSpace: 'nowrap', textOverflow: 'ellipsis'}}>{message.name}</span>
+            <span className='flex gap-2.5 items-center font-[500]'>{
             type === 'deals' ? FolderSvg() :
             type === 'report' ? Bugsvg() :
             type === 'enquiry' ? Helpsvg() :
@@ -243,7 +271,7 @@ const Contact = () => {
           </section>}
           <p className={styles.error}>{error}</p>
           <div>
-            <span className={styles.button} style={{backgroundColor: 'var(--natural)'}}>{message.replies || 'No'} replies</span>
+            <span className={styles.button} style={{backgroundColor: 'var(--natural)'}}>{message.replies || 'No'} { message.replies > 1 ? 'replies' : 'reply'}</span>
             <button disabled={ validate && pass.length < 6 || req && empty || loading} onClick={handleReply} className={styles.button}>
               {loading && loaderCircleSvg()}{loading ? 'Sending' : 'Reply'}</button>
             {req && <button disabled={loading} onClick={()=>{ setReq(false), setValidate(false) ; setPass(''); setMsg([''])}} className={styles.button} style={{color: 'white',backgroundColor: 'var(--error)'}}>Cancel reply</button>}
@@ -252,15 +280,21 @@ const Contact = () => {
       )
     }
     
-    function Filter(filters: string){
+    function Filter( filters: string, check: string = '' ){
       let result
       let filtered = contact
+      const sub = check.toLocaleLowerCase()
       const filter = filters.toLocaleLowerCase()
   
       if (!contact) result = null
       else if (filter.trim() === '') filtered = contact
       else if (['report', 'message', 'deals', 'enquiry', 'feeds'].some((f) => f === filter)) filtered = filtered.filter(( mes: Message )=> mes.type.toLocaleLowerCase().includes(filter))
       else filtered = filtered.filter(( mes: Message )=> mes.content.toLocaleLowerCase().includes(filter))
+
+      if ( sub === 'noreply' ) filtered = filtered.filter(( mes: Message )=> mes.replies === 0 )
+      else if ( sub === 'reply' ) filtered = filtered.filter(( mes: Message )=> mes.replies > 0 )
+      else if ( sub === 'guest' ) filtered = filtered.filter(( mes: Message )=> !mes.isUser )
+      else if ( sub === 'user' ) filtered = filtered.filter(( mes: Message )=> mes.isUser )
   
       if (filtered && filtered.length > 0) result = filtered.map((mes: Message, i: number) => <ContactPacks key={i} message={mes}/>)
   
@@ -275,7 +309,7 @@ const Contact = () => {
         <Defaultbg props={{
           styles: style,
           img: '/homehero.png',
-          h2: `You have no ${filter.trim() !== '' ? 'matching' : 'contact'} message`,
+          h2: `You have no ${filter.trim() !== '' || sub.trim() !== '' ? 'matching' : 'contact'} message`,
           text: 'Try restoring internet connection or refreshing the page',
         }}/>
     }
@@ -289,7 +323,7 @@ const Contact = () => {
         <div className={style.main}>
           <h2 className={style.title}>{} Admin contact page</h2>
           <div className={style.quick}>
-            <Link href="/inbox" className={style.second}>{Inboxsvg('BIG')} Inbox</Link>
+            <Link href="/Contact" className={style.second}>{Inboxsvg('BIG')} Contact</Link>
             <button onClick={() => sendAll(true)}>{SupportSvg('BIG')} Send mass email</button>
           </div>
           <div id={style.searchbar}>
@@ -310,6 +344,14 @@ const Contact = () => {
               ]
             }} />
           </div>
+          <div className={style.helps}>
+            <span onClick={(e: React.MouseEvent<HTMLSpanElement>)=>{setFilter((prev: string) => prev === 'noreply' ? '' : 'noreply' ); Toggle( e , style.clicked ); RemoveLikeClass(e, style.clicked , `.${style.helps} span`)}}>No replies</span>
+            <span onClick={(e: React.MouseEvent<HTMLSpanElement>)=>{setFilter((prev: string) => prev === 'reply' ? '' : 'reply' ); Toggle( e , style.clicked ); RemoveLikeClass(e, style.clicked , `.${style.helps} span`)}}>Replied</span>
+            <span onClick={(e: React.MouseEvent<HTMLSpanElement>)=>{setFilter((prev: string) => prev === 'user' ? '' : 'user' ); Toggle( e , style.clicked ); RemoveLikeClass(e, style.clicked , `.${style.helps} span`)}}>Users</span>
+            <span onClick={(e: React.MouseEvent<HTMLSpanElement>)=>{setFilter((prev: string) => prev === 'guest' ? '' : 'guest' ); Toggle( e , style.clicked ); RemoveLikeClass(e, style.clicked , `.${style.helps} span`)}}>Guests</span>
+          </div>
+
+          { notify && <Notify types="success" message='Message sent to all users' setCondition={setNotify} />}
 
           { isLoading && contact.length < 1 && 
           <Defaultbg props={{
@@ -323,11 +365,11 @@ const Contact = () => {
 
           { all && <section className={styles.all}>
             <button className={styles.cancel} disabled={onLoading} onClick={()=>{ setText(''); setSubject(''); setPassword(''); sendAll(false); setMessages([''])}}>{cancelSvg()}</button>
-            <div className={styles.input}>
+            <div className={styles.input} style={{ width: '100%' }}>
               <p>Subject</p>
               <input type="text" name="subject" value={subject} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSubject(e.target.value)} placeholder=''/>
             </div>
-            <div className={styles.input}>
+            <div className={styles.input} style={{ width: '100%' }}>
               <p>Summary</p>
               <input type="text" name="subject" value={text} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setText(e.target.value)} placeholder=''/>
             </div>
@@ -350,10 +392,14 @@ const Contact = () => {
             </section>
             <PasswordInput value={password} classes={styles.password} placeholder="Confirm with password" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}/>
             <p className={styles.error}>{err}</p>
-            <button className={styles.button} onClick={handleSendAll}>Send {Leftsvg()}</button>
+            <div className='flex flex-wrap gap-2.5'>
+              <button className={styles.button} onClick={handleSendAll}> { onLoading && loaderCircleSvg(styles.loader)} { onLoading ? 'Sending ...' : 'Send' } { !onLoading && Leftsvg()}</button>
+              <button className={styles.button} onClick={handleLoad}>Load</button>
+              <button className={styles.button} onClick={handleDraft}>Draft</button>
+            </div>
           </section>}
 
-          {(!isLoading || contact.length > 0) && Filter(filters)}
+          {(!isLoading || contact.length > 0) && Filter( filters, filter )}
 
           {error && <button disabled={isLoading} className={style.floater} onClick={()=>setRefresh(( prev: boolean )=> !prev )}>{isLoading ? loaderCircleSvg() : Refreshsvg()}</button>}
         </div>

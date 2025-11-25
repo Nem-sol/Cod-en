@@ -76,7 +76,6 @@ const authHandler = (req, res) =>
         const cookies = req.headers.cookie || req.headers.get("cookie") || "";
         const isRecovery = cookies.includes("recovery_mode=true");
 
-        console.log(isRecovery)
         if (account.provider !== "credentials") {
           await connect();
           const existingUser = await User.findOne({ email: user.email });
@@ -259,7 +258,6 @@ const authHandler = (req, res) =>
 
       async session({ session, token }) {
         if (token?.id) {
-          session.state = "default"
           session.user.id = token.id;
           session.user.email = token.email;
           session.user.provider = token.provider;

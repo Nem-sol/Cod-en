@@ -193,11 +193,13 @@
   align-self: center;
   color: var(--error);
 }
+
+/* Admin contact page css styles */
 .mask{
   inset: 0;
   z-index: 2;
   position: fixed;
-  background-color: rgb(0, 0, 0 ,0.15);
+  background-color: var(--mild-dark);
 }
 .pass{
   gap: 10px;
@@ -247,25 +249,48 @@
 }
 .all{
   gap: 10px;
-  width: 60%;
+  width: 65%;
   z-index: 2;
   right: 30px;
-  bottom: 100px;
+  bottom: 75px;
   padding: 20px;
   display: flex;
+  aspect-ratio: 1;
   font-size: 15px;
   position: fixed;
+  overflow-y: auto;
   transition: 0.5s;
-  min-width: 330px;
+  min-width: 360px;
   max-height: 60vh;
   max-width: 525px;
+  padding-top: 0px;
   min-height: 250px;
+  overflow-x: hidden;
   border-radius: 25px;
   flex-direction: column;
   color: rgb( 50, 50, 50);
+  justify-content: space-between;
   border-bottom-left-radius: 5px;
   background-color: var(--pageNav);
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.282)
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.282);
+  &::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+    margin-block: 60px;
+  }
+  &::-webkit-scrollbar-track {
+    margin-block: 10px;
+    border-radius: 3px;
+    background-color: rgba(0, 0, 0, 0.15);
+  }
+  &::-webkit-scrollbar-thumb {
+    cursor: pointer;
+    border-radius: 3px;
+    background-color: var(--sweetPurple); 
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: var(--deepSweetPurple); 
+  }
 }
 .input{
   gap: 10px;
@@ -291,6 +316,7 @@
   position: absolute;
   padding-inline: 15px;
   pointer-events: none;
+  color: var(--deepSweetPurple);
   background-color: var(--pageNav);
 }
 .input input,
@@ -313,12 +339,10 @@
 .password{
   width: 95%;
   padding: 3px;
-  margin: auto;
   column-gap: 2px;
   font-weight: 600;
   max-width: 700px;
   border-radius: 30px;
-  align-self: flex-end;
   border-bottom-right-radius: 7px;
   border: solid var(--sweetPurple) 2px;
   box-shadow: 0 3px 10px rgb(0, 0, 0 ,0.15);
@@ -338,8 +362,8 @@
 .all section{
   gap: 15px;
   display: flex;
-  margin-top: 10px;
   padding-top: 10px;
+  margin-block: 20px;
   flex-direction: column;
   border-top: solid var(--sweetPurple) 2px;
 }
@@ -350,12 +374,12 @@
   box-shadow: 0 3px 10px rgb(0, 0, 0 ,0.15);
 }
 .all .cancel{
-  top: 5px;
-  left: 5px;
+  top: 10px;
+  z-index: 1;
   width: 25px;
   height: 25px;
   display: grid;
-  position: absolute;
+  position: sticky;
   align-items: center;
   border-radius: 100%;
   justify-content: center;
@@ -385,7 +409,7 @@
   fill: white;
   transition: 0.15s;
 }
-.all .button:hover{
+.all .button:last-child:hover{
   padding-right: 40px;
   color: rgb(255, 255, 255);
 }
@@ -394,6 +418,25 @@
 }
 .all .button:hover svg path{
   opacity: 1;
+}
+.all .loader{
+  inset: 0;
+  min-width: 20px;
+  margin-left: 10px;
+  position: relative;
+  transform: none !important;
+}
+.all .loader path{
+  opacity: 1 !important;
+}
+.all .password{
+  align-self: center;
+}
+@media screen and ( max-width: 450px ) {
+  .all{
+    width: 80%;
+    min-width: 0;
+  }
 }
 
 /* not-found-page css */

@@ -1,6 +1,7 @@
 #main{
   display: flex;
   transition: 0.5s;
+  margin-inline: auto;
   justify-content: center;
   max-width: calc( 100% - 80px );
 }
@@ -119,12 +120,34 @@
 .quick button:hover{
   background-color: var(--sweetRed);
 }
-.help{
-  gap: 10px;
+.help,
+.helps{
+  gap: 15px;
   display: flex;
   padding: 5px 0;
   width: fit-content;
   flex-direction: row;
+}
+.helps{
+  flex-wrap: wrap;
+}
+.helps span{
+  gap: 10px;
+  display: flex;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.5s;
+  padding: 7px 20px;
+  align-items: center;
+  border-radius: 10px 25px;
+  color: rgb( 50, 50, 50);
+  background-color: var(--pageNav);
+  box-shadow: 0 3px 8px 2px rgb(0, 0, 0 ,0.15);
+}
+.helps .clicked{
+  color: rgb(254, 246, 197);
+  border-radius: 25px 25px 10px;
+  background-color: var(--natural);
 }
 .help a,
 .help span,
@@ -183,6 +206,7 @@
   font-weight: 600;
   column-gap: 10px;
   max-width: 1200px;
+  justify-content: space-between;
 }
 #searchbar div{
   right: 0;
@@ -304,6 +328,7 @@
   height: 20px;
 }
 .noti div{
+  gap: 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -338,6 +363,11 @@
 .noti button:hover,
 .hist button:hover{
   background-color: var(--mild-dark);
+}
+.noti h4{
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .hist{
   gap: 5px;

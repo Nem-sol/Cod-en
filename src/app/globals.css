@@ -619,7 +619,6 @@ nav .pagenav .inbox .input{
   background-color: rgba(245, 225, 215, 0.526);
 }
 nav .pagenav .inbox .section{
-  flex: 1;
   gap: 3px;
   height: 100%;
   display: flex;
@@ -627,8 +626,9 @@ nav .pagenav .inbox .section{
   overflow-x: hidden;
   padding-block: 20px;
   scrollbar-width: 7px;
-  scrollbar-color: rgba(0, 0, 0, 0.15);
   flex-direction: column;
+  max-height: calc( 100vh - 180px );
+  scrollbar-color: rgba(0, 0, 0, 0.15);
   &::-webkit-scrollbar {
     width: 7px;
     height: 7px;

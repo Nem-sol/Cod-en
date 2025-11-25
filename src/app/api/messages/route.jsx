@@ -33,6 +33,13 @@ export const POST = async ( req ) => {
   try{
     await connect()
     const { name , email , msg , type } = await req.json()
+    
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+
+    if (!token) return NextResponse.json({ error: 'Unauthorized request declined' }, { status: 401 })
+
+    const user = await User.findById(token.id)
+    const isUser = user ? true : false
 
     if (!name.trim()) return NextResponse.json({ error: 'Please submit message with a name entry.' }, { status: 400 })
 
@@ -42,7 +49,7 @@ export const POST = async ( req ) => {
 
     if (!msg.trim()) return NextResponse.json({ error: 'Please submit a non-empty message.' }, { status: 400 })
 
-    await Message.create({ name , email , type , content: msg })
+    await Message.create({ name , email , type , content: msg , isUser })
       
     return NextResponse.json({mssg: `${type[0].toLocaleUpperCase()}${type.toLocaleLowerCase().slice(1)} sent successfully. Cod-en will get back to you shortly.`}, { status: 200 })
   } catch (error) {

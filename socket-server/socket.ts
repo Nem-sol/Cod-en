@@ -1,5 +1,6 @@
 import dotenv from "dotenv"
 import bcrypt from "bcrypt"
+import { Msg } from "@/types.js"
 import { Server } from "socket.io"
 import { createServer } from "node:http"
 import User from "@/src/models/User.jsx"
@@ -8,7 +9,6 @@ import Inbox from "../src/models/Inbox.js"
 import sendMail from "@/src/utils/mailer.js"
 import Message from "@/src/models/Message.js"
 import Project from "../src/models/Project.js"
-import { Message as Messages, Msg } from "@/types.js"
 
 dotenv.config()
 
@@ -188,82 +188,84 @@ const app = async () => {
 
       socket.on("mail-to-one", async({ msg , pass , id }) => {
         const isCorrect = await bcrypt.compare( pass , user.password )
-        const contact: Messages | null | any = await Message.find((mes: Messages) => mes._id === id )
+        const contact = await Message.findById( id )
 
-        if (!id) socket.emit("failed-to-mail", { id , message: "Contact id should not be an empty string."})
+        if (!id) return socket.emit("failed-to-mail", { id , message: "Contact id should not be an empty string."})
           
-        else if (msg.find((m: string) => !m.trim())) socket.emit("failed-to-mail", { id , message: "No empty messages allowed."})
+        if (msg.find((m: string) => !m.trim())) return socket.emit("failed-to-mail", { id , message: "No empty messages allowed."})
 
-        else if (!contact || user.role !== "admin" ) socket.emit("failed-to-mail", { id , message: "Contact message not found."})
+        if (!contact || user.role !== "admin" ) return socket.emit("failed-to-mail", { id , message: "Contact message not found."})
 
-        else if (!isCorrect) socket.emit("failed-to-mail", { id , message: "Incorrect pasword"})
+        if (!isCorrect) return socket.emit("failed-to-mail", { id , message: "Incorrect pasword"})
 
-        else {
-          const sent = await sendMail({
-            title: null,
-            messages: msg,
-            to: contact.email,
-            text: `Cod-en reply to ${contact.name}'${contact.name.endsWith('s') ? "" : "s"} ${contact.type}`,
-            subject: `Reply to ${contact.name}'${contact.name.endsWith('s') ? "" : "s"} ${contact.type}`,
-            link: {
-              address: `${url}/contact`,
-              title: "Cod-en support page",
-              cap: "For more support, visit ", 
-            } 
-          })
-          if (!sent ) {
-            socket.emit("failed-to-mail", { id , message: "Could not send reply. Try again later"})
-            return
+        const sent = await sendMail({
+          title: null,
+          messages: [
+            `Thank you for contacting Cod-en. We received your ${contact.type}`,
+            ...msg,
+          'The Cod-en Team.'],
+          to: contact.email,
+          text: `Cod-en reply to ${contact.name}'${contact.name.endsWith('s') ? "" : "s"} ${contact.type}`,
+          subject: `Reply to ${contact.name}'${contact.name.endsWith('s') ? "" : "s"} ${contact.type}`,
+          link: {
+            address: `${url}/contact`,
+            title: "Cod-en support page",
+            cap: "For more support, visit ", 
           }
-          contact.replies++
-          await contact.save()
-          socket.emit("mailed-to-one", { contact })
-        }
+        })
+        
+        if (!sent ) return socket.emit("failed-to-mail", { id , message: "Could not send reply. Try again later"})
+          
+        contact.replies++
+        await contact.save()
+        socket.emit("mailed-to-one", { contact })
       })
 
       socket.on("mail", async({ messages , summary , subject , password , link }) => {
         const isCorrect = await bcrypt.compare( password , user.password )
           
-        if (!summary.trim()) socket.emit("failed-to-mail", { message: "Summary should not be empty."})
+        if (!summary?.trim()) return socket.emit("failed-to-mail", { message: "Summary should not be empty."})
 
-        else if (!subject.trim()) socket.emit("failed-to-mail", { message: "Subject should not be empty."})
+        if (!subject?.trim()) return socket.emit("failed-to-mail", { message: "Subject should not be empty."})
 
-        else if ( messages.length === 0 || !messages.trim()) socket.emit("failed-to-mail", { message: "Subject should not be empty."})
+        if ( !Array.isArray(messages) || messages?.length === 0 ) return socket.emit("failed-to-mail", { message: "Subject should not be empty."})
 
-        else if (messages.find((m: string) => !m.trim())) socket.emit("failed-to-mail", { message: "No empty messages allowed."})
+        if (messages.find((m: string) => !m.trim())) return socket.emit("failed-to-mail", { message: "No empty messages allowed."})
 
-        else if ( user.role !== "admin" ) socket.emit("failed-to-mail", { message: "Contact message not found."})
+        if ( user.role !== "admin" ) return socket.emit("failed-to-mail", { message: "Contact message not found."})
 
-        else if (!isCorrect) socket.emit("failed-to-mail", { message: "Incorrect pasword"})
+        if (!isCorrect) return socket.emit("failed-to-mail", { message: "Incorrect pasword"})
 
-        else {
-          try {
-            const users = await User.find({
-              $or: [
-                { role: "user" }, 
-                { role: "worker" }
-              ]
-            }).select( "email" )
+        try {
+          const users = await User.find({
+            $or: [
+              { role: "user" }, 
+              { role: "worker" }
+            ]
+          }).select( "email" )
 
-            users.forEach( async (user) => 
-              await sendMail({
-                subject,
-                messages,
-                title: null,
-                text: summary,
-                to: user.email,
-                link: link || {
-                  address: `${url}/contact`,
-                  title: "Cod-en support page",
-                  cap: "For more support, visit ", 
-                } 
-            }))
-
-            socket.emit("mailed-to-all")
-          } catch (error) {
-            socket.emit("failed-to-mail", { message: "Could not send reply. Try again later"})
+          if (!users.length) return socket.emit("failed-to-mail", { message: "No users available to mail." });
+          
+          for (const u of users) {
+            await sendMail({
+              subject,
+              messages,
+              title: null,
+              to: u.email,
+              text: summary,
+              link: link || {
+                address: `${url}/contact`,
+                title: "Cod-en support page",
+                cap: "For more support, visit ",
+              }
+            });
           }
+
+          socket.emit("mailed-to-all")
+        } catch (error) {
+          socket.emit("failed-to-mail", { message: "Could not send reply. Try again later"})
         }
+  
       })
 
       socket.on("send-contact", async ({ name , email , msg , type })=>{

@@ -25,15 +25,18 @@ const poppins = Poppins({
 export const ThemeContext = createContext({})
 
 export const ThemeProvider: React.FC<{children: React.ReactNode}> = ({children}) =>{
+  // const now = localStorage.getItem('theme')
+  // const defaultTheme = now ? JSON.parse(now) : null
+
   const router = useRouter()
   const { setContact } = useContact()
   const [ err, setErr ] = useState('')
   const { socket, ready } = useSocket()
   const { data: session } = useSession()
   const { setInbox } = useInboxContext()
-  const { setProject } = useProjectContext()
   const [ reason, setReason ] = useState('')
-  const [ mode, setMode ] = useState( session?.user?.theme || 'light' )
+  const { setProject } = useProjectContext()
+  const [ mode, setMode ] = useState( 'light' )
   const [ notify , setNotify ] = useState(false)
   const [ changed , setChanged ] = useState(false)
   const { userDetails: user , error , deleted , setDeleted } = useUserContext()
@@ -42,7 +45,7 @@ export const ThemeProvider: React.FC<{children: React.ReactNode}> = ({children})
     const now = mode
     const next = now === 'light' ? 'dark' : 'light'
     setMode( next )
-    if (session?.user) session.user.theme = next
+    localStorage.setItem('theme', JSON.stringify({ theme: next }))
   }
 
   useEffect(()=>{
@@ -52,7 +55,6 @@ export const ThemeProvider: React.FC<{children: React.ReactNode}> = ({children})
       setChanged(true)
       router.push('/signin')
     }
-    setMode( session?.user?.theme || 'dark' )
   }, [ user ])
 
   useEffect(()=>{
@@ -76,14 +78,13 @@ export const ThemeProvider: React.FC<{children: React.ReactNode}> = ({children})
     socket.on('new-contact', ( message : Message ) => {
       setNotify(true)
       setReason('message')
-      setContact((prev: Message[]) => [...prev , message])
+      setContact((prev: Message[]) => [ message , ...prev ])
     })
 
     socket.on("project-error", ( error: {message: string} )=> {
       setNotify(true)
       setReason('error')
       setErr( error?.message)
-      console.log(error?.message)
     })
 
     return () => {
@@ -92,6 +93,12 @@ export const ThemeProvider: React.FC<{children: React.ReactNode}> = ({children})
       socket.off('project-updated')
     }
   }, [ ready ])
+
+  useEffect(() =>{
+      const now = localStorage.getItem('theme')
+      const defaultTheme = now ? JSON.parse(now) : null
+      setMode( defaultTheme?.theme || "light" )
+  }, [])
 
   return(
     <ThemeContext.Provider value={{toggle, mode}}>

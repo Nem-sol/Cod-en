@@ -6,7 +6,7 @@ import style from './page.module.css'
 import styles from '../main.module.css'
 import Footer from '@/src/components/Footer'
 import React, { useEffect, useState } from 'react'
-import { FirstCase } from '@/src/components/functions'
+import { FirstCase, RemoveLikeClass, Toggle } from '@/src/components/functions'
 import { useProjectContext } from '@/src/context/ProjectContext'
 import { Defaultbg, NewFilterSets } from '@/src/components/pageParts'
 import { Cloudsvg, Githubsvg, Inboxsvg, Linksvg, loaderCircleSvg, ProjectSvg, Refreshsvg, Rocketsvg, Searchsvg, SupportSvg, TagSvg } from '@/src/components/svgPack'
@@ -22,7 +22,7 @@ function ProjectPacks({project}: {project: Projects}) {
           <span style={{fontSize: '15px', fontWeight: 600}}>{project.sector}</span>
         </h2>
         <p>{FirstCase(project.service)}</p>
-        {project.reason && <p>{project.reason}</p>}
+        {project.reason && <p className={style[project.status]}>{project.reason}</p>}
         <p><span>{date}</span> <span className={style[project.status]}>{project.status}</span></p>
         <span className={`${style.signed} ${project.signed ? 'text-[var(--success)]' : 'text-[var(--error)]'}`}> <svg ></svg>{project.signed ? 'Signed' : 'Not signed'}</span>
         <p style={{gap: '10px', justifyContent: 'flex-end'}}>{provider === 'github' ? Githubsvg('BIG') : provider === 'domain'  && Cloudsvg()}{FirstCase(provider)}</p>
@@ -36,12 +36,14 @@ function ProjectPacks({project}: {project: Projects}) {
 }
 
 const ProjectPack = () => {
+  const [ check, setFilter ] = useState('')
   const [ filters, setFilters ] = useState('')
   const { project, error, setRefresh, isLoading } = useProjectContext()
 
-  function Filter(filters: string){
+  function Filter(filters: string , check: string ){
     let result
     let filtered
+    const sub = check.toLocaleLowerCase()
     const filter = filters.toLocaleLowerCase()
 
     filtered = project
@@ -49,10 +51,13 @@ const ProjectPack = () => {
     if (!project) result = null
     else if (filter.trim() === '') filtered = project
     else if(filter === 'part' || filter === 'full') filtered = filtered.filter(( proj: Projects )=> proj.type === filters)
-    else if(filter === 'active' || filter === 'waiting' || filter === 'successful' || filter === 'terminated') filtered = filtered.filter(( proj: Projects )=> proj.status.toLocaleLowerCase().includes(filter))
     else filtered = filtered.filter(( proj: Projects )=> proj.name.toLocaleLowerCase().includes(filter))
 
+    if ( sub && sub !== 'not' ) filtered = filtered.filter(( proj: Projects ) => proj.status.toLocaleLowerCase().includes(sub))
+
     if (filtered && filtered.length > 0) result = filtered.map((proj: Projects, i: number)=> <ProjectPacks key={i} project={proj}/>)
+
+    console.log(filter , sub)
 
     if (project && project.length < 1 && error ) return (
       <Defaultbg props={{
@@ -65,7 +70,7 @@ const ProjectPack = () => {
       <Defaultbg props={{
         styles: styles,
         img: '/homehero.png',
-        h2: `You have no ${filter.trim() !== '' ? 'matching' : 'account'} project`,
+        h2: `You have no ${ ( filter.trim() !== '' || sub.trim() !== '') ? 'matching' : 'account'} project`,
         text: 'Try restoring internet connection or refreshing the page',
       }}/>)
   }
@@ -93,14 +98,16 @@ const ProjectPack = () => {
             clicked: styles.clicked,
             reset: ()=>setFilters(''),
             buttons: [
-              {txt: 'Active', reset: ()=>setFilters('active'), query: 'active'},
               {txt: 'Full projects', reset: ()=>setFilters('full'), query: 'full'},
               {txt: 'Part projects', reset: ()=>setFilters('part'), query: 'part'},
-              {txt: 'Waiting', reset: ()=>setFilters('waiting'), query: 'waiting'},
-              {txt: 'Successful', reset: ()=>setFilters('successful'), query: 'successful'},
-              {txt: 'Terminated', reset: ()=>setFilters('terminated'), query: 'terminated'},
             ]
           }} />
+        </div>
+        <div className={styles.helps}>
+          <span onClick={(e: React.MouseEvent<HTMLSpanElement>)=>{setFilter((prev: string) => prev === 'active' ? '' : 'active' ); Toggle( e , styles.clicked ); RemoveLikeClass(e, styles.clicked , `.${styles.helps} span`)}}>Active</span>
+          <span onClick={(e: React.MouseEvent<HTMLSpanElement>)=>{setFilter((prev: string) => prev === 'waiting' ? '' : 'waiting' ); Toggle( e , styles.clicked ); RemoveLikeClass(e, styles.clicked , `.${styles.helps} span`)}}>Waiting</span>
+          <span onClick={(e: React.MouseEvent<HTMLSpanElement>)=>{setFilter((prev: string) => prev === 'complete' ? '' : 'complete' ); Toggle( e , styles.clicked ); RemoveLikeClass(e, styles.clicked , `.${styles.helps} span`)}}>Completed</span>
+          <span onClick={(e: React.MouseEvent<HTMLSpanElement>)=>{setFilter((prev: string) => prev === 'terminated' ? '' : 'terminated' ); Toggle( e , styles.clicked ); RemoveLikeClass(e, styles.clicked , `.${styles.helps} span`)}}>Terminated</span>
         </div>
         {isLoading && project.length < 1 && 
         <Defaultbg props={{
@@ -109,7 +116,7 @@ const ProjectPack = () => {
           h2: 'Getting projects ...',
           text: 'Please be patient while we get your projects',
         }}/>}
-        {(!isLoading || project.length > 0) && Filter(filters)}
+        {(!isLoading || project.length > 0) && Filter( filters , check )}
         {error && <button disabled={isLoading} className={styles.floater} onClick={()=>setRefresh((prev: boolean) => !prev )}>{isLoading ? loaderCircleSvg() : Refreshsvg()}</button>}
       </div>
       <Footer />

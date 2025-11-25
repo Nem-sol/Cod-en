@@ -107,6 +107,7 @@ export type Message = {
   email: string
   replies: number
   content: string
+  isUser: boolean
   createdAt: string | null
   updatedAt: string | null
 }
