@@ -1,5 +1,6 @@
 import connect from "./db"
 import OTP from "../models/OTP"
+import { onTime } from "./apiTools";
 
 const generateOTPCode = (length = 8) => {
   let code = "";
@@ -22,44 +23,34 @@ export const generateOTP = async ( userId , validity = 10 ) => {
   return code;
 }
 
-export const validateOTP = async ( checker , code ) => {
+export const validateOTP = async ( id , code ) => {
   try {
     await connect()
+    const userId = String(id)
 
-    if (!checker) throw new Error('User not found')
+    if (!userId) throw new Error('User not found')
 
-    const otp = OTP.find({  
-      $or: [
-        { userId: checker }, 
-        { email: checker }
-      ]
-    }).sort({createdAt: -1}).limit(1)
+    const otps = await OTP.find({ userId }).sort({createdAt: -1})
 
-    if ( !otp || otp.length === 0 ) throw new Error('No OTP generated for user')
+    if ( otps.length === 0 ) throw new Error('No OTP generated for user')
 
-    const latest = otp[0]
-    const validity = Number(latest.validity);
+    const otp = otps[0]
+    const validity = Number(otp.validity);
     
-    if (latest.code !== code.trim().toUpperCase()) throw new Error("Incorrect OTP code");
+    if ( otp.code !== code.trim().toUpperCase()) throw new Error("Incorrect OTP code");
 
-    if ( otp.expired || latest.expired ) throw new Error('OTP expired')
+    if ( otp.expired ) throw new Error('OTP expired')
 
-    // Compute expiration time safely (no timezone issues)
-    // createdAt is stored as UTC in MongoDB by default
-    const nowUTC = Date.now(); // also UTC
-    const expiryUTC = createdAtUTC + validity * 60 * 1000;
-    const createdAtUTC = new Date(latest.createdAt).getTime();
+    await OTP.updateMany({ userId }, { expired: true})
 
-    if (nowUTC > expiryUTC) {
-      latest.expired = true;
-      await latest.save();
-      throw new Error("OTP expired");
-    }
+    if (!onTime( otp.createdAt , validity )) throw new Error("OTP expired")
 
-    latest.expired = true
-    await latest.save()
+    await Promise.all(
+      otps.map(async ( otp ) =>( OTP.findByIdAndDelete( otp._id )))
+    )
+
     return true
   } catch (error) {
-    throw new Error('Unexpected error. Try again later')
+    throw new Error( error.message.toLowerCase().includes('otp') ? error.message : 'Could not validate OTP. Try again later')
   }
 }

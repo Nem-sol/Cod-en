@@ -16,6 +16,7 @@ const Signup = () => {
   const [ name, setName ] = useState('')
   const [ pass, setPass ] = useState('')
   const { email, setEmail } = useEmail()
+  const [ done, setDone ] = useState(false)
   const [ verify, setVerify ] = useState(false)
   const [ loading, setLoading ] = useState(false)
   const [ label1, setLabel1 ] = useState('Username')
@@ -28,22 +29,37 @@ const Signup = () => {
   const GithubSignUp = async () => {
     await signIn('github' , { redirect: false })
   }
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if ( verify ) return setErr('Please verify email or cancel process.')
-    if (!name) return setErr('Please fill in name field')
-    if (!email) return setErr('Please fill in email field')
-    if (!pass) return setErr('Please fill in password field')
-    if (pass.length < 6) return setErr('Password is too short')
-    if (name.trim().length < 4) return setErr('Username is too short')
+  const validate = () => {
+    if (!name) {
+      setErr('Please fill in name field')
+      return false
+    } else if (!email) {
+      setErr('Please fill in email field')
+      return false
+    } else if (!pass) {
+      setErr('Please fill in password field')
+      return false
+    } else if (pass.length < 6) {
+      setErr('Password is too short')
+      return false
+    } else if (name.trim().length < 4) {
+      setErr('Username is too short')
+      return false
+    } 
     setErr('')
     setLoading(true)
+    return true
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!validate()) return
     const res = await fetch('/api/auth/signup', {
       method: 'POST',
       headers: {
         'Content-Type':'application.json'
       },
-      body: JSON.stringify({ name , email , password: pass , code })
+      body: JSON.stringify({ name , email , password: pass , code: null })
     })
 
     const contentType = res.headers.get('content-type')
@@ -53,11 +69,11 @@ const Signup = () => {
       setErr('Unexpected server error. Try again later')
       return
     }
-    const { ok } = res
     const json = await res.json()
-    if(!ok) {
+    if( !res.ok ) {
       if (json.error === 'OTP sent to email sucessfully') setVerify(true)
       else setErr(json.error)
+      setLoading(false)
     }
     else await signIn('credentials', { email , password: pass })
     setLoading(false)
@@ -66,16 +82,16 @@ const Signup = () => {
   
   const handleVerify = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if ( loading ) return
-    const codes = e.target.value.trim().toUpperCase()
-    setCode(e.target.value.trim().toUpperCase())
+    const codes = e.target.value.trim().toUpperCase().replace(/[^0-9] + [^A-Z]/g, "");
+    setCode(codes)
     if (codes.length === 8 ) {
-      setLoading(true)
+      if (!validate()) return
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: {
           'Content-Type':'application.json'
         },
-        body: JSON.stringify({name , email , password: pass , code })
+        body: JSON.stringify({name , email , password: pass , code: codes })
       })
 
       const contentType = res.headers.get('content-type')
@@ -85,10 +101,12 @@ const Signup = () => {
         setErr('Unexpected server error. Try again later')
         return
       }
-      const { ok } = res
       const json = await res.json()
-      if(!ok) setErr(json.error)
-      else await signIn('credentials', { email , password: pass })
+      if (!res.ok) setErr(json.error)
+      else {
+        setDone( true )
+        await signIn('credentials', { email , password: pass })
+      }
       setLoading(false)
     }
   }
@@ -139,13 +157,13 @@ const Signup = () => {
       </div>
       <p className='text-end pr-14 max-w-2xl w-full'>Have an account? <Link href='/signin' style={{color: 'var(--compliment)'}}>Log in</Link> </p>
       { verify  && <>
-        <div className={style.mask} onClick={()=>{setVerify(false); setCode('')}}></div>
+        <div className={style.mask} onClick={()=>{ setErr(''); setCode(''); setVerify(false) }} aria-disabled={ loading } style={{ pointerEvents: loading ? 'none' : 'all' }}></div>
         <div className={styles.verify}>
           <h2>Verify email with Otp</h2>
-          <p>{ loading ? 'Sending...' : 'OTP has been sent to email successfuly'}</p>
+          <p>{ done ? 'Logging you in..' : loading ? 'Sending...' : 'OTP has been sent to email successfuly'}</p>
           <PasswordInput placeholder='Enter OTP' value={code} onChange={handleVerify} classes={styles.password}/>
-          <p style={{ color: 'var(--error)' }}>{err}</p>
-          <button onClick={handleSubmit} disabled={loading}>Resend Otp</button>
+          <p style={{ color: 'var(--error)', fontWeight: '600' }}>{err}</p>
+          <button onClick={handleSubmit} disabled={loading}>{ done ? 'Sign up success' : 'Resend Otp'}</button>
         </div>
       </>}
       <Footer />

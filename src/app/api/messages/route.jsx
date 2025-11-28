@@ -53,7 +53,6 @@ export const POST = async ( req ) => {
       
     return NextResponse.json({mssg: `${type[0].toLocaleUpperCase()}${type.toLocaleLowerCase().slice(1)} sent successfully. Cod-en will get back to you shortly.`}, { status: 200 })
   } catch (error) {
-    console.log(error)
     return NextResponse.json({error: 'Error occured in the process'}, { status: 400 })
   }
 }

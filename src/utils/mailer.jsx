@@ -19,7 +19,6 @@ const generateTemplate = ({
   code,
   link,
   title,
-  types,
   messages,
 }) => {
   const yr = new Date().getFullYear();
@@ -27,93 +26,6 @@ const generateTemplate = ({
   
   // Font stack with multiple fallbacks
   const fontStack = "'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
-  
-  // If OTP type
-  if (types?.toLowerCase().includes("otp")) {
-    return `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <!--[if mso]>
-        <style>
-          * { font-family: Arial, sans-serif !important; }
-        </style>
-        <![endif]-->
-        <style>
-          @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
-        </style>
-      </head>
-      <body style="background:#f4f4f4; padding:0; margin:0; font-family:${fontStack};">
-        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f4f4;">
-          <tr><td align="center" style="padding:30px 10px;">
-
-            <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px; background:white; border-radius:12px;">
-
-              <tr>
-                <td align="center" style="padding:30px 20px 20px;">
-                  <img src="${baseUrl}/full-coden-logo.png" alt="Cod-en+" width="120" style="display:block; border:0; height:auto;" />
-                  <h2 style="color:#bb6a5e; margin:20px 0 10px; font-weight:700; font-size:24px; font-family:${fontStack};">
-                    ${title || "Your Verification Code"}
-                  </h2>
-                </td>
-              </tr>
-
-              <tr>
-                <td align="center" style="padding:20px;">
-                  <div style="
-                    background:#fff0e2;
-                    padding:30px 20px;
-                    border-radius:15px;
-                    box-shadow:0 3px 6px rgba(0,0,0,0.15);
-                    font-size:36px;
-                    font-weight:700;
-                    color:#323232;
-                    letter-spacing:8px;
-                    font-family:${fontStack};
-                    line-height:1.2;
-                  ">
-                    ${code}
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td style="padding:20px 30px;">
-                  ${
-                    messages
-                      ?.map(
-                        (m) => `
-                      <p style="font-size:15px; color:#323232; line-height:1.6; margin:0 0 15px; font-family:${fontStack};">
-                        ${m}
-                      </p>
-                    `
-                      )
-                      .join("") || ''
-                  }
-                </td>
-              </tr>
-
-              <tr>
-                <td align="center" style="padding:30px 20px 20px; border-top:1px solid #e0e0e0;">
-                  <a href="${baseUrl}" style="text-decoration:none; display:inline-block; margin-bottom:10px;">
-                    <img src="${baseUrl}/full-coden-logo.png" alt="Cod-en+" width="80" style="display:block; border:0; height:auto;" />
-                  </a>
-                  <p style="color:#666; font-size:13px; margin:5px 0 0; font-family:${fontStack};">
-                    © ${yr} Cod-en+
-                  </p>
-                </td>
-              </tr>
-
-            </table>
-
-          </td></tr>
-        </table>
-      </body>
-      </html>
-    `;
-  }
 
   // Regular template
   return `
@@ -159,6 +71,28 @@ const generateTemplate = ({
                     </h1>
                   ` : ""}
                   
+                  <!-- If OTP type -->
+                  ${
+                    code && `<tr>
+                      <td align="center" style="padding:50px;">
+                        <div style="
+                          background:#fff0e2;
+                          padding:30px 20px;
+                          border-radius:15px;
+                          box-shadow:0 3px 6px rgba(0,0,0,0.15);
+                          font-size:30px;
+                          font-weight:700;
+                          color:#323232;
+                          letter-spacing:8px;
+                          font-family:${fontStack};
+                          line-height:1.2;
+                        ">
+                          ${code}
+                        </div>
+                      </td>
+                    </tr>`
+                  }
+
                   <!-- Messages -->
                   ${messages?.map((m) => `
                     <p style="margin:0 0 15px; color:#323232; font-size:15px; line-height:1.6; font-family:${fontStack};">
@@ -319,7 +253,6 @@ export default async function sendMail({
   link,
   subject,
   messages,
-  types = '',
   code = null,
   title = null,
 }) {
@@ -333,8 +266,7 @@ export default async function sendMail({
       subject,
       from: `"Cod-en" <${process.env.EMAIL_USER}>`,
       html: generateTemplate({ 
-        code, 
-        types, 
+        code,
         messages, 
         title: title || subject, 
         link: link || { 

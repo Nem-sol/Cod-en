@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import NextAuth from "next-auth";
+import { format } from "date-fns";
 import connect from "@/src/utils/db";
 import sendMail from "@/src/utils/mailer"
 import User from "../../../../models/User";
@@ -44,7 +45,7 @@ const authHandler = (req, res) =>
             target: user.name,
             userId: user._id.toString(),
             title: `Successful log in for ${user.name}`,
-            message: `Successful Log in to your account at ${new Date().toLocaleString()}`,
+            message: `Successful Log in to your account at ${format(new Date(), "do MMMM, yyyy")}`,
           });
 
           await sendMail({
@@ -53,7 +54,7 @@ const authHandler = (req, res) =>
             text: `Successful log in for ${user.name}` ,
             subject : `Successful log in for ${user.name}`,
             messages: [
-              `Account was logged into at ${new Date().toLocaleString()}.`,
+              `Account was logged into at ${format(new Date(), "do MMMM, yyyy")}.`,
               'If this was not you, log into your account and change log-in details and request logout immediately'
             ],
           })
@@ -122,7 +123,7 @@ const authHandler = (req, res) =>
               userId: userClient._id,
               target: userClient.name,
               title: "Successful account recovery",
-              message: `Account was recovered and password was changed successfully at ${new Date().toLocaleString()}.`,
+              message: `Account was recovered and password was changed successfully at ${format(new Date(), "do MMMM, yyyy")}.`,
             });
 
             await Notification.create({
@@ -133,7 +134,7 @@ const authHandler = (req, res) =>
               target: userClient.name,
               link: `/history/${history._id}`,
               title: `Successful account recovery for ${userClient.name}`,
-              message: `Account was recovered and password was changed successfully at ${new Date().toLocaleString()}.`,
+              message: `Account was recovered and password was changed successfully at ${format(new Date(), "do MMMM, yyyy")}.`,
             });
 
             await sendMail({
@@ -141,7 +142,7 @@ const authHandler = (req, res) =>
               text: "Successful account recovery",
               subject: "Successful account recovery",
               messages: [
-                `Account was recovered and password was changed successfully at ${new Date().toLocaleString()}.`
+                `Account was recovered and password was changed successfully at ${format(new Date(), "do MMMM, yyyy")}.`
               ],
               link: {cap: 'For more information, view ', address: `/history/${history._id}`, title: 'recovery history'}
             });
@@ -151,17 +152,37 @@ const authHandler = (req, res) =>
               text: "Successful account recovery",
               subject: "Successful account recovery",
               messages: [
-                `Account was recovered and password was changed successfully at ${new Date().toLocaleString()}.`
+                `Account was recovered and password was changed successfully at ${format(new Date(), "do MMMM, yyyy")}.`
               ],
               link: {cap: 'For more information, view ', address: `/history/${history._id}`, title: 'recovery history'}
             });
 
             return true;
           } else if (existingUser) {
-            if (existingUser.provider !== account.provider) {
-              throw new Error(
+            if (existingUser.provider !== account.provider) throw new Error(
                 `This email is already registered with ${existingUser.provider}. Please log in with ${existingUser.provider}.`
               );
+
+            if ( existingUser.requestLogout ) {
+              await Notification.create({
+                type: "Log in",
+                class: "request",
+                status: "Failed",
+                userId: existingUser._id,
+                target: existingUser.name,
+                title: `Failed account log in at ${format(new Date(), "do MMMM, yyyy")}`,
+                message: `OAuth failure. Could not log into account due to user settings.`,
+              });
+              await sendMail({
+                to: user.email ,
+                text: `Log in failure for ${existingUser.name}`,
+                subject : `Log in failure  in for ${existingUser.name}`,
+                link: {cap: 'If you need to regain account access, kindly visit our', address: `/recovery`, title: 'recovery page'},
+                messages: [
+                  `Account for ${existingUser.email} could not be logged into because user has requested logout.`
+                ],
+              })
+              throw new Error(' Log in attempt failed due to user settings')
             }
 
             user.id = existingUser._id.toString();
@@ -174,7 +195,7 @@ const authHandler = (req, res) =>
               userId: existingUser._id,
               target: existingUser.name,
               title: `Successful log in for ${existingUser.name}`,
-              message: `Successful Log in to your account at ${new Date().toLocaleString()}`,
+              message: `Successful Log in to your account at ${format(new Date(), "do MMMM, yyyy")}`,
             });
 
             await sendMail({
@@ -183,7 +204,7 @@ const authHandler = (req, res) =>
               text: `Successful log in for ${existingUser.name}`,
               subject: `Successful log in for ${existingUser.name}`,
               messages: [
-                `Account was logged into at ${new Date().toLocaleString()}.`,
+                `Account was logged into at ${format(new Date(), "do MMMM, yyyy")}.`,
                 'If this was not you, log into your account and change log-in details and request logout immediately'
               ],
             });
@@ -211,7 +232,7 @@ const authHandler = (req, res) =>
               userId: newUser._id,
               target: newUser.name,
               title: "Successful sign up",
-              message: `Successful sign up to Cod-en at ${new Date().toLocaleString()}.`,
+              message: `Successful sign up to Cod-en at ${format(new Date(), "do MMMM, yyyy")}.`,
             });
 
             await Notification.create({
@@ -233,7 +254,7 @@ const authHandler = (req, res) =>
               subject: `Successful sign up for ${newUser.name}`,
               messages: [
                 "Welcome to Cod-en - Future of web development",
-                `You signed up to cod-en at ${new Date().toLocaleString()}.`,
+                `You signed up to cod-en at ${format(new Date(), "do MMMM, yyyy")}.`,
                 `Next up? Create Project\n Get a tutorial pack\n Read Coden Blogs!`
               ],
               link: {cap: 'For more information, view ', address: `/history/${history._id}`, title: 'sign up history'}

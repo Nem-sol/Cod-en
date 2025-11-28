@@ -3,32 +3,35 @@
 //Functions to be exported into other pages
 //Note:  This is not a next file!
 
+
 export const pick = focus => document.querySelector(focus)
+
 export const Add = (e, focus) => e.target.classList.add(focus)
+
 export const Toggle = (e, focus) => e.target.classList.toggle(focus)
+
 export const pickAll = focus => document.querySelectorAll(focus)
-export function hide(focus){
-  pick(focus).style.display = "none"
-}
+
 export function FirstCase(focus){
   const a = typeof(focus[0]) === 'string' ? focus[0].toLocaleUpperCase() : focus[0] || ''
   const b = focus.toLocaleLowerCase().slice(1)
   return `${a}${b}`
 }
-export function toggle(focus, showForm='block'){
-  (pick(focus) && pick(focus).style.display === showForm) ? pick(focus).style.display = "none" : pick(focus).style.display = showForm
-}
+
 export function Click(focus){
   pick(focus) && pick(focus).click() 
 }
+
 export function classRemove(focus, newClass){
   let factor = pick(focus)
   pick(focus) && factor.classList.remove(newClass)
 }
+
 export function classAdd(focus, newClass){
   let factor = pick(focus)
   pick(focus) && factor.classList.add(newClass)
 }
+
 export function classToggle(focus, factorclass = 'isShown'){
   let factor = pick(focus)
   if(pick(focus)){
@@ -40,11 +43,13 @@ export function classToggle(focus, factorclass = 'isShown'){
     }
   }
 }
+
 export function translateText(text, factor){
   let y = pick(factor)
   if ( !y ) return
   y.innerText = text
 }
+
 export function animationTimeline(factor, focusclass, distance, focus= factor){
     let scrolltop = window.scrollY
     let scrolltracker = pick('html').offsetHeight + distance - window.innerHeight - scrolltop
@@ -54,6 +59,7 @@ export function animationTimeline(factor, focusclass, distance, focus= factor){
       focus.classList.add(focusclass)
   }
 }
+
 export function RemoveOtherClass( protect, focusClass, targetClass){
   let protectedObj= pick(protect)
   let focusArray = document.querySelectorAll(targetClass)
@@ -62,6 +68,7 @@ export function RemoveOtherClass( protect, focusClass, targetClass){
     if ( i !== protectedObj) i.classList.remove(focusClass)
   })
 }
+
 export function RemoveLikeClass(e, focusClass, targetClass){
   let insideFocus = false
   let focusArray = document.querySelectorAll(targetClass)
@@ -76,6 +83,7 @@ export function RemoveLikeClass(e, focusClass, targetClass){
     })
   }
 }
+
 export function AddLikeClass(e, focusClass, targetClass){
   let insideFocus = false
   let focusArray = document.querySelectorAll(targetClass)
@@ -90,6 +98,7 @@ export function AddLikeClass(e, focusClass, targetClass){
     })
   }
 }
+
 export function CheckIncludes( e, focusClass ){
   let verified = false
   let focusArray = pickAll(focusClass)
@@ -98,11 +107,13 @@ export function CheckIncludes( e, focusClass ){
   })
   return verified
 }
+
 export function RemoveAllClass( focusClass, targetClass){
   let focusArray = pickAll(targetClass)
   //remove all class from similar item in the DOM
   focusArray.forEach( i => i.classList.remove(focusClass))
 }
+
 export function revAnimationTimeline(factor, focusclass, top = 0, bottom = top , focus = factor){
     const end = window.innerHeight - bottom
     const scrolltracker = factor.getBoundingClientRect().y
@@ -115,6 +126,7 @@ export function revAnimationTimeline(factor, focusclass, top = 0, bottom = top ,
       focus.classList.remove(focusclass)
     }
 }
+
 export const scrollCheck = (focus, parent, ancestor = parent) => {
   const par = pick(`.${parent}`)
   const anc = pick(`#${ancestor}`)

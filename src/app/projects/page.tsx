@@ -9,7 +9,7 @@ import React, { useEffect, useState } from 'react'
 import { FirstCase, RemoveLikeClass, Toggle } from '@/src/components/functions'
 import { useProjectContext } from '@/src/context/ProjectContext'
 import { Defaultbg, NewFilterSets } from '@/src/components/pageParts'
-import { Cloudsvg, Githubsvg, Inboxsvg, Linksvg, loaderCircleSvg, ProjectSvg, Refreshsvg, Rocketsvg, Searchsvg, SupportSvg, TagSvg } from '@/src/components/svgPack'
+import { GlobeSvg, Githubsvg, Inboxsvg, Linksvg, loaderCircleSvg, ProjectSvg, Refreshsvg, Rocketsvg, Searchsvg, SupportSvg, TagSvg } from '@/src/components/svgPack'
 
 function ProjectPacks({project}: {project: Projects}) {
   const provider = project.provider
@@ -25,7 +25,7 @@ function ProjectPacks({project}: {project: Projects}) {
         {project.reason && <p className={style[project.status]}>{project.reason}</p>}
         <p><span>{date}</span> <span className={style[project.status]}>{project.status}</span></p>
         <span className={`${style.signed} ${project.signed ? 'text-[var(--success)]' : 'text-[var(--error)]'}`}> <svg ></svg>{project.signed ? 'Signed' : 'Not signed'}</span>
-        <p style={{gap: '10px', justifyContent: 'flex-end'}}>{provider === 'github' ? Githubsvg('BIG') : provider === 'domain'  && Cloudsvg()}{FirstCase(provider)}</p>
+        <p style={{gap: '10px', justifyContent: 'flex-end'}}>{provider === 'github' ? Githubsvg('BIG') : provider === 'domain'  && GlobeSvg()}{FirstCase(provider)}</p>
       </div>
       <p style={{justifyContent: 'flex-end'}}>
         <Link href={'/projects/'+project._id}>{Linksvg()}</Link>

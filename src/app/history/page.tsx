@@ -64,9 +64,9 @@ const History = () => {
       }}/>)
     else return result ? (
       <div className={styles.hist_Pack}>
-        <div className='flex font-medium justify-between gap-2.5 w-full px-7 text-[var(--deepSweetPurple)] mb-2.5'>
+        <div className='grid px-5 mb-2.5 gap-2.5 w-full text-center font-medium text-[var(--deepSweetPurple)]' style={{ gridTemplateColumns: '1fr 3fr 2fr 1fr' }}>
           <p>Time</p>
-          <p className='flex-[0.4]'>Title</p>
+          <p>Title</p>
           <p>Target</p>
           <p>Status</p>
         </div>

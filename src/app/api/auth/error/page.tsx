@@ -20,7 +20,7 @@ const Page = () => {
             search={'error'}
             fallback={'This may be due to unstable internet connection, wrong url-entry or aborted verification.'}
           />
-          <Back />
+          <Back number={2} />
           <Link href='/help'>{Helpsvg()}<span>Help</span></Link>
           <LogLink />
         </div>

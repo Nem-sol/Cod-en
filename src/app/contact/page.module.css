@@ -91,7 +91,7 @@
   display: flex;
   row-gap: 20px;
   padding: 10px;
-  min-width: 275px;
+  min-width: 320px;
   max-width: 650px;
   flex-direction: column;
 }
@@ -192,6 +192,35 @@
   font-weight: 600;
   align-self: center;
   color: var(--error);
+}
+.caller{
+  display: flex;
+  gap: 20px 50px;
+  flex-wrap: wrap;
+}
+.caller div{
+  display: flex;
+  gap: 10px 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.caller a{
+  gap: 15PX;
+  padding: 0;
+  display: flex;
+  width: fit-content;
+  align-items: center;
+}
+.caller span{
+  background-color: transparent;
+}
+.caller a svg{
+  padding: 4px;
+  min-width: 27.5px;
+  min-height: 27.5px;
+  border-radius: 100%;
+  color: var(--background);
+  background-color: var(--translucent);
 }
 
 /* Admin contact page css styles */
@@ -436,6 +465,9 @@
   .all{
     width: 80%;
     min-width: 0;
+  }
+  .form{
+    min-width: 275px;
   }
 }
 

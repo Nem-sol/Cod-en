@@ -1,30 +1,20 @@
 'use client'
 import Link from 'next/link'
+import { User } from '@/types'
 import style from './page.module.css'
 import styles from '../main.module.css'
-import { signOut, useSession } from 'next-auth/react'
 import Footer from '@/src/components/Footer'
+import stylez from '../(auth)/page.module.css'
 import React, { useEffect, useState } from 'react'
+import { signOut, useSession } from 'next-auth/react'
 import { PasswordInput } from '@/src/components/ChatBox'
 import { useUserContext } from '@/src/context/UserProvider'
 import { CheckIncludes, FirstCase } from '@/src/components/functions'
-import { Editsvg, EyeClosedSvg, Eyesvg, Githubsvg, LogoutSvg, Padlocksvg, Refreshsvg, SettingSvg, Packssvg, GoogleG, Cloudsvg, AddSvg, Rocketsvg, Leftsvg, loaderCircleSvg, checkmarkSvg, DeleteSvg } from '@/src/components/svgPack'
+import { Editsvg, EyeClosedSvg, Eyesvg, Githubsvg, LogoutSvg, Padlocksvg, Refreshsvg, SettingSvg, Packssvg, GoogleG, GlobeSvg, AddSvg, Rocketsvg, Leftsvg, loaderCircleSvg, checkmarkSvg, DeleteSvg } from '@/src/components/svgPack'
 
 type sets = {
   answer: string
   question: string
-}
-
-type User ={
-  name: string
-  role: string
-  email: string
-  provider: string
-  createdAt: string
-  updatedAt: string
-  exclusive: boolean
-  backupEmail:  string | null
-  recoveryQuestions: string[]
 }
 
 const Settings = () => {
@@ -32,14 +22,17 @@ const Settings = () => {
   const [ err , setErr ] = useState('')
   const [ pass , setPass ] = useState('')
   const [ name , setName ] = useState('')
+  const [ code , setCode ] = useState('')
   const [ email , setEmail ] = useState('')
   const [ backup , setBackup ] = useState('')
   const [ ready , setReady ] = useState(false)
+  const [ logout , setLogOut ] = useState(false)
   const [ update , setUpdate ] = useState(false)
   const [ verify , setVerify ] = useState(false)
   const [ success, setSuccess ] = useState(false)
   const [ loading, setLoading ] = useState(false)
   const [ password , setPassword ] = useState('')
+  const [ require , setRequire ] = useState(false)
   const [ deleting , setDeleting ] = useState(false)
   const [ disclose , setDisclose ] = useState(false)
   const [ changeArr , setChangeArr ] = useState([''])
@@ -50,6 +43,42 @@ const Settings = () => {
 
   const handleClick = (e: React.MouseEvent<HTMLFormElement>)=>{!CheckIncludes(e, `.${style.updator} menu`) && !CheckIncludes(e, `.${style.updator} input`) &&!CheckIncludes(e, `.${style.updator} menu span`) && setRecovery(( prev: sets[] )=> [...prev.filter((f: sets)=> f.question.trim() !== '' && f.answer.trim() !== '')])}
 
+  const requestLogout = async ( not = false ) => {
+    setErr('')
+    if ( !logout ) return setLogOut( true )
+    if ( !password.trim() ) return setErr('Please enter password')
+    if ( password.length < 6 ) return setErr('Incorrect password')
+    setLoading(true)
+    const res = await fetch('/api/users',{
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'authorization': `Bearer ${user.id}`
+      },
+      body: JSON.stringify({ code: require && !not ? code : null ,  password })
+    })
+    const contentType = res.headers.get('content-type')
+
+    if (!contentType || !contentType.includes('application/json')) {
+      setLoading(false)
+      setErr('Unexpected server error. Try again later')
+      return
+    }
+    const result = await res.json()
+    if (!res.ok) {
+      if (result.error === 'OTP sent to email sucessfully') setRequire(true)
+      else setErr(result.error)
+    } else {
+      setErr('Logging you out...')
+      await signOut()
+    }
+    setLoading( false )
+  }
+
+  const handleEnterCode = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const codes = e.target.value.trim().toUpperCase().replace(/[^0-9] + [^A-Z]/g, "");
+    setCode(codes)
+  }
   const handleDelete = async (i: number) => {
     if (!user) return
     if (ready) {
@@ -61,9 +90,9 @@ const Settings = () => {
       setEr('')
       setLoading(true)
       const res = await fetch('/api/users',{
-        method: 'DELETE',
+        method: 'PATCH',
         headers: {
-          'Cntent-Type': 'application/json',
+          'Content-Type': 'application/json',
           'authorization': `Bearer ${user.id}`
         },
         body: JSON.stringify({ i , password })
@@ -101,7 +130,7 @@ const Settings = () => {
       const res = await fetch('/api/users',{
         method: 'POST',
         headers: {
-          'Cntent-Type': 'application/json',
+          'Content-Type': 'application/json',
           'authorization': `Bearer ${user.id}`
         },
         body: JSON.stringify({ recoveryQuestions: recovery , password})
@@ -164,7 +193,7 @@ const Settings = () => {
       const res = await fetch('/api/users',{
         method: 'POST',
         headers: {
-          'Cntent-Type': 'application/json',
+          'Content-Type': 'application/json',
           'authorization': `Bearer ${user.id}`
         },
         body: JSON.stringify({ name , email , newPassword: pass , password , backup })
@@ -221,8 +250,8 @@ const Settings = () => {
           </div>
           <div className='flex font-medium gap-2.5 text-[1em] text-[var(--changingPurple)] border-t-[#9f76a0] border-t-2 mx-5 flex-col'>
             <p className='flex gap-2.5 items-center p-2 transition-[0.5s]'>{Packssvg('BIG')} Subscriptions <span>{user && user.exclusive ? 'Active' : 'Inactive'}</span></p>
-            {user && <p className='flex gap-2.5 items-center p-2 transition-[0.5s]'>{user.provider === 'github' ? Githubsvg() : user.provider === 'google' ? GoogleG() : Cloudsvg()} Provider <span>{user ? FirstCase(user.provider) : 'Custom'} provider</span></p>}
-            {!user && <p className='flex gap-2.5 items-center p-2 transition-[0.5s]'> {Cloudsvg()} Provider <span> Custom</span></p>}
+            {user && <p className='flex gap-2.5 items-center p-2 transition-[0.5s]'>{user.provider === 'github' ? Githubsvg() : user.provider === 'google' ? GoogleG() : GlobeSvg()} Provider <span>{user ? FirstCase(user.provider) : 'Custom'} provider</span></p>}
+            {!user && <p className='flex gap-2.5 items-center p-2 transition-[0.5s]'> {GlobeSvg()} Provider <span> Custom</span></p>}
           </div>
           <div className={style.setts}>
             <span>Recovery questions</span>
@@ -259,8 +288,8 @@ const Settings = () => {
           </div>
           <p className='flex gap-4'>
             {error && <button className={style.button} onClick={()=>setRefresh((prev : boolean)=> !prev)}>{Refreshsvg()} Refresh details</button>}
-            {user && <button className={style.button + ' text-[var(--error)!important]'} onClick={()=>signOut()}>{LogoutSvg()} Log out</button>}
             {user && user.provider === 'custom' && <button className={style. button} onClick={()=> setUpdate(true)}>{Editsvg()} Update credentials</button>}
+            <button onClick={() => requestLogout()} className={style.logout}> {LogoutSvg()} Request Log out</button>
           </p>
         </div>
         {update && <>
@@ -270,7 +299,7 @@ const Settings = () => {
             <div className={style.holder} style={{translate:  verify ? '-50%' : 0}}>
               <section style={{gap: '25px'}}>
                 <span>Update credentials</span>
-                <h3 className='text-[var(--changingPurple)]'>{Editsvg('BIG')} Update only desired fields</h3>
+                <b className='text-[var(--changingPurple)] font-semibold self-center text-[1.1em]'>{Editsvg('BIG')} Update only desired fields</b>
                 {user?.provider === 'custom' && <div className={style.input}>
                   <p>User name</p>
                   <input type="text" name='name' value={name} onChange={(e: React.ChangeEvent<HTMLInputElement>)=>setName(e.target.value.endsWith('  ') ? e.target.value.slice(0, -1) : e.target.value )}/>
@@ -306,6 +335,23 @@ const Settings = () => {
             </div>
           </form>
           </>}
+
+        {
+          logout && <>
+            <div className={style.mask} onClick={() => { setErr(''); setCode(''); setRequire( false ); setLogOut( false ); setPassword('')}}></div>
+            <section className={stylez.verify}>
+              <h2>Confirm logout request</h2>
+              <p className='w-4/5'>{ loading ? !require ? 'Generating OTP...' : 'Requesting log out...' : 'This action will make your account inacessible except by recovery. '}{ !loading && <Link href='/help/account' className='text-[var(--deepSweetPurple)]'>Learn more</Link>}</p>
+              <PasswordInput placeholder='Enter Password' value={password} onChange={(e: React.ChangeEvent<HTMLInputElement>)=> setPassword(e.target.value.trim())} classes={stylez.password}/>
+              { require && <PasswordInput placeholder='Enter OTP' value={code} onChange={handleEnterCode} classes={stylez.password}/>}
+              <p style={{ color: 'var(--error)', fontWeight: '600' , minHeight: '22.5px'}}>{err}</p>
+              <div className='flex gap-2.5 w-full justify-evenly'>
+                <button onClick={() => requestLogout()} disabled={loading} style={{color: 'var(--translucent)'}}>{ require ? loading ? 'Sending...' : 'Confirm Log out' : loading ? 'Requesting OTP...' : 'Request OTP' }</button>
+                { require && <button onClick={() => requestLogout(true)} disabled={loading} style={{color: 'var(--translucent)'}}> Resend OTP </button>}
+              </div>
+            </section>
+          </>
+        }
       </div>
       <Footer />
     </main>

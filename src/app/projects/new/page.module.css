@@ -524,8 +524,11 @@
     width: 18px;
     height: 18px;
   }
+  .fillerForm #providers .input{
+    overflow: hidden;
+  }
   .fillerForm #providers .input input:focus{
-    min-width: 100%;
+    min-width: calc( 100% + 10px );
   }
   .fillerForm #providers .input:focus span,
   .fillerForm #providers .input input:focus + span{

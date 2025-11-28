@@ -9,6 +9,8 @@
     "dev:socket": "tsx socket-server/socket.ts",
     "build": "next build --turbopack",
     "start": "next start",
+    "start:socket": "node socket-server/dist/socket.js",
+    "build:socket": " node socket-server/build.mjs",
     "lint": "eslint"
   },
   "dependencies": {
@@ -34,6 +36,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "concurrently": "^9.2.1",
+    "esbuild": "^0.27.0",
     "eslint": "^9",
     "eslint-config-next": "15.5.4",
     "tailwindcss": "^4",

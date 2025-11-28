@@ -6,13 +6,14 @@ import styles from './page.module.css'
 import style from './../main.module.css'
 import Footer from '@/src/components/Footer'
 import React, { useEffect, useState } from 'react'
-import { FirstCase, RemoveLikeClass, Toggle } from '@/src/components/functions'
+import { emails, tels } from '@/src/utils/apiTools'
 import { useSocket } from '@/src/context/SocketContext'
 import { useUserContext } from '@/src/context/UserProvider'
 import { useContact } from '@/src/context/MessageContext'
 import ChatInput, { PasswordInput } from '@/src/components/ChatBox'
+import { FirstCase, RemoveLikeClass, Toggle } from '@/src/components/functions'
 import { Defaultbg, NewDropSets, NewFilterSets , Notify } from '@/src/components/pageParts'
-import { AddSvg, Bugsvg, cancelSvg, checkmarkSvg, FolderSvg, Helpsvg, Inboxsvg, Leftsvg, loaderCircleSvg, Refreshsvg, Searchsvg, SupportSvg } from '@/src/components/svgPack'
+import { AddSvg, Bugsvg, cancelSvg, checkmarkSvg, FolderSvg, Helpsvg, Inboxsvg, Leftsvg, loaderCircleSvg, Mailsvg, Refreshsvg, Searchsvg, SupportSvg } from '@/src/components/svgPack'
 
 const Contact = () => {
   const { socket , ready } = useSocket()
@@ -123,7 +124,13 @@ const Contact = () => {
           </section>
           <h3 className={styles.h3}>
             <p><span>Or</span></p>
-            <p>Reach out to us: <em></em></p>
+            <div className={styles.caller}>Reach out to us: 
+              <div>
+                <a href={`mailto:${ emails }`}>{Mailsvg()} <span>{ emails}</span></a>
+                <a href={`tel:${ tels }`}>{Mailsvg()} <span> { tels } </span></a>
+                <Link href=''>{Mailsvg()} <span>codendevs@gmail.com</span></Link>
+              </div>
+            </div>
           </h3>
         </form>
         <Footer />

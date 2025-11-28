@@ -10,7 +10,7 @@ import React, { ReactNode, useEffect, useState } from 'react'
 import { NewDropSets, Notify } from '@/src/components/pageParts'
 import { useProjectContext } from '@/src/context/ProjectContext'
 import { classAdd, classRemove, classToggle, Click, FirstCase, pick, RemoveOtherClass } from '@/src/components/functions'
-import { AddProjectsvg, AddSvg, Buildsvg, Cloudsvg, Devsvg, FolderSvg, Githubsvg, Helpsvg, HTMLsvg, Leftsvg, loaderCircleSvg, Nextsvg, Nodesvg, ProjectSvg, Reactsvg, Rocketsvg, Rustsvg, TagSvg, Vercelsvg } from '../../../components/svgPack'
+import { AddProjectsvg, AddSvg, Buildsvg, GlobeSvg, Devsvg, FolderSvg, Githubsvg, Helpsvg, HTMLsvg, Leftsvg, loaderCircleSvg, Nextsvg, Nodesvg, ProjectSvg, Reactsvg, Rocketsvg, Rustsvg, TagSvg, Vercelsvg } from '../../../components/svgPack'
 
 type Blogs = {
   props: {
@@ -410,10 +410,10 @@ const NewProject = () => {
                       {svg: Githubsvg('p-0.5'), txt: 'Github', query: 'github', func: ()=>setProvider('github')}
                     ] : type !== 'part' ? [
                       {svg: Vercelsvg('p-0.5'), txt: 'Vercel', query: 'vercel', func: ()=>setProvider('vercel')},
-                      {svg: Cloudsvg(), txt: 'Domain', query: 'domain', func: ()=>setProvider('domain')}
+                      {svg: GlobeSvg(), txt: 'Domain', query: 'domain', func: ()=>setProvider('domain')}
                     ] : [
                       {svg: Vercelsvg('p-0.5'), txt: 'Vercel', query: 'vercel', func: ()=>setProvider('vercel')},
-                      {svg: Cloudsvg(), txt: 'Domain', query: 'domain', func: ()=>setProvider('domain')},
+                      {svg: GlobeSvg(), txt: 'Domain', query: 'domain', func: ()=>setProvider('domain')},
                       {svg: Githubsvg('p-0.5'), txt: 'Github', query: 'github', func: ()=>setProvider('github')}
                     ]
                   }}/>

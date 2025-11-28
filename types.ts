@@ -1,3 +1,17 @@
+export type User ={
+  _id: string
+  name: string
+  role: string
+  email: string
+  provider: string
+  createdAt: string
+  updatedAt: string
+  exclusive: boolean
+  requestLogout: boolean
+  backupEmail:  string | null
+  recoveryQuestions: string[]
+}
+
 export type Msg = {
   _id: string;
   sent: boolean;

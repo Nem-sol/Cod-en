@@ -1,13 +1,13 @@
 import dotenv from "dotenv"
 import bcrypt from "bcrypt"
-import { Msg } from "@/types.js"
+import { Msg } from "../types.js"
 import { Server } from "socket.io"
 import { createServer } from "node:http"
-import User from "@/src/models/User.jsx"
+import User from "../src/models/User.js"
 import connect from "../src/utils/db.js"
 import Inbox from "../src/models/Inbox.js"
-import sendMail from "@/src/utils/mailer.js"
-import Message from "@/src/models/Message.js"
+import sendMail from "../src/utils/mailer.js"
+import Message from "../src/models/Message.js"
 import Project from "../src/models/Project.js"
 
 dotenv.config()
@@ -49,7 +49,7 @@ const app = async () => {
       userProjects.forEach((p) => socket.join(`project:${p._id}`))
       userInboxes.forEach((i) => socket.join(`inbox:${i._id}`))
 
-      if (isAdmin) socket.join('admin')
+      if (isAdmin) socket.join("admin")
 
       socket.on("send-message", async ({ inboxId, msg, type = "message" }) => {
         try {
@@ -167,6 +167,13 @@ const app = async () => {
 
           socket.emit("inbox-created", newInbox)
           socket.emit("project-created", newProject)
+
+          io.in('admin').socketsJoin(`project:${newProject._id}`)
+
+          io.in('admin').socketsJoin(`inbox:${newInbox._id}`)
+
+          io.to('admin').emit('inbox-created', newInbox )
+          io.to('admin').emit('project-created', newProject )
         } catch (err) {
           console.log(err)
           socket.emit("project-error", { message: "Failed to create project" })

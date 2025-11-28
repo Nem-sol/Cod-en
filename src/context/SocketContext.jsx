@@ -1,6 +1,7 @@
 "use client";
 import { io } from "socket.io-client";
 import { useSession } from "next-auth/react";
+import { socketUrl } from "../utils/apiTools";
 import { createContext, useContext, useEffect, useState } from "react";
 
 const SocketContext = createContext();
@@ -17,7 +18,7 @@ export function SocketProvider({ children }) {
     const connectSocket = async () => {
       if (socket) return
       try {
-        const s = io( process.env.socketURL || 'http://localhost:4000' , {
+        const s = io( socketUrl , {
           autoConnect: true,
           reconnection: true,
           withCredentials: true,

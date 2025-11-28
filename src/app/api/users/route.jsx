@@ -1,12 +1,15 @@
 import bcrypt from 'bcrypt'
 import validator from 'validator'
+import { format } from 'date-fns'
 import connect from '@/src/utils/db'
 import User from '../../../models/User'
 import { getToken } from 'next-auth/jwt'
 import sendMail from '@/src/utils/mailer'
 import { NextResponse } from 'next/server'
 import History from '../../../models/History'
+import { onTime } from '@/src/utils/apiTools'
 import Notification from '../../../models/Notification'
+import { generateOTP, validateOTP } from '@/src/utils/Otp'
 
 export const GET = async (req) => {
   await connect()
@@ -24,6 +27,7 @@ export const GET = async (req) => {
     if (userDetails.requestLogout) return NextResponse({ email: null }, { status: 200 })
 
     return NextResponse.json({
+      _id: userDetails._id,
       role: userDetails.role,
       name: userDetails.name,
       email: userDetails.email,
@@ -175,19 +179,13 @@ export const POST = async (req) => {
         { status: 400 }
       )
     }
-    
-    // Compute expiration time safely (no timezone issues)
-    // updatedAt is stored as UTC in MongoDB by default
-    const nowUTC = Date.now(); // also UTC
-    const expiryUTC = updatedAtUTC + 3 * 60 * 60 * 1000;
-    const updatedAtUTC = new Date(user.updatedAt).getTime();
 
-    if (nowUTC < expiryUTC) {
+    if (!onTime( user.updatedAt , 180 )) {
       await sendMail({
         to: user.email ,
         subject : `Profile settings alert`,
         text: `Profile update failure for ${user.name}` ,
-        link: {cap: 'For more security advice, view ', address: `/help/security}`, title: 'cod-en security approach'},
+        link: {cap: 'For more security advice, view ', address: `/help/security`, title: 'cod-en security approach'},
         messages: [
           `Unusual attempt to change settings for ${user.name} has been noticed.`,
           'If this was not you, log into your account and change log-in details and request logout immediately'
@@ -234,7 +232,7 @@ export const POST = async (req) => {
       status: 'Successful',
       target: updatedUser.name,
       title: 'Successful update',
-      message: `Successful credential update at ${new Date().toLocaleString()}.`})
+      message: `Successful credential update at ${format(new Date.now(), "do MMMM, yyyy")}.`})
     await Notification.create({
       read: false,
       important: true,
@@ -284,12 +282,11 @@ export const POST = async (req) => {
       title: 'Credential updates failure',
       message: 'Could not update credentials due to unknown error. Try again later!'})
     }
-    console.log(error)
     return NextResponse.json({ error: 'Something went wrong. Please try again' }, { status: 500 })
   }
 }
 
-export const DELETE = async (req) => {
+export const PATCH = async (req) => {
   try {
     const { i , password } = await req.json();
     await connect();
@@ -345,11 +342,7 @@ export const DELETE = async (req) => {
 
     if (typeof i !== 'number') return NextResponse.json({ error: 'Number should be a figurative value' }, { status: 400 })
 
-    const nowUTC = Date.now();
-    const updatedAtUTC = new Date(user.updatedAt).getTime();
-    const expiryUTC = updatedAtUTC + 3 * 60 * 60 * 1000;
-
-    if (nowUTC < expiryUTC) {
+    if (!onTime( user.updatedAt , 180 )) {
       await sendMail({
         to: user.email ,
         subject : `Profile settings alert`,
@@ -378,7 +371,7 @@ export const DELETE = async (req) => {
         userId: user._id,
         target: user.name,
         title: `Successful credential update for ${user.name}`,
-        message: `Recovery question deleted successfully at ${new Date().toLocaleString()}`,
+        message: `Recovery question deleted successfully at ${format(new Date.now(), "do MMMM, yyyy")}`,
       });
 
       await sendMail({
@@ -387,7 +380,7 @@ export const DELETE = async (req) => {
         text: `Successful credential update for ${user.name}` ,
         subject : `Successful credential update for ${user.name}`,
         messages: [
-          `Recovery question deleted successfully at ${new Date().toLocaleString()}`,
+          `Recovery question deleted successfully at ${format(new Date.now(), "do MMMM, yyyy")}`,
           'If this was not you, log into your account and change log-in details and request logout immediately'
         ],
       })
@@ -404,7 +397,7 @@ export const DELETE = async (req) => {
         text: `Successful credential update for ${user.name}` ,
         subject : `Successful credential update for ${user.name}`,
         messages: [
-          `Recovery question deleted successfully at ${new Date().toLocaleString()}`,
+          `Recovery question deleted successfully at ${format(new Date.now(), "do MMMM, yyyy")}`,
           'If this was not you, log into your account and change log-in details and request logout immediately'
         ],
       })
@@ -422,3 +415,112 @@ export const DELETE = async (req) => {
   }
 };
 
+export const DELETE = async ( req ) => {
+  try {
+    const { password } = await req.json();
+    await connect();
+
+    if (!password)
+      return NextResponse.json(
+        { error: "Password required to update changes" },
+        { status: 400 }
+      );
+
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    if (!token)
+      return NextResponse.json(
+        { error: "Unauthorized request declined" },
+        { status: 401 }
+      );
+
+    const user = await User.findById(token.id);
+    if (!user)
+      return NextResponse.json(
+        { error: "Could not find user account" },
+        { status: 404 }
+      );
+
+    const passCorrect = await bcrypt.compare(password, user.password);
+    if (!passCorrect){
+      await sendMail({
+        link: null,
+        to: user.email ,
+        text: `Logout request failure for ${user.name}` ,
+        subject : `Logout request failure for ${user.name}`,
+        messages: [
+          `Request-logout attempt failed due to incorrect password`,
+          'If this was not you, log into your account, change log-in details and request logout immediately'
+        ],
+      })
+      return NextResponse.json({ error: "Incorrect password" }, { status: 400 });
+    }
+
+    if (user.requestLogout) return NextResponse.json({ error: "User has requested logout already" }, { status: 400 });
+
+    if ( !code ) {
+      const code = await generateOTP( user._id )
+  
+      await sendMail({
+        code,
+        to: email,
+        text: `Logout request OTP for ${email}` ,
+        subject : `Logout request OTP for ${email}`,
+        link: {cap: 'For more information on Cod-en logout request process, view ', address: '/help/account', title: 'account help page'},
+        messages: [
+          `Your Logout request one-time-password is shown above`,
+          'This OTP lasts for only ten minutes. Use it quick before it expires'
+        ],
+      })
+  
+      return NextResponse.json({ error: 'OTP sent to email sucessfully' }, { status: 400 })
+    }
+
+    const valid = await validateOTP( user._id , code )
+    
+    if ( !valid ) return NextResponse.json({ error: 'OTP is not correct. Check email for OTP or resend' }, { status: 400 })
+
+    user.requestLogout = true
+    await user.save()
+
+    const history = await History.create({
+      type: 'Profile',
+      class: 'update',
+      userId: user._id,
+      target: user.name,
+      status: 'Successful',
+      title: 'Request-logout success',
+      message: `User requested logout successfully at ${format(new Date.now(), "do MMMM, yyyy")}. Your account is now inaccessible. Recover account to continue to Cod-en`})
+
+    await Notification.create({
+      read: false,
+      important: true,
+      type: 'Profile',
+      class: 'update',
+      userId: user._id,
+      target: user.name,
+      link: `/history/${history._id.toString()}`,
+      title: `${user.name} requested logout successfully at ${format(new Date.now(), "do MMMM, yyyy")}. Your account is now inaccessible. Recover account to continue to Cod-en`,
+      message: `Successful credential updates. User updated ${updateArr.join(', ')} successfully`})
+
+    await sendMail({
+      to: user.email ,
+      text: `Request-logout success for ${user.name}` ,
+      subject : `Request-logout success for ${user.name}`,
+      link: {cap: 'For more information on account recovery, view ', address: 'help/account', title: 'recovery guides'},
+      messages: [
+        'You have been successfully logged out of Cod-en via "request logout" attempt',
+        'This means that you will be unable to access notifications, projects, inbox and all Cod-en services and you will be logged out from Cod-en across all devices.',
+        'You can gain access by recovering your account from our recoovery page through recovery questions or OAuth',
+        'Waiting for your return ...',
+        'The Cod-en team'
+      ],
+    })
+    return NextResponse.json({ status: 200 })
+
+  } catch (error) {
+    return NextResponse.json(
+      { error: error.message.includes('OTP') ? error.message : "Something went wrong. Please try again." },
+      { status: 500 }
+    );
+  }
+}

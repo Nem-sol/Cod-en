@@ -226,11 +226,12 @@ export default function Navbar() {
       </section>
       <section className="links" onMouseEnter={()=> window.innerWidth > 650 && classAdd('nav', 'inView')}>
         <Link href='/dashboard'>{HomeSvg()}</Link>
-        <Link href='/projects'>{ProjectSvg()}</Link>
-        <Link href='/notifications'>{NotificationSvg()}{unread > 0 && <span className='bg-[var(--error)] rounded-full aspect-square min-w-5.5 text-[15px] flex items-center justify-center text-white -top-[5px] -right-[3px]' style={{position: 'absolute', boxShadow: '0 1px 4px rgba(0, 0, 0, 0.3), 0 2px 3px rgba(0, 0, 0, 0.2)'}}>{unread > 9 ? '9' : unread}</span>}</Link>
-        <Link href='/tutorials'>{TagSvg('BIG hover:rotate-90')}</Link>
-        <Link href='/settings'>{SettingSvg('hover:rotate-90')}</Link>
-        <Link href='/help'>{Helpsvg('hover:scale-[1.25]')}</Link>
+        <Link href='/projects' className='group'>{ProjectSvg('group-hover:-rotate-15')}</Link>
+        <Link href='/notifications' className='group'>{NotificationSvg('top-0 group-hover:-top-1')}{unread > 0 && <span className='bg-[var(--error)] rounded-full aspect-square min-w-5.5 text-[15px] flex items-center justify-center text-white -top-[5px] -right-[3px]' style={{position: 'absolute', boxShadow: '0 1px 4px rgba(0, 0, 0, 0.3), 0 2px 3px rgba(0, 0, 0, 0.2)'}}>{unread > 9 ? '9' : unread}</span>}
+        </Link>
+        <Link href='/tutorials' className='group'>{TagSvg('BIG group-hover:rotate-90')}</Link>
+        <Link href='/settings' className='group'>{SettingSvg('group-hover:rotate-90')}</Link>
+        <Link href='/help' className='group'>{Helpsvg('group-hover:scale-[1.25]')}</Link>
       </section>
     </nav>
   )

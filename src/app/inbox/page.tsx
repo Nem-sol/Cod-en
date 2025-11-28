@@ -14,9 +14,6 @@ import { Copier, Defaultbg } from '@/src/components/pageParts'
 import { classRemove, classToggle, FirstCase } from '@/src/components/functions'
 import { Backsvg, checkmarkSvg, dblChecksvg, HistorySvg, Inboxsvg, loaderCircleSvg, Moresvg, ProjectSvg, Rocketsvg, Searchsvg, SupportSvg } from '@/src/components/svgPack'
 
-type InboxPacks = {
-  inb: Inboxes[]
-}
 
 const Inbox = () => {
   const [ id , setId ] = useState('')
@@ -45,7 +42,7 @@ const Inbox = () => {
 
   useEffect(()=>{
     if ( !isLoading && inbox.length < 1 ) setRefresh(true)
-  }, [ ])
+  }, [ user ])
 
   function Filter(filters: string){
     let filtered
@@ -85,7 +82,7 @@ const Inbox = () => {
             <section className={`${style.hidden} hidden2`}>
               <span>{active?.title}</span>
               <span>{FirstCase(active?.status)}</span>
-              <span>Unread - {active?.messages.filter((msg: Msg) => user.id === active.userId ? !msg.sent : msg.sent).length}</span>
+              <span>Unread - {active.messages.filter((msg: MSg) => user.id === active.userId ? !msg.sent && !msg.read : msg.sent && !msg.read ).length}</span>
               <span>{format(active!.createdAt, "do MMMM, yyyy")}</span>
               <span>{active?._id}</span>
             </section>

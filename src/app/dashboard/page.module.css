@@ -51,20 +51,21 @@
 }
 .moderator div{
   height: 0;
-  padding: 0;
+  opacity: 0;
   display: flex;
   color: inherit;
-  overflow: hidden;
-  transition: 0.5s;
   font-weight: 600;
+  transition: 0.5s;
+  overflow: hidden;
+  padding-inline: 20px;
   transition-delay: 0.2s;
   flex-direction: column;
   justify-content: space-between;
 }
 .moderator .active div{
+  opacity: 1;
   height: 100px;
-  padding: 12px 20px;
-  padding-top: 10px;
+  padding-block: 10px 12px;
 }
 .moderator section div a{
   min-width: 125px;

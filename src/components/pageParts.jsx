@@ -1,21 +1,29 @@
 'use client'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter, useSearchParams } from 'next/navigation';
 import { signOut, useSession } from "next-auth/react"
 import { ThemeContext } from '../context/ThemeContext'
 import { useContext, useEffect, useState } from 'react'
 import { useEmail } from '../context/ProtectionProvider'
 import { useUserContext } from '../context/UserProvider'
 import { useInboxContext } from '../context/InboxContext'
+import { useRouter, useSearchParams } from 'next/navigation';
 import { CheckIncludes, classAdd, classRemove, classToggle, FirstCase, pick, pickAll, RemoveLikeClass, RemoveOtherClass, revAnimationTimeline, scrollCheck } from './functions'
-import { Backsvg, Blogsvg, cancelSvg, Helpsvg, Inboxsvg, Javascriptsvg, Leftsvg, LogInSvg, LogoutSvg, Mailsvg, Nextsvg, Nightsvg, Nodesvg, ProjectSvg, Reactsvg, Rocketsvg, Rustsvg, Sunsvg, SupportSvg, TagSvg, loaderCircleSvg, TypeScriptsvg, Copysvg, checkmarkSvg, Devsvg, Linksvg, HTMLsvg, AppSvg, HomeSvg, dblRightArrowsvg } from './svgPack'
+import { Backsvg, Blogsvg, cancelSvg, Helpsvg, Inboxsvg, Javascriptsvg, Leftsvg, LogInSvg, LogoutSvg, Mailsvg, Nextsvg, Nightsvg, Nodesvg, ProjectSvg, Reactsvg, Rocketsvg, Rustsvg, Sunsvg, SupportSvg, TagSvg, loaderCircleSvg, TypeScriptsvg, Copysvg, checkmarkSvg, Devsvg, Linksvg, HTMLsvg, AppSvg, HomeSvg, dblRightArrowsvg, Packssvg } from './svgPack'
 
 
-export function Back(){
+export function Back({ num = 1 }){
   const router = useRouter()
+  const routes = window.history
+  const number = 0 - Maths.abs(Number(num)) || -1 // always negative
+  const handleBack = () => {
+    if ( routes.length < number ) {
+      if (user) router.push('/dashboard')
+      else router.push('/')
+    } else routes.go( number )
+  }
   return(
-    <button onClick={()=>router.back()}>{Backsvg()}<span>Back</span></button>
+    <button onClick={handleBack}>{Backsvg()}<span>Back</span></button>
   )
 }
 
@@ -80,8 +88,8 @@ export function GuestNav(){
       <Link href='/help'>{Helpsvg()} Help</Link>
       <Link href='/blogs'>{Blogsvg()} Blogs</Link>
       <Link href='/portfolio'>{ProjectSvg()} Portfolio</Link>
-      <Link href='/help/services'>{TagSvg('isBig')} Services</Link>
       <Link href='/contact'>{SupportSvg('isBig')} Contact</Link>
+      <Link href='/payments'>{Packssvg('isBig')} Send gift</Link>
     </div>
   )
 }

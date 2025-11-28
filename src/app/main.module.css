@@ -98,8 +98,8 @@
 .quick{
   display: flex;
   padding: 5px 0;
+  max-width: 100%;
   column-gap: 20px;
-  width: fit-content;
   flex-direction: row;
 }
 .quick a,
@@ -107,9 +107,11 @@
   display: flex;
   column-gap: 5px;
   font-weight: 600;
+  overflow: hidden;
   padding: 7px 15px;
   white-space: nowrap;
   border-radius: 25px;
+  text-overflow: ellipsis;
   color: var(--translucent);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.282), 0 0px 3px rgba(0, 0, 0, 0.282);
 }
@@ -388,10 +390,25 @@
   border-bottom-left-radius: inherit;
   border-bottom-right-radius: inherit;
 }
+.hist p{
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .hist div{
   gap: 10px;
   display: flex;
+  text-align: center;
+  text-overflow: ellipsis;
   justify-content: space-between;
+}
+.hist div:first-child{
+  display: grid;
+  grid-template-columns: 1fr 3fr 2fr 1fr;
+}
+.hist button:last-child svg{
+  padding: 2px;
+  stroke: currentColor;
+  stroke-linecap: round;
 }
 .hist span{
   color: rgb(41, 34, 34);
@@ -439,18 +456,22 @@
     display: none;
   }
 }
-@media screen and (max-width: 500px) {
-  #main{
-    max-width: none;
-    font-size: 0.9em;
-  }
-}
-@media screen and (max-width: 425px) {
+@media screen and (max-width: 525px) {
   .title p{
     display: none;
   }
   .quick .second{
     display: none;
+  }
+}
+@media screen and (max-width: 500px) {
+  #main{
+    max-width: none;
+    font-size: 0.9em;
+    padding-bottom: 15px;
+  }
+  .default_bg{
+    width: 90%;
   }
 }
 @media screen and (max-width: 350px) {
