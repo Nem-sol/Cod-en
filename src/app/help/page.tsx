@@ -40,7 +40,7 @@ const Help = () => {
         </div>
         <div className={styles.default_bg}>
           <div><Image src='/homehero.png' fill={true} alt='Empty help feed'/></div>
-          <h3 className={error && 'text-[var(--error)!important]'}>{!isLoading ? error ? 'Error occured'  : (filters.trim() !== '' && help.filter(( h: Helps )=> h.title.includes(filters.trim()))) ? 'Search term does not exist' : 'Search help titles' : 'Getting help pages ...'}
+          <h3 className={error ? 'text-[var(--error)!important]' : ''}>{!isLoading ? error ? 'Error occured'  : (filters.trim() !== '' && help.filter(( h: Helps )=> h.title.includes(filters.trim()))) ? 'Search term does not exist' : 'Search help titles' : 'Getting help pages ...'}
           <p>{!isLoading ? error ? 'Could not get help pages' : (filters.trim() !== '' && help.filter(( h: Helps )=> h.title.includes(filters.trim()))) ? 'Help title does not exist on Cod-en. Try researching titles' : 'Discover more on Cod-en from our help pages.' : 'Loading help pages data.'}</p></h3>
           {(error || isLoading) && <section className='pt-6 w-full'><button className='flex gap-2.5 items-center justify-center rounded-[25px!important] mx-auto hover:bg-[#fc52524d]' style={{border: 'solid 2px', padding: '5px 23px', fontSize: '16px', color: 'var(--error)', borderColor: 'var(--error)', backgroundImage: 'linear-gradient( to right, #fc52524d, transparent'}} disabled={isLoading} onClick={()=>setRefresh(( prev : boolean)=> !prev)}>{Refreshsvg()} Refresh</button></section>}
         </div>

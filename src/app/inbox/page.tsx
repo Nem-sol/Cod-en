@@ -82,7 +82,7 @@ const Inbox = () => {
             <section className={`${style.hidden} hidden2`}>
               <span>{active?.title}</span>
               <span>{FirstCase(active?.status)}</span>
-              <span>Unread - {active.messages.filter((msg: MSg) => user.id === active.userId ? !msg.sent && !msg.read : msg.sent && !msg.read ).length}</span>
+              <span>Unread - {active?.messages.filter((msg: Msg) => user?.id === active.userId ? !msg.sent && !msg.read : msg.sent && !msg.read ).length}</span>
               <span>{format(active!.createdAt, "do MMMM, yyyy")}</span>
               <span>{active?._id}</span>
             </section>
@@ -103,7 +103,7 @@ const Inbox = () => {
           }}/>}
           {active && active.messages && active.messages.length > 0 && active.messages.map(( mes: Msg , i: number) => {
             const next: Msg = active.messages[i + 1]
-            const isOwner = user.id === active.userId
+            const isOwner = user?.id === active.userId
             const isToday = !next || isSameDay(new Date(next.createdAt) , new Date(mes?.createdAt))
             return <>
               <section key={i} className={`${ isOwner ? !mes.sent ? style.received : 'sent' : mes.sent ? style.received : 'sent'}`}>

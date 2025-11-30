@@ -32,7 +32,7 @@ const Notification = () => {
       const res = await fetch(`/api/notifications`,{
         method: 'PATCH',
         headers: {
-          'authorization': `Bearer ${user.id}`,
+          'authorization': `Bearer ${user?.id}`,
         },
         body: JSON.stringify({id})
       })
@@ -43,7 +43,7 @@ const Notification = () => {
       const res = await fetch(`/api/notifications`,{
         method: 'DELETE',
         headers: {
-          'authorization': `Bearer ${user.id}`,
+          'authorization': `Bearer ${user?.id}`,
         },
         body: JSON.stringify({id})
       })
@@ -63,7 +63,7 @@ const Notification = () => {
     const res = await fetch(`/api/notifications`,{
       method: 'POST',
       headers: {
-        'authorization': `Bearer ${user.id}`,
+        'authorization': `Bearer ${user?.id}`,
       },
       body: JSON.stringify({action})
     })
@@ -110,7 +110,7 @@ const Notification = () => {
           <button onClick={()=>{classToggle(`#n${notification._id}`, styles.inView); RemoveOtherClass(`#n${notification._id}`, styles.inView, `.${styles.noti}`)}}>{Moresvg()}</button>
           <div className={styles.details}>
             <p>{notification.read ? 'Read' : 'Unread'}</p>
-            <p>For: {notification.target === user.name ? 'User' : notification.target}</p>
+            <p>For: {notification.target === user?.name ? 'User' : notification.target}</p>
             <p>Type: {notification.type}</p>
             <p>Created: {friendlyDate}</p>
           </div>

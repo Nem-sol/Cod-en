@@ -142,7 +142,7 @@ const NewProject = () => {
     else {
       setIsLoading(true);
       if ( error ) setRefresh(true)
-      socket.emit("create-project", {
+      socket?.emit("create-project", {
         name,
         type,
         lang,
@@ -181,7 +181,7 @@ const NewProject = () => {
 
   useEffect(()=>{
     if(ready) {
-      socket.on("project-created", ()=> setIsLoading(false))
+      socket?.on("project-created", ()=> setIsLoading(false))
     }
     return () => {
       mode === 'assist' && autoSave()
@@ -190,8 +190,8 @@ const NewProject = () => {
 
   useEffect(()=>{
     if(!ready) return
-    socket.on("project-created", ()=> setIsLoading(false))
-    socket.on("project-error", ( error: {message: string} )=> {
+    socket?.on("project-created", ()=> setIsLoading(false))
+    socket?.on("project-error", ( error: {message: string} )=> {
       setIsLoading(false)
       setError('Could not create project')
       setErr(`${error?.message}. Please try again`)

@@ -28,7 +28,7 @@ const History = () => {
         <div className='w-full'>
           <p>{friendlyDate}</p>
           <p className='flex-[0.4]'>{history.title}</p>
-          <p>{history.target === user.name ? 'User' : history.target}</p>
+          <p>{history.target === user?.name ? 'User' : history.target}</p>
           <p>{history.status}</p>
         </div>
         <div>

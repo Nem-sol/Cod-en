@@ -20,8 +20,9 @@ export default function LoadingBar() {
   const start = () => NProgress.start()
 
   useEffect(() => {
-    const handleLinkClick = (e) => {
-      const link = e.target.closest("a");
+    const handleLinkClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null
+      const link = target?.closest("a");
       if (link && link.href && link.href.startsWith(window.location.origin)) start()
       if (link && link.href && link.pathname === pathname) done()
     }

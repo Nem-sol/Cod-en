@@ -55,10 +55,10 @@ const Payments = () => {
         if (i === e.target && n === 1) { setProvider('paystack'); setType('gift')}
         else if (i === e.target && n === 2) { setProvider('flutterwave'); setType('gift')}
       })
-      const description = desc || `${FirstCase(provider)} ${type} payment from ${ name || user?.name || 'Guest'}`
+      const description = desc || `${FirstCase(provider)} ${type} payment from ${ name || name || 'Guest'}`
       const res = await fetch("/api/payments", {
         method: "POST",
-        body: JSON.stringify({ type, email: user?.email || email, targetId, amount, desc: description, currency, provider, method, userId: user?.id })
+        body: JSON.stringify({ type, email: email || email, targetId, amount, desc: description, currency, provider, method, userId: null })
       });
       
       const data = await res.json();
@@ -82,7 +82,7 @@ const Payments = () => {
         setReason('socket')
         return
       }
-      socket.emit("gift-payments", { type, email: user?.email || email, targetId, amount:  Number(amount.trim()), desc: description, currency, provider, method, userId: user?.id });
+      socket?.emit("gift-payments", { type, email: user?.email || email, targetId, amount:  Number(amount.trim()), desc: description, currency, provider, method, userId: user?.id });
     }
   }
 
@@ -174,7 +174,7 @@ const Payments = () => {
               <input type="text" name='name' value={name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName( e.target.value )} placeholder="Payee's name"/>
             </div>
             <div className={style.input}>
-              <input type="email" name='email' value={email} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail( user ? user.email : e.target.value)} placeholder="Payee's email"/>
+              <input type="email" name='email' value={email} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail( user?.email || e.target.value)} placeholder="Payee's email"/>
             </div>
             <div className={style.input}>
               <input type="text" name='' inputMode='decimal' value={amount} onChange={(e: React.ChangeEvent<HTMLInputElement>) => {

@@ -26,8 +26,8 @@ const Contact = () => {
     const { userDetails: user } = useUserContext()
     const [ success, setSuccess ] = useState(false)
     const [ loading, setLoading ] = useState(false)
-    const [ name, setName ] = useState( user ? user.name : '')
-    const [ email, setEmail ] = useState( user ? user.email : '')
+    const [ name, setName ] = useState( user?.name || '')
+    const [ email, setEmail ] = useState( user?.email || '')
     const handleSubmit = async (e: React.FormEvent) =>{
       setError('')
       e.preventDefault()
@@ -38,7 +38,7 @@ const Contact = () => {
         if (!ready) setError('Unstable internet connection. Try again later')
         else {
           setLoading(true)
-          socket.emit('send-contact', { msg , name: user?.name , email: user?.email , type })
+          socket?.emit('send-contact', { msg , name: user?.name , email: user?.email , type })
         }
       } else {
         setLoading(true)
@@ -46,7 +46,7 @@ const Contact = () => {
           const res = await fetch('/api/messages', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ msg , name: user ? user.name : name , email: user ? user.email : email , type })
+            body: JSON.stringify({ msg , name , email , type })
           });
 
           const contentType = res.headers.get('content-type')
@@ -75,15 +75,15 @@ const Contact = () => {
 
     useEffect(()=> {
       if (!user) return
-      socket.on("contact-error", (error: { message: string})=> setError( error?.message || `Could not send ${type.toLocaleLowerCase()}`))
-      socket.on("contact-success", ()=>{
+      socket?.on("contact-error", (error: { message: string})=> setError( error?.message || `Could not send ${type.toLocaleLowerCase()}`))
+      socket?.on("contact-success", ()=>{
         setSuccess(true)
         setError(`${FirstCase(type)} ${type !== 'message' && 'message'} sent successfully. Cod-en will reach out to you shortly.`)
         setTimeout(()=>{ setSuccess(false) ; setError('') ; setMsg('') }, 3000)
         return () => {
           if (!socket) return
-          socket.off("contact-error")
-          socket.off("contact-success")
+          socket?.off("contact-error")
+          socket?.off("contact-success")
         }
       })
     }, [ ready ])
@@ -97,8 +97,8 @@ const Contact = () => {
             <Image src='/homehero.png' fill={true} alt='contact_img' />
           </div>
           <section className={styles.form}>
-            <input name='name' value={name} type="text" autoComplete='true' autoCorrect='true' placeholder={user ? user.name : 'John Michael'} onChange={(e)=> !user ? setName(e.target.value) : setName(user.name)} onKeyDown={()=> user && setName(user.name)}/>
-            <input name='email' value={email} type="text" autoComplete='true' autoCorrect='true' placeholder={user ? user.email : 'you@example.com'} onChange={(e)=> !user ? setEmail(e.target.value) : setEmail(user.email)} onKeyDown={()=> user && setEmail(user.email)}/>
+            <input name='name' value={name} type="text" autoComplete='true' autoCorrect='true' placeholder={ user?.name || 'John Michael'} onChange={(e)=> setName( user?.name || e.target.value)} onKeyDown={()=> setName(user?.name || '')}/>
+            <input name='email' value={email} type="text" autoComplete='true' autoCorrect='true' placeholder={ user?.email || 'you@example.com'} onChange={(e)=> setEmail( user?.email || e.target.value)} onKeyDown={()=> setEmail(user?.email || '')}/>
             <textarea name='message' value={msg} autoComplete='true' autoCorrect='true' placeholder='Start your message...' onChange={(e)=> setMsg(e.target.value)}/>
             {!user && <span>Access convenient comunication when you <Link href='/signup' style={{color: 'var(--compliment)', fontWeight: '700', whiteSpace: 'nowrap'}}>sign up</Link></span>}
             {error && <p className='text-[var(--error)] font-medium' style={success ? {color: 'var(--success)'} : {}}>{error}</p>}
@@ -179,13 +179,13 @@ const Contact = () => {
       else if (!ready) setErr("Restore internet connection")
       else {
         setOnLoading(true)
-        socket.emit('mail', { subject, password , summary: text , messages: message })
+        socket?.emit('mail', { subject, password , summary: text , messages: message })
       }
     }
 
     useEffect(()=>{
       if (!socket) return
-      socket.on("mailed-to-all", ()=>{
+      socket?.on("mailed-to-all", ()=>{
         setText('')
         sendAll(false)
         setSubject('')
@@ -194,7 +194,7 @@ const Contact = () => {
         setMessages([''])
         setOnLoading( false )
       })
-      socket.on('failed-to-mail', ( errors : { message: string , id: string | null }) => {
+      socket?.on('failed-to-mail', ( errors : { message: string , id: string | null }) => {
         setId(errors.id || '')
         if ( errors.id ) setErrors(errors.message)
         else {
@@ -203,15 +203,15 @@ const Contact = () => {
         }
       })
 
-      socket.on('mailed-to-one', ({ contact }: { contact : Message} )=>{
+      socket?.on('mailed-to-one', ({ contact }: { contact : Message} )=>{
         setErrors('')
         setId(contact?._id)
         setContact(( prev: Message[]) => prev.map((mes: Message) => mes._id === contact?._id ? contact : mes ))
       })
       return () => {
-        socket.off('mailed-to-one')
-        socket.off('mailed-to-all')
-        socket.off('failed-to-mail')
+        socket?.off('mailed-to-one')
+        socket?.off('mailed-to-all')
+        socket?.off('failed-to-mail')
       }
     }, [ socket ])
 
@@ -235,7 +235,7 @@ const Contact = () => {
         else if (!ready) setError("Restore internet connection")
         else {
           setLoading(true)
-          socket.emit('mail-to-one', { msg , pass , id: message._id })
+          socket?.emit('mail-to-one', { msg , pass , id: message._id })
         }
       }
       

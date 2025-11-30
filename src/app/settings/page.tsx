@@ -53,7 +53,7 @@ const Settings = () => {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
-        'authorization': `Bearer ${user.id}`
+        'authorization': `Bearer ${user?.id}`
       },
       body: JSON.stringify({ code: require && !not ? code : null ,  password })
     })
@@ -93,7 +93,7 @@ const Settings = () => {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'authorization': `Bearer ${user.id}`
+          'authorization': `Bearer ${user?.id}`
         },
         body: JSON.stringify({ i , password })
       })
@@ -107,7 +107,13 @@ const Settings = () => {
       }
       const result = await res.json()
       if (!res.ok) setEr(result.error)
-      else setUserDetails((prev: User) => {return { ...prev , recoveryQuestions: [...prev.recoveryQuestions.filter((q: string,  n: number ) =>  n !== i )]}})
+      else setUserDetails((prev: User | null) => {
+        return { ...prev,
+          role: prev?.role || 'user',
+          exclusive: prev?.exclusive || false,
+          requestLogout: prev?.requestLogout || false,
+          recoveryQuestions: [...prev!.recoveryQuestions.filter((q: string,  n: number ) =>  n !== i && q )]}
+      })
       setReady(false)
       setPassword('')
       setLoading(false)
@@ -131,7 +137,7 @@ const Settings = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'authorization': `Bearer ${user.id}`
+          'authorization': `Bearer ${user?.id}`
         },
         body: JSON.stringify({ recoveryQuestions: recovery , password})
       })
@@ -149,7 +155,7 @@ const Settings = () => {
         setSuccess(true)
         setEr('Updates successful')
         setTimeout(()=>{ setSuccess(false); setEr('')}, 1500)
-        setUserDetails((prev: User) => {return { ...prev , ...result }})
+        setUserDetails((prev: User | null) => {return { ...prev , ...result }})
       }
       setReady(false)
       setPassword('')
@@ -194,7 +200,7 @@ const Settings = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'authorization': `Bearer ${user.id}`
+          'authorization': `Bearer ${user?.id}`
         },
         body: JSON.stringify({ name , email , newPassword: pass , password , backup })
       })
@@ -211,7 +217,7 @@ const Settings = () => {
         setSuccess(true)
         setErr('Updates successful')
         session!.user!.email = result.email
-        setUserDetails((prev: User) => { return { ...prev , ...result }})
+        setUserDetails((prev: User | null) => { return { ...prev , ...result }})
       }
       setPass('')
       setName('')
@@ -232,32 +238,32 @@ const Settings = () => {
         <h2 className={styles.title}>{SettingSvg()} Settings</h2>
         <div className={styles.quick}>
           <button onClick={()=>setDisclose((prev: boolean) => !prev)}>{!disclose ? Eyesvg('min-w-8') : EyeClosedSvg('min-w-8')}{!disclose ? 'View' : 'Hide'} credentials</button>
-          { user && user.provider === 'custom' && <button className={styles.second} onClick={()=> setUpdate(true)}>{Editsvg()} Update credentials</button>}
-          <Link href='/recovery' className={user && user.provider === 'custom' ? styles.third : styles.second}>{Padlocksvg('isBig')} Account recovery</Link>
+          { user && user?.provider === 'custom' && <button className={styles.second} onClick={()=> setUpdate(true)}>{Editsvg()} Update credentials</button>}
+          <Link href='/recovery' className={user && user?.provider === 'custom' ? styles.third : styles.second}>{Padlocksvg('isBig')} Account recovery</Link>
         </div>
         <div className='flex gap-y-12 flex-col mt-5'>
           <div className={style.setts}>
-            <span>{user ? FirstCase(user.role) : 'Guest'} profile</span>
-            <p>{user ? disclose ? user.name : '*****' : 'Guest'}</p>
-            <p>{user ? disclose ? user.email : '*****' : 'Email: Not set'}</p>
-            {user && <p className='text-[var(--deepSweetPurple)]'>{user.provider === 'custom' ? 'Passwords are encrypted and not displayed for security reasons' : 'Passwords are managed by your provider'}</p>}
+            <span>{user ? FirstCase(user?.role) : 'Guest'} profile</span>
+            <p>{user ? disclose ? user?.name : '*****' : 'Guest'}</p>
+            <p>{user ? disclose ? user?.email : '*****' : 'Email: Not set'}</p>
+            {user && <p className='text-[var(--deepSweetPurple)]'>{user?.provider === 'custom' ? 'Passwords are encrypted and not displayed for security reasons' : 'Passwords are managed by your provider'}</p>}
             {!user && <p className='text-[var(--deepSweetPurple)]'>Sign up with Coden+ and create your password</p>}
           </div>
           <div className={style.setts}>
             <span>Back-up email</span>
-            <p>{user && user.backupEmail ? disclose ? user.backupEmail : '*****' : 'Not set'}</p>
+            <p>{user && user?.backupEmail ? disclose ? user?.backupEmail : '*****' : 'Not set'}</p>
             <p className='flex justify-end'>{<button className={style.button} onClick={()=>setUpdate(true)}>{Editsvg('isBig')} {user?.backupEmail ? 'Change' : 'Add'}</button>}</p>
           </div>
           <div className='flex font-medium gap-2.5 text-[1em] text-[var(--changingPurple)] border-t-[#9f76a0] border-t-2 mx-5 flex-col'>
-            <p className='flex gap-2.5 items-center p-2 transition-[0.5s]'>{Packssvg('BIG')} Subscriptions <span>{user && user.exclusive ? 'Active' : 'Inactive'}</span></p>
-            {user && <p className='flex gap-2.5 items-center p-2 transition-[0.5s]'>{user.provider === 'github' ? Githubsvg() : user.provider === 'google' ? GoogleG() : GlobeSvg()} Provider <span>{user ? FirstCase(user.provider) : 'Custom'} provider</span></p>}
+            <p className='flex gap-2.5 items-center p-2 transition-[0.5s]'>{Packssvg('BIG')} Subscriptions <span>{user && user?.exclusive ? 'Active' : 'Inactive'}</span></p>
+            {user && <p className='flex gap-2.5 items-center p-2 transition-[0.5s]'>{user?.provider === 'github' ? Githubsvg() : user?.provider === 'google' ? GoogleG() : GlobeSvg()} Provider <span>{user ? FirstCase(user?.provider) : 'Custom'} provider</span></p>}
             {!user && <p className='flex gap-2.5 items-center p-2 transition-[0.5s]'> {GlobeSvg()} Provider <span> Custom</span></p>}
           </div>
           <div className={style.setts}>
             <span>Recovery questions</span>
-            <p>Slots - {user ? user.recoveryQuestions.length : 0}/3</p>
+            <p>Slots - {user ? user?.recoveryQuestions.length : 0}/3</p>
             {err && !recovery.length && <p style={success ? {color: 'var(--success)'} : {}} className='text-[var(--error)] max-w-2xl w-full'>{er}</p>}
-            {user && user.recoveryQuestions.map((ques: string, i: number)=><div className={style.reco} key={i}>{ disclose ? ques : '****'} <button style={deleting ? {opacity: 1} : {}} onClick={()=> handleDelete(i)}>{ loading ? loaderCircleSvg() : deleting? DeleteSvg() : AddSvg()}</button></div>)}
+            {user && user?.recoveryQuestions.map((ques: string, i: number)=><div className={style.reco} key={i}>{ disclose ? ques : '****'} <button style={deleting ? {opacity: 1} : {}} onClick={()=> handleDelete(i)}>{ loading ? loaderCircleSvg() : deleting? DeleteSvg() : AddSvg()}</button></div>)}
             
             {recovery.map((inp: sets, i: number)=>{
               return <>
@@ -281,14 +287,14 @@ const Settings = () => {
             })}
             {ready && <PasswordInput value={password} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value.trim())} classes={style.password} placeholder="Enter current password" />}
             {recovery.length > 0 && <p className='text-[var(--sweetPurple)] self-center items-center flex gap-1'>{Padlocksvg('big min-w-7')} Recovery answers cannot be displayed after creation</p>}
-            {user && user.recoveryQuestions.length < 3 && user.provider === 'custom' && <h3 className='flex-wrap flex justify-end items-center gap-2.5'>
+            {user && user?.recoveryQuestions.length < 3 && user?.provider === 'custom' && <h3 className='flex-wrap flex justify-end items-center gap-2.5'>
               <p style={success ? {color: 'var(--success)'} : {}} className='text-[var(--error)] max-w-2xl w-full'>{er}</p>
               <p className='min-w-fit flex gap-2.5'>{recovery.length > 0 && <button className={style.button} onClick={handleRecovery}>{loading ? loaderCircleSvg() : checkmarkSvg('isBig')} { loading ?  'Saving...' : 'Save' }</button>}
-              <button className={style.button} onClick={()=> {setEr(''); user.recoveryQuestions.length + recovery.length < 3 && setRecovery(( prev: sets[] )=> [...prev.filter((f: sets)=> f.question.trim() !== '' || f.answer.trim() !== ''), {question: '', answer: ''}])}}>{AddSvg('isBig')} Add </button></p></h3>}
+              <button className={style.button} onClick={()=> {setEr(''); user?.recoveryQuestions.length + recovery.length < 3 && setRecovery(( prev: sets[] )=> [...prev.filter((f: sets)=> f.question.trim() !== '' || f.answer.trim() !== ''), {question: '', answer: ''}])}}>{AddSvg('isBig')} Add </button></p></h3>}
           </div>
           <p className='flex gap-4'>
             {error && <button className={style.button} onClick={()=>setRefresh((prev : boolean)=> !prev)}>{Refreshsvg()} Refresh details</button>}
-            {user && user.provider === 'custom' && <button className={style. button} onClick={()=> setUpdate(true)}>{Editsvg()} Update credentials</button>}
+            {user && user?.provider === 'custom' && <button className={style. button} onClick={()=> setUpdate(true)}>{Editsvg()} Update credentials</button>}
             <button onClick={() => requestLogout()} className={style.logout}> {LogoutSvg()} Request Log out</button>
           </p>
         </div>

@@ -38,6 +38,6 @@
     "src/app/api/auth/signup/route.jsx",
     "src/app/api/notifications/route.jsx",
     "src/context/NotificationContext.jsx"
-, "src/utils/Otp.tsx"    ],
+, "src/utils/Otp.tsx", "src/components/LoadingBar.tsx"    ],
   "exclude": ["node_modules"]
 }
