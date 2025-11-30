@@ -6,7 +6,7 @@ type PasswordProps = {
   value: string
   classes: string
   placeholder?: string
-  style: { readonly [key: string]: string }
+  style?: { readonly [key: string]: string }
   onChange: (e: React.ChangeEvent<HTMLInputElement>)=> void
 }
 
