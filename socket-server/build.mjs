@@ -18,8 +18,8 @@ await esbuild.build({
   minify: false,
   logLevel: 'info',
 }).then(() => {
-  console.log('✅ Socket server built successfully!');
+  console.log('Socket server built successfully!');
 }).catch(() => {
-  console.error('❌ Build failed');
+  console.error('Build failed');
   process.exit(1);
 });

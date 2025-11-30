@@ -1,15 +1,17 @@
 export type User ={
-  _id: string
-  name: string
   role: string
-  email: string
-  provider: string
-  createdAt: string
-  updatedAt: string
   exclusive: boolean
+  name?: string | null
+  email?: string | null
+  image?: string | null
   requestLogout: boolean
-  backupEmail:  string | null
-  recoveryQuestions: string[]
+  provider?: string | null
+  createdAt?: string | null
+  updatedAt?: string | null
+  backupEmail?: string | null
+  id?: string | null | undefined
+  _id?: string | null | undefined
+  recoveryQuestions: string[] | never[]
 }
 
 export type Msg = {

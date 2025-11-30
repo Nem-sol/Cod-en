@@ -1,21 +1,32 @@
 "use client";
+import { User } from "@/types";
 import { signOut, useSession } from "next-auth/react";
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, SetStateAction, Dispatch } from "react";
 
-const UserContext = createContext();
+interface UserSet {
+  error: boolean,
+  status: string,
+  deleted: boolean,
+  userDetails: User | null,
+  setRefresh: Dispatch<SetStateAction<boolean>>
+  setDeleted: Dispatch<SetStateAction<boolean>>
+  setUserDetails: Dispatch<SetStateAction<User | null>>
+}
+const UserContext = createContext<UserSet | undefined >( undefined );
 
-export const UserProvider = ({ children }) => {
+export const UserProvider: React.FC<{ children: React.ReactNode}> = ({ children }) => {
   const [ error , setError ] = useState(false)
   const { data: session , status } = useSession()
   const [ refresh , setRefresh ] = useState(true)
   const [ deleted , setDeleted ] = useState(false)
-  const [ userDetails , setUserDetails ] = useState(null);
+  const [ userDetails , setUserDetails ] = useState< User | null>(null);
 
   useEffect(() => {
     if (status === "authenticated" && session.user) {
+      const id = session.user.id
       const fetchExtraUserData = async () => {
         setError(false)
-        setUserDetails({ ...session.user, role: 'user', backupEmail: null, recoveryQuestions: [] })
+        setUserDetails({ ...session.user, role: 'user', exclusive: false, _id: id,backupEmail: null, createdAt: null, updatedAt: null, requestLogout: true, recoveryQuestions: [] })
         try {
           const res = await fetch('/api/users/', {
             headers: {
@@ -36,12 +47,11 @@ export const UserProvider = ({ children }) => {
             if (extra.error === 'User not found') {
               signOut()
               setDeleted(true)
-              router.push('/signup')
             }
           }
           else setUserDetails({ ...session.user, ...extra })
         } catch (err) {
-          setError(err)
+          setError(true)
           console.error("Failed to fetch user details");
         }
       };
@@ -58,4 +68,12 @@ export const UserProvider = ({ children }) => {
   );
 };
 
-export const useUserContext = () => useContext(UserContext);
+export function useUserContext() {
+  const context = useContext(UserContext);
+  
+  if (!context) {
+    throw new Error('useEmail must be used within an EmailProvider');
+  }
+  
+  return context;  // Now TypeScript knows it's not undefined
+}

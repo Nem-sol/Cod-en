@@ -206,7 +206,6 @@ const app = async () => {
         if (!isCorrect) return socket.emit("failed-to-mail", { id , message: "Incorrect pasword"})
 
         const sent = await sendMail({
-          title: null,
           messages: [
             `Thank you for contacting Cod-en. We received your ${contact.type}`,
             ...msg,
@@ -257,7 +256,6 @@ const app = async () => {
             await sendMail({
               subject,
               messages,
-              title: null,
               to: u.email,
               text: summary,
               link: link || {

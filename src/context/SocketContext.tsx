@@ -1,22 +1,27 @@
 "use client";
-import { io } from "socket.io-client";
+import { io , Socket } from "socket.io-client";
 import { useSession } from "next-auth/react";
 import { socketUrl } from "../utils/apiTools";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, Dispatch, SetStateAction, useContext, useEffect, useState } from "react";
 
-const SocketContext = createContext();
+interface SocketSet {
+  ready: boolean,
+  socket: Socket | null,
+  setRetry: Dispatch<SetStateAction<boolean>>
+}
+const SocketContext = createContext<SocketSet | undefined>( undefined );
 
-export function SocketProvider({ children }) {
+export const SocketProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const [ ready, setReady] = useState(false);
   const [ retry, setRetry] = useState(false);
-  const [ socket, setSocket] = useState(null);
+  const [ socket, setSocket] = useState<Socket | null>(null);
   const { data: session , status } = useSession()
 
   useEffect(() => {
-    if (status !== 'authenticated') return;
+    if ( status !== 'authenticated' || !session?.user?.id ) return;
 
     const connectSocket = async () => {
-      if (socket) return
+      if ( socket?.connected ) return
       try {
         const s = io( socketUrl , {
           autoConnect: true,
@@ -51,8 +56,10 @@ export function SocketProvider({ children }) {
     };
 
     connectSocket();
-    return () => socket && socket.disconnect();
-  }, [ status , retry ]);
+    return () => {
+      if (socket) socket.disconnect()
+    };
+  }, [ status , retry , session ]);
 
   return (
     <SocketContext.Provider value={{ socket, ready , setRetry }}>
@@ -61,4 +68,10 @@ export function SocketProvider({ children }) {
   );
 }
 
-export const useSocket = () => useContext(SocketContext);
+export function useSocket() {
+  const context = useContext(SocketContext);
+  
+  if (!context) throw new Error('useEmail must be used within an EmailProvider');
+  
+  return context;
+}

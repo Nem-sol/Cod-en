@@ -1,9 +1,16 @@
 'use client'
-import { createContext, useContext, useEffect, useState } from "react";
+import { Helps } from "@/types";
+import React, { createContext, Dispatch, SetStateAction, useContext, useEffect, useState } from "react";
 
-export const Help = createContext()
+interface HelpSet {
+  error: boolean
+  isLoading: boolean
+  help: Helps[] | never[]
+  setRefresh: Dispatch<SetStateAction<boolean>>
+}
+export const Help = createContext<HelpSet | undefined>( undefined )
 
-export const HelpProvider = ({ children }) => {
+export const HelpProvider: React.FC<{ children: React.ReactNode}> = ({ children }) => {
   const [ help, setHelp ] = useState([])
   const [ error, setError ] = useState(false)
   const [ refresh, setRefresh ] = useState(false)
@@ -34,4 +41,10 @@ export const HelpProvider = ({ children }) => {
   )
 }
 
-export const useHelp = () => useContext(Help)
+export const useHelp = () =>{
+  const context = useContext(Help);
+  
+  if (!context) throw new Error('useHelp must be used within an EmailProvider');
+  
+  return context;
+}

@@ -1,16 +1,26 @@
 'use client'
+import { Projects } from '@/types';
 import { useUserContext } from './UserProvider';
-import { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, Dispatch, SetStateAction, useContext, useEffect, useState } from "react";
 
-export const ProjectContext = createContext()
+interface ProjectSet {
+  status: string
+  error: boolean
+  isLoading: boolean
+  project: Projects[] | never[]
+  setRefresh: Dispatch<SetStateAction<boolean>>
+  setProject: Dispatch<SetStateAction< Projects[] | never[]>>
+}
 
-export const ProjectProvider = ({ children }) => {
+export const ProjectContext = createContext<ProjectSet | undefined >( undefined )
+
+export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [ error, setError ] = useState(false)
-  const [ project, setProject ] = useState([])
   const [ status, setStatus ] = useState('Idle')
   const { userDetails: user } = useUserContext()
   const [ refresh, setRefresh ] = useState(false)
   const [ isLoading, setIsLoading ] = useState(false)
+  const [ project, setProject ] = useState<Projects[] | never[]>([])
 
   useEffect(()=>{
     const fetchProject = async () =>{
@@ -20,7 +30,7 @@ export const ProjectProvider = ({ children }) => {
         const res = await fetch('/api/projects/', {
           headers: {
             'Content-Type': 'application/json',
-            'authorization': `Bearer ${user.id}`,
+            'authorization': `Bearer ${user?.id}`,
           }
         });
         const result = await res.json()
@@ -33,7 +43,7 @@ export const ProjectProvider = ({ children }) => {
       setIsLoading(false)
     }
     user ? fetchProject() : setProject([])
-    project.length > 0 ? setStatus(project.filter( proj => proj.status !== 'failed' && proj.status !== 'complete')[0].status) : setStatus('Idle')
+    project.length > 0 ? setStatus(project.filter(( proj: Projects )=> proj.status !== 'failed' && proj.status !== 'complete')[0].status) : setStatus('Idle')
   }, [ user , refresh ])
 
   return(
@@ -43,4 +53,10 @@ export const ProjectProvider = ({ children }) => {
   )
 }
 
-export const useProjectContext = () => useContext(ProjectContext)
+export const useProjectContext = () => {
+  const context = useContext(ProjectContext);
+  
+  if (!context) throw new Error('useProjectContext must be used within an EmailProvider');
+  
+  return context;
+}

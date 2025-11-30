@@ -27,17 +27,17 @@
     "**/*.tsx",
     "next-env.d.ts",
     ".next/types/**/*.ts",
-    "src/utils/mailer.jsx",
+    "src/utils/mailer.tsx",
     "socket-server/socket.ts",
     "src/components/ChatBox.tsx",
     "src/app/api/users/route.jsx",
     "src/app/api/inbox/route.jsx",
-    "src/context/UserProvider.jsx",
+    "src/context/UserProvider.tsx",
     "src/app/api/messages/route.tsx",
     "src/context/HistoryContext.jsx",
     "src/app/api/auth/signup/route.jsx",
     "src/app/api/notifications/route.jsx",
     "src/context/NotificationContext.jsx"
-, "src/utils/Otp.jsx"    ],
+, "src/utils/Otp.tsx"    ],
   "exclude": ["node_modules"]
 }

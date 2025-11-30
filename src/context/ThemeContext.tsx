@@ -2,7 +2,6 @@
 import { createContext, useEffect, useState } from "react"
 import { classAdd, classRemove } from "../components/functions"
 
-
 export const ThemeContext = createContext({})
 
 export const ThemeProvider: React.FC<{children: React.ReactNode}> = ({children}) =>{

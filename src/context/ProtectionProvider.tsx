@@ -19,10 +19,15 @@ import { loaderCircleSvg } from "../components/svgPack"
 import stylez from '../app/projects/new/page.module.css'
 import { Helps, Inboxes, Message, Projects } from '@/types'
 import { useParams, usePathname , useRouter } from 'next/navigation'
-import { createContext , useContext, useEffect, useState } from "react"
+import { createContext , Dispatch , SetStateAction , useContext, useEffect, useState } from "react"
 import { CheckIncludes, FirstCase, RemoveAllClass, translateText } from '../components/functions'
 
-const ProtectorContext = createContext({})
+interface EmailSet {
+  email: string,
+  setEmail: Dispatch<SetStateAction<string>>
+}
+
+const ProtectorContext = createContext<EmailSet | undefined>( undefined )
 
 export const ProtectorProvider: React.FC<{children: React.ReactNode}> = ({children}) => {
   const router = useRouter()
@@ -35,7 +40,7 @@ export const ProtectorProvider: React.FC<{children: React.ReactNode}> = ({childr
   const { socket, ready } = useSocket()
   const { setInbox } = useInboxContext()
   const { data: session } = useSession()
-  const [ email , setEmail ] = useState()
+  const [ email , setEmail ] = useState('')
   const { setProject } = useProjectContext()
   const [ reason, setReason ] = useState('')
   const [ notify , setNotify ] = useState(false)
@@ -68,38 +73,38 @@ export const ProtectorProvider: React.FC<{children: React.ReactNode}> = ({childr
 
   useEffect(()=>{
     if (!ready) return
-    socket.on("project-created", (project: Projects)=>{
+    socket?.on("project-created", (project: Projects)=>{
       setNotify(true)
       setReason('created')
       setProject((prev: Projects[]) => [...prev, project])
     })
 
-    socket.on("inbox-created", (project: Inboxes)=>{
+    socket?.on("inbox-created", (project: Inboxes)=>{
       setInbox((prev: Inboxes[]) => [...prev, project])
     })
 
-    socket.on('project-updated', (updated:  Projects)=> {
+    socket?.on('project-updated', (updated:  Projects)=> {
       setNotify(true)
       setReason('update')
       setProject((prev: Projects[]) => prev.map( p => p._id === updated._id ? updated : p))
     })
 
-    socket.on('new-contact', ( message : Message ) => {
+    socket?.on('new-contact', ( message : Message ) => {
       setNotify(true)
       setReason('message')
       setContact((prev: Message[]) => [ message , ...prev ])
     })
 
-    socket.on("project-error", ( error: {message: string} )=> {
+    socket?.on("project-error", ( error: {message: string} )=> {
       setNotify(true)
       setReason('error')
       setErr( error?.message)
     })
 
     return () => {
-      socket.off('project-error')
-      socket.off('project-created')
-      socket.off('project-updated')
+      socket?.off('project-error', ()=>{})
+      socket?.off('project-created', ()=>{})
+      socket?.off('project-updated', ()=>{})
     }
   }, [ ready ])
 
@@ -120,7 +125,7 @@ export const ProtectorProvider: React.FC<{children: React.ReactNode}> = ({childr
         parts[1] === 'history' ? 'Details' : 
         parts[1] === 'help' ? (help.length > 0 ? help[0].title : 'Not found') : 
         parts[1] === 'projects' ? (parts[2] === 'new' ? 'New' : 
-          project ? project.title : 'Not found') : 
+          project ? project.name : 'Not found') : 
         'Not found'
       )
       translateText(`Cod-en | ${FirstCase(parts[1])} - ${sub}`, 'title')
@@ -164,4 +169,10 @@ export const ProtectorProvider: React.FC<{children: React.ReactNode}> = ({childr
   )
 }
 
-export const useEmail = () => useContext(ProtectorContext)
+export function useEmail() {
+  const context = useContext(ProtectorContext);
+  
+  if (!context) throw new Error('useEmail must be used within an EmailProvider');
+  
+  return context;
+}

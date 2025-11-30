@@ -9,7 +9,7 @@ const generateOTPCode = (length = 8) => {
   return code;
 };
 
-export const generateOTP = async ( userId , validity = 10 ) => {
+export const generateOTP = async ( userId: number , validity = 10 ) => {
   await connect();
 
   const code = generateOTPCode(8);
@@ -23,7 +23,7 @@ export const generateOTP = async ( userId , validity = 10 ) => {
   return code;
 }
 
-export const validateOTP = async ( id , code ) => {
+export const validateOTP = async ( id: string , code: string ) => {
   try {
     await connect()
     const userId = String(id)
@@ -51,6 +51,6 @@ export const validateOTP = async ( id , code ) => {
 
     return true
   } catch (error) {
-    throw new Error( error.message.toLowerCase().includes('otp') ? error.message : 'Could not validate OTP. Try again later')
+    if ( error instanceof Error ) throw new Error( error.message.toLowerCase().includes('otp') ? error.message : 'Could not validate OTP. Try again later')
   }
 }

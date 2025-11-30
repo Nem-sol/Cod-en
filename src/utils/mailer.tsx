@@ -1,5 +1,21 @@
 import nodemailer from "nodemailer";
 
+type MailOptions = {
+  to: string,
+  text: string,
+  subject: string,
+  messages: string[],
+  code?: null | string,
+  link?: { cap: string , address: string, title: string } | null,
+}
+
+type templateOptions = {
+  title: string,
+  messages: string[],
+  code: string | null,
+  link: { cap: string , address: string, title: string } | null
+}
+
 // Initialize transporter with better error handling
 const createTransporter = () => {
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
@@ -20,7 +36,7 @@ const generateTemplate = ({
   link,
   title,
   messages,
-}) => {
+}: templateOptions ) => {
   const yr = new Date().getFullYear();
   const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
   
@@ -254,8 +270,7 @@ export default async function sendMail({
   subject,
   messages,
   code = null,
-  title = null,
-}) {
+}: MailOptions ) {
 
   try {
     const transporter = createTransporter();
@@ -268,7 +283,7 @@ export default async function sendMail({
       html: generateTemplate({ 
         code,
         messages, 
-        title: title || subject, 
+        title: subject, 
         link: link || { 
           title: "Cod-en help",
           cap: "For more information, visit ", 
@@ -280,7 +295,7 @@ export default async function sendMail({
     await transporter.sendMail(mailOptions);
     return true;
   } catch (err) {
-    console.error("Email send failed:", err.message);
+    if ( err instanceof Error ) console.error("Email send failed:", err.message);
     return false;
   }
 }

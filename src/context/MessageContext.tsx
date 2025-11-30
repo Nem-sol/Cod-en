@@ -1,15 +1,24 @@
 'use client'
+import { Message } from "@/types";
 import { useUserContext } from "./UserProvider";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, Dispatch, SetStateAction, useContext, useEffect, useState } from "react";
 
-export const Contact = createContext()
+interface ContactSet {
+  error: boolean
+  isLoading: boolean
+  contact: Message[] | never[]
+  setRefresh: Dispatch<SetStateAction<boolean>>
+  setContact: Dispatch<SetStateAction< Message[] | never[]>>
+}
 
-export const ContactProvider = ({ children }) => {
+export const Contact = createContext<ContactSet | undefined>( undefined )
+
+export const ContactProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const [ error, setError ] = useState(false)
-  const [ contact, setContact ] = useState([])
   const { userDetails: user } = useUserContext()
   const [ refresh, setRefresh ] = useState(false)
   const [ isLoading, setIsLoading ] = useState(false)
+  const [ contact, setContact ] = useState<Message[] | never[]>([])
 
   useEffect(()=>{
     const fetchContact = async () =>{
@@ -45,4 +54,10 @@ export const ContactProvider = ({ children }) => {
   )
 }
 
-export const useContact = () => useContext(Contact)
+export const useContact = () => {
+  const context = useContext(Contact);
+  
+  if (!context) throw new Error('useContact must be used within an EmailProvider');
+  
+  return context;
+}
