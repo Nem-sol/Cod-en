@@ -68,8 +68,8 @@ export default function Navbar() {
   const [ sucess , setSuccess ] = useState(false)
   const { ready , setRetry , socket } = useSocket()
   const [ isLoading , setIsLoading ] = useState(false)
-  const [ name, setName ] = useState( user ? user.name : '')
-  const [ email, setEmail ] = useState( user ? user.email : '')
+  const [ name, setName ] = useState( user?.name || '')
+  const [ email, setEmail ] = useState( user?.email || '')
   const { inbox , sendMessage , readMessages , loading , err: errors , unread: notread } = useInboxContext()
   const viewInbox = inbox.filter(( inb: Inboxes) => inb._id === id)[0] || null
   const activeInbox = inbox.filter(( inb: Inboxes) => inb.status === 'active')
@@ -87,12 +87,12 @@ export default function Navbar() {
       else if (!ready) setError('Unstable internet connection. Try again later')
       else {
         setIsLoading(true)
-        socket.emit('send-contact', { msg: mss , name: user?.name , email: user?.email , type })
+        socket?.emit('send-contact', { msg: mss , name: user?.name , email: user?.email , type })
       }
     }
 
   useEffect(()=>{
-    setId(activeInbox.length > 0 ? activeInbox[0]._id : null)
+    setId(activeInbox.length > 0 ? activeInbox[0]._id : '')
   }, [ inbox ])
 
   useEffect(()=>{
@@ -101,11 +101,11 @@ export default function Navbar() {
 
   useEffect(()=> {
     if (!user) return
-    socket.on("contact-error", (error: {message: string}) => {
+    socket?.on("contact-error", (error: {message: string}) => {
       setIsLoading(false)
       setError( error?.message || `Could not send ${type.toLocaleLowerCase()}`)
     })
-    socket.on("contact-success", ()=>{
+    socket?.on("contact-success", ()=>{
       setSuccess(true)
       setIsLoading(false)
       setError(`${FirstCase(type)} ${type !== 'message' && 'message' } sent successfully. Cod-en will reach out to you shortly.`)
@@ -113,8 +113,8 @@ export default function Navbar() {
     })
     return () => {
       if (!socket) return
-      socket.off("contact-error")
-      socket.off("contact-success")
+      socket?.off("contact-error")
+      socket?.off("contact-success")
     }
   }, [ ready ])
 
@@ -185,7 +185,7 @@ export default function Navbar() {
             </section>
             <p className='text-[var(--error)] text-end font-medium px-2.5 self-end'>{ errors || err }</p>
             {viewInbox && viewInbox.status === 'active' && <div className="input mx-1 bar">
-              <ChatInput value={msg} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMsg(e.target.value)}/>
+              <ChatInput value={msg} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMsg(e.target.value)}/>
               <button disabled={loading} className='bg-[var(--success)!important] text-[white!important]' onClick={()=> msg.trim() !== '' && handleSendMessage()}>{ loading ? loaderCircleSvg() : Leftsvg('p-1')}</button>
             </div>}
           </div>
@@ -197,8 +197,8 @@ export default function Navbar() {
               <Link href='/contact'>{Linksvg()}</Link>
             </h2>
             <div className="holder">
-              <input name='name' value={name} type="text" autoComplete='true' autoCorrect='true' placeholder={user.name} onChange={()=> setName(user.name)} onKeyDown={()=> setName(user.name)}/>
-              <input name='email' value={email} type="text" autoComplete='true' autoCorrect='true' placeholder={user.email} onChange={()=> setEmail(user.email)} onKeyDown={()=> setEmail(user.email)}/>
+              <input name='name' value={name} type="text" autoComplete='true' autoCorrect='true' placeholder={user?.name || 'John Michael'} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(user?.name || e.target.value)} onKeyDown={()=> setName((prev: string) => user?.name || prev )}/>
+              <input name='email' value={email} type="text" autoComplete='true' autoCorrect='true' placeholder={user?.email || 'you@example.com'} onChange={(e: React.ChangeEvent<HTMLInputElement>) =>  setEmail(user?.email || e.target.value)} onKeyDown={()=> setEmail((prev)=> user?.email || prev)}/>
               <textarea name='message' value={mss} autoComplete='true' autoCorrect='true' placeholder='Start your message...' onChange={(e: React.ChangeEvent<HTMLTextAreaElement>)=> setMss(e.target.value)}/>
               <p className='text-[var(--error)] text-end font-medium px-2.5 self-end mt-auto' style={sucess ? {color: 'var(--success)'} : {}}>{error}</p>
               <div className='flex gap-x-2.5 items-center'>

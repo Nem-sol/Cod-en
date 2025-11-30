@@ -97,8 +97,8 @@ const Contact = () => {
             <Image src='/homehero.png' fill={true} alt='contact_img' />
           </div>
           <section className={styles.form}>
-            <input name='name' value={name} type="text" autoComplete='true' autoCorrect='true' placeholder={ user?.name || 'John Michael'} onChange={(e)=> setName( user?.name || e.target.value)} onKeyDown={()=> setName(user?.name || '')}/>
-            <input name='email' value={email} type="text" autoComplete='true' autoCorrect='true' placeholder={ user?.email || 'you@example.com'} onChange={(e)=> setEmail( user?.email || e.target.value)} onKeyDown={()=> setEmail(user?.email || '')}/>
+            <input name='name' value={name} type="text" autoComplete='true' autoCorrect='true' placeholder={ user?.name || 'John Michael'} onChange={(e)=> setName( user?.name || e.target.value)} onKeyDown={()=> setName((prev: string) => user?.name || prev)}/>
+            <input name='email' value={email} type="text" autoComplete='true' autoCorrect='true' placeholder={ user?.email || 'you@example.com'} onChange={(e)=> setEmail( user?.email || e.target.value)} onKeyDown={()=> setEmail((prev: string)=> user?.email || prev)}/>
             <textarea name='message' value={msg} autoComplete='true' autoCorrect='true' placeholder='Start your message...' onChange={(e)=> setMsg(e.target.value)}/>
             {!user && <span>Access convenient comunication when you <Link href='/signup' style={{color: 'var(--compliment)', fontWeight: '700', whiteSpace: 'nowrap'}}>sign up</Link></span>}
             {error && <p className='text-[var(--error)] font-medium' style={success ? {color: 'var(--success)'} : {}}>{error}</p>}
