@@ -125,7 +125,7 @@ const Inbox = () => {
         </section>
         <p className='text-[var(--error)] text-end font-medium px-2.5 self-end my-1'>{err || errors}</p>
         {active && <div className={`${style.input} ${style.bar}`}>
-          <ChatInput value={msg} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMsg(e.target.value)}/>
+          <ChatInput value={msg} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMsg(e.target.value)}/>
           <button disabled={loading} className='bg-[var(--success)!important] text-[white!important]' onClick={()=> msg.trim() !== '' && handleSendMessage()}>{ loading ? loaderCircleSvg() : Rocketsvg('BIG')}</button>
         </div>}
       </div>
