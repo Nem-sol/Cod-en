@@ -93,10 +93,12 @@ const Notification = () => {
     }}, [])
 
     return (
-      <div className={styles.noti} id={`n${notification._id}`}>
+      <div className={styles.noti}>
         {!notification.read && <span></span>}
         <div>
-          <h4 className='font-[700!important]'>{notification.title}</h4>
+          <h4 className='font-[700!important]'>
+            <p>{notification.title}</p>
+          </h4>
           <p style={{'display':'flex', 'columnGap':'10px'}}>
             {!notification.read && <button disabled={loading || Loading} onClick={()=>{handleUpdate(notification, 'read', setLoading); setAct('read')}}>{act=== 'read' && loading ? loaderCircleSvg() : dblChecksvg()}</button>}
             {notification.link && <Link href={notification.link}>{Linksvg()}</Link>}
@@ -155,7 +157,7 @@ const Notification = () => {
 
   return (
     <main id={styles.main} onClick={( e: React.MouseEvent<HTMLElement, MouseEvent>)=>{ if(!CheckIncludes(e, 'menu') && !CheckIncludes(e, 'menu div') && !CheckIncludes(e, 'menu button') && !CheckIncludes(e, 'menu span')) RemoveAllClass( styles.inView , 'menu' ); if(!CheckIncludes(e, `.${styles.noti} button`) && !CheckIncludes(e, `.${styles.details}`) && !CheckIncludes(e, `.${styles.details} p`)) RemoveAllClass( styles.inView , `.${styles.noti}` )}}>
-      <div className={styles.main}>
+      <div className={styles.main} style={{ containerType: 'inline-size' }}>
         <h2 className={styles.title}>{NotificationSvg('BIG')} Notifications</h2>
         <div className={styles.quick}>
           <Link href='/inbox' className={styles.second}>{Inboxsvg('BIG')} Inbox</Link>

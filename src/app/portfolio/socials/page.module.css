@@ -1,0 +1,196 @@
+.h2{
+  top: 20px;
+  transition: 0.5s;
+  font-weight: 600;
+  font-size: 1.5em;
+  position: absolute;
+}
+.media{
+  width: 100%;
+  display: flex;
+  gap: 10px 30px;
+  align-items: start;
+}
+.title{
+  font-weight: 700;
+  color: transparent;
+  background-clip: text;
+  font-size: 27px !important;
+  text-shadow: 0 3px 3px rgba(65, 20, 91, 0.15);
+  background-image: linear-gradient(to right, rgb(187, 106, 94), rgb(243, 179, 159), rgb(239, 226, 143), rgb(253, 249, 201));
+}
+.title p{
+  gap: 10px;
+  display: flex;
+  align-items: start;
+  flex-direction: column-reverse;
+}
+.title p span{
+  gap: 10px;
+  display: flex;
+  font-size: 16px;
+  transition: 0.5s;
+  font-weight: 600;
+  color: var(--black);
+  align-items: center;
+}
+.title p span:first-child{
+  color: initial;
+  font-weight: 700;
+  font-size: 0.7em;
+  padding: 3px 15px;
+  border-radius: 20px;
+  border-top-left-radius: 5px;
+  background-color: var(--noti);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+  background-image: linear-gradient(to bottom right, rgba(0, 0, 0, 0.1), transparent, transparent, rgba(0, 0, 0, 0.1));
+}
+.title svg{
+  width: 23px;
+  height: 23px;
+}
+.links{
+  gap: 20px;
+  z-index: 1;
+  display: grid;
+  margin-right: 50px;
+  width: fit-content;
+  align-self: flex-end;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+.links a{
+  flex: 1;
+  display: flex;
+  padding: 5px 12px;
+  align-items: center;
+  border-radius: 20px;
+  justify-content: center;
+  transition: 0.5s all, 0s color;
+  border-bottom-right-radius: 5px;
+  background-color: var(--pageNav);
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.15), transparent);
+  box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.28), 0px 3px 10px rgba(0, 0, 0, 0.2);
+}
+.links svg{
+  width: 24px;
+  height: 24px;
+  transition: 0s;
+}
+#default_bg{
+  gap: 30px;
+  container-type: inline-size;
+}
+.nav{
+  z-index: 2;
+}
+.nav section{
+  gap: 7px;
+  display: flex;
+  overflow: hidden;
+  border-radius: 15px;
+  flex-direction: column;
+  border-top-left-radius: 0;
+  transition: 0.5s all, 0s background-color;
+}
+.nav button{
+  opacity: 0;
+  display: none;
+  transition: 0.5s;
+  padding: 5px 15px;
+  border-radius: 10px;
+  background-color: var(--noti);
+  border-bottom-left-radius: 5px;
+  border-bottom-left-radius: 20px;
+  box-shadow: 0 3px 3px 2px rgba(65, 20, 91, 0.15);
+}
+.nav a {
+  gap: 15px;
+  display: flex;
+  align-items: first baseline;
+  transition: 0.5s all, 0s color;
+}
+.nav span{
+  padding: 7px 10px;
+  border-radius: 10px;
+  border-bottom-left-radius: 5px;
+  border-bottom-left-radius: 20px;
+  background-color: var(--translucent);
+}
+.nav a:hover{
+  color: var(--black);
+}
+.nav a:hover span{
+  background-color: var(--black);
+}
+.bottom_bg{
+  bottom: 0;
+  width: 100%;
+  z-index: -2;
+  height: 25vh;
+  overflow: hidden;
+  max-width: 100vw;
+  position: absolute;
+  background-image: linear-gradient(to right, rgb(187, 106, 94), rgb(243, 179, 159), rgb(239, 226, 143), rgb(234, 231, 201));
+}
+.bottom_bg::before{
+  z-index: -1;
+  content: '';
+  bottom: 12vh;
+  height: 25vh;
+  rotate: 5deg;
+  position: absolute;
+  width: calc( 100% + 40px );
+  border-bottom-right-radius: 50%;
+  background-color: var(--background);
+  transition: 0s all, 0.5s background-color;
+  box-shadow: 0px 1px 14px rgba(0, 0, 0, 0.28), 0px 3px 10px rgba(0, 0, 0, 0.2);
+}
+@media screen and ( max-width: 725px) {
+  .links{
+    margin-right: 10px;
+  }
+  #default_bg{
+    justify-content: flex-end !important;
+  }
+}
+@container( max-width: 725px) {
+  .media{
+    flex-direction: column;
+  }
+  .title{
+    max-width: none;
+  }
+  .nav{
+    top: 80px;
+    position: sticky;
+  }
+  .nav button{
+    opacity: 1;
+    display: block;
+  }
+  .nav section{
+    top: 100%;
+    height: 0;
+    z-index: 1;
+    padding-block: 0;
+    position: absolute;
+    background-color: var(--noti);
+  }
+  .nav.inView section{
+    height: 175px;
+    padding-block: 12px;
+    box-shadow: 0px 1px 14px rgba(0, 0, 0, 0.28), 0px 3px 10px rgba(0, 0, 0, 0.2);
+  }
+  .nav.inView button{
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 20px;
+  }
+  .bottom_bg::before{
+    height: 20vh;
+  }
+}
+@container( max-width: 425px) {
+  .nav{
+    margin-right: auto;
+  }
+}

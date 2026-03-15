@@ -67,7 +67,6 @@
   display: flex;
   max-width: 100%;
   box-shadow: none;
-  pointer-events: none;
   align-items: flex-start;
   color: rgb( 50, 50, 50);
 }
@@ -183,6 +182,9 @@
 @media screen and (max-width: 350px) {
   #fill{
     margin-right: 15px;
+  }
+  .autoFill{
+    max-height: 175px;
   }
   .form{
     padding: 15px;

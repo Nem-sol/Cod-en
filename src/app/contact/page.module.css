@@ -73,9 +73,9 @@
 }
 .img{
   flex: 2;
-  min-width: 250;
-  max-width: 400;
   aspect-ratio: 1;
+  min-width: 250px;
+  max-width: 450px;
   transition: 0.3s;
   animation: img linear 6s infinite backwards;
 }
@@ -99,16 +99,15 @@
 .form textArea{
   transition: 0.1s;
   font-weight: 600;
-  padding: 12px 15px;
   border-radius: 25px;
   color: var(--translucent);
+  padding: 12px 15px !important;
   border-bottom-left-radius: 5px;
   border: solid var(--deepSweetPurple) 2px;
   background-color: rgba(255, 252, 222, 0.075);
 }
 .form textarea{
   min-height: 200px;
-  max-height: 500px;
 }
 .form input:focus,
 .form textArea:focus{
@@ -197,12 +196,7 @@
   display: flex;
   gap: 20px 50px;
   flex-wrap: wrap;
-}
-.caller div{
-  display: flex;
-  gap: 10px 20px;
-  flex-wrap: wrap;
-  align-items: center;
+  justify-content: space-evenly;
 }
 .caller a{
   gap: 15PX;
@@ -215,9 +209,9 @@
   background-color: transparent;
 }
 .caller a svg{
-  padding: 4px;
-  min-width: 27.5px;
-  min-height: 27.5px;
+  padding: 7px;
+  min-width: 33.5px;
+  min-height: 33.5px;
   border-radius: 100%;
   color: var(--background);
   background-color: var(--translucent);

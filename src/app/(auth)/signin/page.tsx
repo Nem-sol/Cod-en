@@ -3,7 +3,7 @@ import Link from 'next/link'
 import React, { useState } from 'react'
 import styles from '../page.module.css'
 import { signIn } from 'next-auth/react'
-import Footer from '@/src/components/Footer'
+import { ShortFooter } from '@/src/components/Footer'
 import { PasswordInput } from '@/src/components/ChatBox'
 import { Githubsvg, GoogleG, loaderCircleSvg } from '@/src/components/svgPack'
 
@@ -14,12 +14,14 @@ const SignIn = () => {
   const [ loading, setLoading ] = useState(false)
   const GoogleSignIn = async () => {
     setLoading(true)
+    document.cookie = `login=true; path=/; max-age=300`;
     const res = await signIn('google', { redirect: false })
     if (res?.error) setErr(res.error)
     setLoading(false)
   }
   const GithubSignIn = async () => {
     setLoading(true)
+    document.cookie = `login=true; path=/; max-age=300`;
     const res = await signIn('github', { redirect: false })
     if (res?.error) setErr(res.error)
     setLoading(false)
@@ -55,7 +57,7 @@ const SignIn = () => {
         <button onClick={()=>GithubSignIn()} disabled={loading}>{Githubsvg()} Sign in <span>with Github</span></button>
       </div>
       <p className='text-end pr-14 max-w-2xl w-full'>New to Cod-en? <Link href='/signup' style={{color: 'var(--compliment)'}}>Sign up</Link> </p>
-      <Footer />
+      <ShortFooter />
     </main>
   )
 }

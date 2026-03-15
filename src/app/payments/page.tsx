@@ -98,6 +98,7 @@ const Payments = () => {
     e.preventDefault()
     if (!user) router.push('/signin')
     else if ( error ) { setReason('internet'); setNotify(true)}
+    else if ( !error ) { setReason('unavailable'); setNotify(true)}
     else {setReq('tutorials')}
   }
 
@@ -155,6 +156,7 @@ const Payments = () => {
         { notify && <Notify message='Current settings are not updated due to unstable internet connection.' types='error' setCondition={setNotify} condition={reason === 'internet'}/>}
         { notify && <Notify message='Please restore stable internet connection for smooth payment.' types='error' setCondition={setNotify} condition={reason === 'socket'}/>}
         { notify && <Notify message='Please be patient while we load your details.' setCondition={setNotify} condition={reason === 'loading'}/>}
+        { notify && <Notify message='This feature is currently unavailable. Updates will be released when accessible.' setCondition={setNotify} condition={reason === 'unavailable'}/>}
         { notify && <Notify message='You do not have any project.' setCondition={setNotify} types='error' condition={reason === 'projects'}/>}
         { notify && <Notify message='Amount should be at most a hundred million.' setCondition={setNotify} condition={reason === 'amount'}/>}
         <h2 className={style.title}>{TagSvg('big')} Payments</h2>

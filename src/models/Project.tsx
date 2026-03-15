@@ -2,6 +2,13 @@ import mongoose from "mongoose"
 
 const { Schema } = mongoose
 
+const PhaseSchema = new Schema({
+  title: String,
+  completed: {
+    type: Boolean,
+    default: false,
+}})
+
 const StageSchema = new Schema({
   title: {
     type: String,
@@ -10,12 +17,7 @@ const StageSchema = new Schema({
   phase: {
     default: [],
     required: true,
-    type: [{
-      type: String,
-      completed: {
-        type: Boolean,
-        default: false,
-    }}],
+    type: [PhaseSchema],
   },
 })
 
@@ -25,6 +27,7 @@ const ProjectSchema = new Schema({
   link: String, // this is the web location
   pages: String,
   reason: String,
+  currency: String,
   langFrom:  [ String ],
   userId: {
     type: String,

@@ -2,10 +2,10 @@ import validator from 'validator'
 import connect from '@/src/utils/db'
 import User from '../../../models/User'
 import { getToken } from 'next-auth/jwt'
-import { NextResponse } from 'next/server'
 import Message from '../../../models/Message'
+import { NextResponse , NextRequest } from 'next/server'
 
-export const GET = async ( req ) => {
+export const GET = async ( req: NextRequest ) => {
   try{
     await connect()
     
@@ -21,14 +21,14 @@ export const GET = async ( req ) => {
 
     if (!messages || messages.length === 0) return NextResponse.json([], { status: 200 })
 
-    return NextResponse.json(messages, {status: 200})
+    return NextResponse.json( messages, {status: 200})
   }
   catch(err){
-    return NextResponse.json({error: err}, {status: 400})
+    if (err instanceof Error ) return NextResponse.json({error: err}, {status: 400})
   }
 }
 
-export const POST = async ( req ) => {
+export const POST = async ( req: NextRequest ) => {
 
   try{
     await connect()
@@ -53,6 +53,6 @@ export const POST = async ( req ) => {
       
     return NextResponse.json({mssg: `${type[0].toLocaleUpperCase()}${type.toLocaleLowerCase().slice(1)} sent successfully. Cod-en will get back to you shortly.`}, { status: 200 })
   } catch (error) {
-    return NextResponse.json({error: 'Error occured in the process'}, { status: 400 })
+    if (error instanceof Error ) return NextResponse.json({error: 'Error occured in the process'}, { status: 400 })
   }
 }

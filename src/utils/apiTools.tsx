@@ -1,9 +1,14 @@
-export const emails = process.env.EMAIL_USER || 'codendevs@gmail.com'
+import { format } from "date-fns";
 
-export const socketUrl = process.env.socketUrl || 'http://localhost:4000'
+export const emails = process.env.NEXT_PUBLIC_EMAIL
 
-export const tels = process.env.tels || '+2349022924447'
+export const socketUrl = process.env.NEXT_PUBLIC_socketUrl || 'http://localhost:4000'
 
+export const tels = process.env.NEXT_PUBLIC_tels || '+234 902 2924 447'
+
+export function newDate () {
+  return format(new Date(), "do MMMM, yyyy")
+}
 export function onTime ( focus: string , allowance: number = 0 ) {
   
   // Compute expiration time safely (no timezone issues)

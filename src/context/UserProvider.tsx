@@ -26,7 +26,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode}> = ({ children 
       const id = session.user.id
       const fetchExtraUserData = async () => {
         setError(false)
-        setUserDetails({ ...session.user, role: 'user', exclusive: false, _id: id,backupEmail: null, createdAt: null, updatedAt: null, requestLogout: true, recoveryQuestions: [] })
+        if ( !userDetails ) setUserDetails({ ...session.user, role: 'user', exclusive: false, _id: id,backupEmail: null, createdAt: null, updatedAt: null, requestLogout: true, recoveryQuestions: [] })
         try {
           const res = await fetch('/api/users/', {
             headers: {
@@ -37,10 +37,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode}> = ({ children 
 
           const contentType = res.headers.get('content-type')
 
-          if (!contentType || !contentType.includes('application/json')) {
-            setError(true)
-            return
-          }
+          if (!contentType || !contentType.includes('application/json')) return setError(true)
           const extra = await res.json();
           if (!res.ok) {
             setError(true)

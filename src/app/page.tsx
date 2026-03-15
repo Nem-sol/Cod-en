@@ -20,8 +20,8 @@ export default function Home() {
         <FeaturesBanner props={ styles }/>
       </section>
       <div id={styles.trigger}>
-        <div className={styles.img} style={{flex: 0, minWidth: '250px'}}>
-          <Image src='/homehero.png' fill={true} alt='banner_img'/>
+        <div className={styles.img} style={{flex: 1, minWidth: '250px'}}>
+          <Image src='/projects.png' fill={true} alt='banner_img'/>
         </div>
         <Trigger props={ styles }/>
       </div>

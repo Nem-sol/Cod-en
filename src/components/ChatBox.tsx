@@ -1,5 +1,6 @@
 import { Padlocksvg, UnlockSvg } from "./svgPack";
 import { useRef, useEffect, useState } from "react";
+import styles from './../app/projects/[id]/project.module.css'
 
 type PasswordProps = {
   name?: string
@@ -15,6 +16,24 @@ type ChatProps = {
   maxHeight?: string
   placeholder?: string
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>)=> void
+}
+
+export const EdittablePack = ({
+  text = '' ,
+  style = {},
+  value = '' ,
+  rev = false,
+  svg = <></> ,
+  editting = false ,
+  placeholder = '' ,
+  classes = styles.span,
+  onChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => { console.log(e.target.value )},
+  onChangeArea = (e: React.ChangeEvent<HTMLTextAreaElement>) => { console.log(e.target.value )}
+}) => {
+  if ( !editting ) return <div style={style} className={classes}> { svg } <span> { value } </span> </div>
+  else return <div style={style} className={`${classes} ${styles.editting} ${rev ? styles.rev : ''}`}> { svg }
+    { rev ? <input value={text} placeholder={placeholder} onChange={onChangeInput}/> : <ChatInput value={text} placeholder={placeholder} onChange={onChangeArea} maxHeight='275px'/>}
+  </div>
 }
 
 export const PasswordInput = ({
@@ -40,19 +59,24 @@ export default function ChatInput({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    const el = textareaRef.current;
-    if (!el) return
-    el.style.height = "auto"
-    el.style.height = Math.min(el.scrollHeight, 200) + "px"// 200px = max-height
+    const resize = () => {
+      const el = textareaRef.current;
+      if (!el) return
+      el.style.height = "auto"
+      el.style.height = Math.min(el.scrollHeight, 200) + "px"// 200px = max-height
+    }
+    resize()
+    window.addEventListener('resize', resize)
+    return () => window.removeEventListener('resize', resize)
   }, [ value ]);
 
   return (
     <textarea
       value={value}
       ref={textareaRef}
-      onChange={onChange}
       autoCorrect="true"
       autoComplete="true"
+      onChange={onChange}
       placeholder={placeholder}
       rows={1}
       style={{

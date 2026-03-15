@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import style from './page.module.css'
 import { Inboxes, Msg } from '@/types'
+import home from './../page.module.css'
 import styles from './../main.module.css'
 import { format, isSameDay } from 'date-fns'
 import Footer from '@/src/components/Footer'
@@ -12,7 +13,7 @@ import { useUserContext } from '@/src/context/UserProvider'
 import { useInboxContext } from '@/src/context/InboxContext'
 import { Copier, Defaultbg } from '@/src/components/pageParts'
 import { classRemove, classToggle, FirstCase } from '@/src/components/functions'
-import { Backsvg, checkmarkSvg, dblChecksvg, HistorySvg, Inboxsvg, loaderCircleSvg, Moresvg, ProjectSvg, Rocketsvg, Searchsvg, SupportSvg } from '@/src/components/svgPack'
+import { Backsvg, checkmarkSvg, dblChecksvg, HistorySvg, Inboxsvg, loaderCircleSvg, Moresvg, ProjectSvg, Searchsvg, Sendsvg, SupportSvg } from '@/src/components/svgPack'
 
 
 const Inbox = () => {
@@ -55,14 +56,13 @@ const Inbox = () => {
 
     if (inbox && inbox.length > 0) return <div className={style.inboxPack}>
       <div className={style.all}>
-        {inbox.length > 0 ? inbox.map((i: Inboxes, n: number)=>(
+        {filtered.length > 0 ? filtered.map((i: Inboxes, n: number)=>(
           <section key={n} onClick={()=>{setId(i._id); readMessages(i._id)}}>
-            <h2>{Inboxsvg('BIG')} {i.title} {id === i._id && <span>In view</span>}</h2>
-            <p style={{backgroundColor: i.status === 'active' ? 'var(--success)' : i.status === 'completed' ? 'var(--error)' : 'var(--mild-dark)'}}>{i.status}</p>
+            <h2>{SupportSvg('BIG')} {i.title}</h2>
           </section>
         )) : <Defaultbg props={{
           styles: style,
-          img: '/homehero.png',
+          img: '/inbox.png',
           h2: 'You have no matcing inbox',
           text: 'Try turning off filters or refreshing the page',
         }}/>}
@@ -70,7 +70,7 @@ const Inbox = () => {
       <div className={style.one}>
         <div style={{paddingInline: '20px', boxShadow: '0 5px 10px var(--sweetRed)', zIndex: 1}} className={style.bar}>
           <h2 className='font-bold text-[18px] flex-1'>{active ? active.title : 'Inbox'}</h2>
-          {inbox.length > 0 && <button onClick={()=>{classToggle(`.${style.hidden}`, style.inView); classRemove(`.hidden2`, style.inView)}}>{ProjectSvg()}
+          {inbox.length > 0 && <button onClick={()=>{classToggle(`.${style.hidden}`, style.inView); classRemove(`.hidden2`, style.inView)}}>{Inboxsvg('BIG')}
             <section className={style.hidden}>
               {inbox.map(( i: Inboxes, n: number )=>(
                 <span key={n} onClick={()=>{setId(i._id); readMessages(i._id)}}>{i.title}</span>
@@ -91,13 +91,13 @@ const Inbox = () => {
         <section className={style.section}>
           {inbox.length < 1 && <Defaultbg props={{            
             styles: style,
-            img: '/homehero.png',
+            img: '/inbox.png',
             h2: 'You have no inbox',
             text: 'Create an active project to view inbox or switch inbox from toolbar.',
           }}/>}
           {inbox.length > 0 && !active && <Defaultbg props={{            
             styles: style,
-            img: '/homehero.png',
+            img: '/inbox.png',
             h2: 'No message to display',
             text: 'Select an inbox to view and update messages',
           }}/>}
@@ -118,7 +118,7 @@ const Inbox = () => {
           )}
           { active && active.messages.length < 1 && <Defaultbg props={{            
             styles: style,
-            img: '/homehero.png',
+            img: '/inbox.png',
             h2: 'You have no messages',
             text: 'Send a message and begin conversation. Messages deemed unimportant may be ignored',
           }} />}
@@ -126,7 +126,7 @@ const Inbox = () => {
         <p className='text-[var(--error)] text-end font-medium px-2.5 self-end my-1'>{err || errors}</p>
         {active && <div className={`${style.input} ${style.bar}`}>
           <ChatInput value={msg} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMsg(e.target.value)}/>
-          <button disabled={loading} className='bg-[var(--success)!important] text-[white!important]' onClick={()=> msg.trim() !== '' && handleSendMessage()}>{ loading ? loaderCircleSvg() : Rocketsvg('BIG')}</button>
+          <button disabled={loading} className='bg-[var(--success)!important] text-[white!important]' onClick={()=> msg.trim() !== '' && handleSendMessage()}>{ loading ? loaderCircleSvg() : Sendsvg()}</button>
         </div>}
       </div>
     </div>
@@ -134,7 +134,7 @@ const Inbox = () => {
     else if (inbox.length < 1 && !error) return (
       <Defaultbg props={{
         styles: style,
-        img: '/homehero.png',
+        img: '/inbox.png',
         h2: `You have no inbox`,
         text: 'Create a project to view inbox',
       }}/>
@@ -143,14 +143,15 @@ const Inbox = () => {
     else if (inbox && inbox.length === 0 && error ) return (
       <Defaultbg props={{
         styles: style,
-        img: '/homehero.png',
+        img: '/inbox.png',
         h2: 'Could not get messages',
         text: 'Try restoring internet connection or refreshing the page',
       }} />)
   }
+  
   return (
     <main id={styles.main}>
-      <div className={styles.main}>
+      <div className={styles.main} style={{ containerType: 'inline-size' }}>
         <h2 className={styles.title}>{Inboxsvg()} Inbox</h2>
         <div className={styles.quick}>
           <Link href='/history' className={styles.second}>{HistorySvg()} History</Link>
@@ -163,12 +164,13 @@ const Inbox = () => {
         {(!isLoading || inbox.length > 0) && Filter(filters)}
         {(isLoading && inbox.length < 1) && <Defaultbg props={{
             styles: style,
-            img: '/homehero.png',
+            img: '/inbox.png',
             h2: 'Getting messages...',
             text: 'Please be patient while we get your messages',
           }} />}
         {(error || isLoading) && inbox.length < 1 && <button disabled={isLoading} className={styles.floater} onClick={()=>setRefresh((prev: boolean) => !prev )}>{isLoading ? loaderCircleSvg() : Backsvg()}</button>}
       </div>
+      <div className={home.background2} style={{ position: 'fixed' }}></div>
       <Footer />
     </main>
   )

@@ -13,7 +13,7 @@ import { useUserContext } from '../context/UserProvider'
 import { useInboxContext } from '../context/InboxContext'
 import { useNotificationContext } from '../context/NotificationContext'
 import { classRemove, classAdd, classToggle, FirstCase, pick } from './functions'
-import { cancelSvg, dblRightArrowsvg, FolderSvg, Helpsvg, HomeSvg, Inboxsvg, Bugsvg, Linksvg, loaderCircleSvg, NotificationSvg, ProjectSvg, Leftsvg, SettingSvg, SupportSvg, TagSvg, checkmarkSvg, HistorySvg, AddProjectsvg, Blogsvg, Locationsvg, Githubsvg, Facebooksvg, AppSvg, Packssvg, Padlocksvg, dblChecksvg } from './svgPack'
+import { PortfolioSvg, cancelSvg, dblRightArrowsvg, FolderSvg, Helpsvg, HomeSvg, Inboxsvg, Bugsvg, Linksvg, loaderCircleSvg, NotificationSvg, ProjectSvg, Leftsvg, SettingSvg, SupportSvg, TagSvg, checkmarkSvg, HistorySvg, AddProjectsvg, Blogsvg, Locationsvg, Githubsvg, Facebooksvg, AppSvg, Packssvg, Padlocksvg, dblChecksvg, Sendsvg, Feedbacksvg, HandShakeSvg } from './svgPack'
 
 type link = {
   func: void | null
@@ -137,6 +137,7 @@ export default function Navbar() {
                 {tag: 'Inbox', link: '/inbox', svg: Inboxsvg('isBig'), func: null},
                 {tag: 'Blogs', link: '/blogs', svg: Blogsvg(), func: null},
                 {tag: 'Help', link: '/help', svg: Helpsvg(), func: null},
+                {tag: 'Portofolio', link: '/portfolio', svg: PortfolioSvg(), func: null},
                 {tag: 'Account recovery', link: '/recovery', svg: Padlocksvg('pb-0.5'), func: null},
                 {tag: 'Make payments', link: '/payments', svg: Packssvg('BIG'), func: null},
                 {tag: 'Cod-en projects', link: '/portfolio/projects', svg: AppSvg(), func: null},
@@ -156,37 +157,39 @@ export default function Navbar() {
               <button onClick={()=> classAdd('nav', 'msg')}>{SupportSvg('isBig')}</button>
               <Link href='/inbox'>{Linksvg()}</Link>
             </div>
-            <section className='section'>
-              {viewInbox ? (viewInbox.messages && viewInbox.messages.length > 0) ? viewInbox.messages.map(( mes: Msg , i: number) => {
-              const next = viewInbox.messages[i + 1]
-              const isOwner = user.id === viewInbox.userId
-              const isToday = !next || isSameDay(new Date(next.createdAt) , new Date(mes?.createdAt))
-              return <>
-                <section key={i} className={`${ isOwner ? !mes.sent ? style.received : style.sent : mes.sent ? style.received : style.sent}`}>
-                  <div className={`${(!next || next.sent !== mes.sent || !isToday) ? style.last : ''}`}><span>{mes.content}</span></div>
-                  <p>{format(mes.updatedAt, 'h:mm a')} <Copier props={{text: mes?.content}}/> { isOwner ? (mes.sent ?
-                  mes.read ? dblChecksvg('text-blue-500') : checkmarkSvg() : <></> ) :
-                  !mes.sent ?
-                  mes.read ? dblChecksvg('text-blue-500') : checkmarkSvg() : <></> }</p>
-                </section>
-                {!isToday && <menu className={style.date}>{format(next?.createdAt, 'do, MMMM, yy')}</menu>}
-              </>
-              }) : <Defaultbg props={{
-                styles: styles,
-                img: '/homehero.png',
-                h2: 'You have no messages',
-                text: 'Send a message and begin conversation. Messages deemed unimportant may be ignored',
-              }}/> : <Defaultbg props={{
-                styles: styles,
-                img: '/homehero.png',
-                h2: 'You have no inbox',
-                text: 'Create an active project to view inbox or switch inbox from toolbar.',
-              }}/>}
+            <section className="section">
+              <section className='chats'>
+                {viewInbox ? (viewInbox.messages && viewInbox.messages.length > 0) ? viewInbox.messages.map(( mes: Msg , i: number) => {
+                const next = viewInbox.messages[i + 1]
+                const isOwner = user.id === viewInbox.userId
+                const isToday = !next || isSameDay(new Date(next.createdAt) , new Date(mes?.createdAt))
+                return <>
+                  <section key={i} className={`${ isOwner ? !mes.sent ? style.received : style.sent : mes.sent ? style.received : style.sent}`}>
+                    <div className={`${(!next || next.sent !== mes.sent || !isToday) ? style.last : ''}`}><span>{mes.content}</span></div>
+                    <p>{format(mes.updatedAt, 'h:mm a')} <Copier props={{text: mes?.content}}/> { isOwner ? (mes.sent ?
+                    mes.read ? dblChecksvg('text-blue-500') : checkmarkSvg() : <></> ) :
+                    !mes.sent ?
+                    mes.read ? dblChecksvg('text-blue-500') : checkmarkSvg() : <></> }</p>
+                  </section>
+                  {!isToday && <menu key={i + 0.5 } className={style.date}>{format(next?.createdAt, 'do, MMMM, yy')}</menu>}
+                </>
+                }) : <Defaultbg props={{
+                  styles: styles,
+                  img: '/homehero.png',
+                  h2: 'You have no messages',
+                  text: 'Send a message and begin conversation. Messages deemed unimportant may be ignored',
+                }}/> : <Defaultbg props={{
+                  styles: styles,
+                  img: '/homehero.png',
+                  h2: 'You have no inbox',
+                  text: 'Create an active project to view inbox or switch inbox from toolbar.',
+                }}/>}
+              </section>
             </section>
             <p className='text-[var(--error)] text-end font-medium px-2.5 self-end'>{ errors || err }</p>
             {viewInbox && viewInbox.status === 'active' && <div className="input mx-1 bar">
               <ChatInput value={msg} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMsg(e.target.value)}/>
-              <button disabled={loading} className='bg-[var(--success)!important] text-[white!important]' onClick={()=> msg.trim() !== '' && handleSendMessage()}>{ loading ? loaderCircleSvg() : Leftsvg('p-1')}</button>
+              <button disabled={loading} className='bg-[var(--success)!important] text-[white!important]' onClick={()=> msg.trim() !== '' && handleSendMessage()}>{ loading ? loaderCircleSvg() : Sendsvg()}</button>
             </div>}
           </div>
           <div className="contact">
@@ -208,13 +211,13 @@ export default function Navbar() {
                   class: 'inView',
                   buttons: user ? [
                     {svg: Helpsvg(), txt: 'Enquiry', query: 'enquiry', func: ()=>setType('enquiry')},
-                    {svg: FolderSvg(), txt: 'Deals', query: 'deals', func: ()=>setType('deals')},
+                    {svg: HandShakeSvg(), txt: 'Deals', query: 'deals', func: ()=>setType('deals')},
                     {svg: SupportSvg('isBig'), txt: 'Message', query: 'message', func: ()=>setType('message')},
                     {svg: Bugsvg(), txt: 'Report', query: 'report', func: ()=>setType('report')},
-                    {svg: SupportSvg('isBig'), txt: 'Feedback', query: 'feeds', func: ()=>setType('feeds')}
+                    {svg: Feedbacksvg(), txt: 'Feedback', query: 'feeds', func: ()=>setType('feeds')}
                   ] : [
                     {svg: Helpsvg(), txt: 'Enquiry', query: 'enquiry', func: ()=>setType('enquiry')},
-                    {svg: FolderSvg(), txt: 'Business deals', query: 'deals', func: ()=>setType('deals')},
+                    {svg: HandShakeSvg(), txt: 'Business deals', query: 'deals', func: ()=>setType('deals')},
                     {svg: SupportSvg('BIG'), txt: 'Message', query: 'message', func: ()=>setType('message')}
                   ]
                 }}/></div>

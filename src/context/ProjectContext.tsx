@@ -1,5 +1,6 @@
 'use client'
 import { Projects } from '@/types';
+import { useSocket } from './SocketContext';
 import { useUserContext } from './UserProvider';
 import React, { createContext, Dispatch, SetStateAction, useContext, useEffect, useState } from "react";
 
@@ -15,6 +16,7 @@ interface ProjectSet {
 export const ProjectContext = createContext<ProjectSet | undefined >( undefined )
 
 export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { socket , ready } = useSocket()
   const [ error, setError ] = useState(false)
   const [ status, setStatus ] = useState('Idle')
   const { userDetails: user } = useUserContext()
@@ -45,6 +47,17 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
     user ? fetchProject() : setProject([])
     project.length > 0 ? setStatus(project.filter(( proj: Projects )=> proj.status !== 'failed' && proj.status !== 'complete')[0].status) : setStatus('Idle')
   }, [ user , refresh ])
+
+  useEffect(()=>{
+    if ( !ready ) return
+    socket?.on('project-updated', ( project: Projects ) => {
+      setProject(( prev: Projects[] | never []) => prev.map((proj: Projects ) => project._id === proj._id ? project : proj ))
+    })
+    
+    return () => {
+      socket?.off('project-updated')
+    }
+  })
 
   return(
     <ProjectContext.Provider value={{project, status, setProject, isLoading, setRefresh, error}}>

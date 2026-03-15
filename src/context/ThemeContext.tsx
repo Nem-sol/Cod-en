@@ -1,12 +1,15 @@
 "use client"
-import { createContext, useEffect, useState } from "react"
 import { classAdd, classRemove } from "../components/functions"
+import { createContext, useContext, useEffect, useState } from "react"
 
-export const ThemeContext = createContext({})
+interface Themes {
+  mode: string
+  toggle: () => void
+}
+
+export const ThemeContext = createContext< Themes | undefined >( undefined )
 
 export const ThemeProvider: React.FC<{children: React.ReactNode}> = ({children}) =>{
-  // const now = localStorage.getItem('theme')
-  // const defaultTheme = now ? JSON.parse(now) : null
 
   const [ mode, setMode ] = useState( 'light' )
 
@@ -27,6 +30,11 @@ export const ThemeProvider: React.FC<{children: React.ReactNode}> = ({children})
 
   useEffect(()=>{
     classAdd( 'body' , mode )
+    const keyListener = (e: KeyboardEvent) => {
+      if (e.altKey && e.key.toLocaleLowerCase() === 't') toggle()
+    }
+    window.addEventListener('keydown', keyListener)
+    return () => window.removeEventListener('keydown', keyListener)
   }, [ mode ])
 
   return(
@@ -34,4 +42,10 @@ export const ThemeProvider: React.FC<{children: React.ReactNode}> = ({children})
         {children}
     </ThemeContext.Provider>
   )
+}
+
+export const useTheme = () => {
+  const themes = useContext(ThemeContext)
+  if (!themes) throw new Error(' Theme hook must be used in the Theme Provider.' )
+  return themes
 }

@@ -6,10 +6,10 @@ import style from './page.module.css'
 import styles from '../main.module.css'
 import Footer from '@/src/components/Footer'
 import React, { useEffect, useState } from 'react'
-import { FirstCase, RemoveLikeClass, Toggle } from '@/src/components/functions'
 import { useProjectContext } from '@/src/context/ProjectContext'
 import { Defaultbg, NewFilterSets } from '@/src/components/pageParts'
-import { GlobeSvg, Githubsvg, Inboxsvg, Linksvg, loaderCircleSvg, ProjectSvg, Refreshsvg, Rocketsvg, Searchsvg, SupportSvg, TagSvg } from '@/src/components/svgPack'
+import { FirstCase, RemoveLikeClass, Toggle } from '@/src/components/functions'
+import { GlobeSvg, Githubsvg, Inboxsvg, Linksvg, loaderCircleSvg, ProjectSvg, Refreshsvg, Rocketsvg, Searchsvg, SupportSvg, TagSvg, ResourcesSvg, HistorySvg, Devsvg, AppSvg, HandShakeSvg, Bugsvg, Vercelsvg, MenuShortSvg } from '@/src/components/svgPack'
 
 function ProjectPacks({project}: {project: Projects}) {
   const provider = project.provider
@@ -17,20 +17,29 @@ function ProjectPacks({project}: {project: Projects}) {
   return (
     <div className={style.project}>
       <div>
-        <h2>
-          <span>{project.name}</span>
-          <span style={{fontSize: '15px', fontWeight: 600}}>{project.sector}</span>
-        </h2>
-        <p>{FirstCase(project.service)}</p>
-        {project.reason && <p className={style[project.status]}>{project.reason}</p>}
-        <p><span>{date}</span> <span className={style[project.status]}>{project.status}</span></p>
-        <span className={`${style.signed} ${project.signed ? 'text-[var(--success)]' : 'text-[var(--error)]'}`}> <svg ></svg>{project.signed ? 'Signed' : 'Not signed'}</span>
-        <p style={{gap: '10px', justifyContent: 'flex-end'}}>{provider === 'github' ? Githubsvg('BIG') : provider === 'domain'  && GlobeSvg()}{FirstCase(provider)}</p>
+        <h2> {project.name} </h2>
+        <span>{
+          project.service === 'web application' ? GlobeSvg() :
+          project.service === 'software application' ? AppSvg() :
+          project.service === 'transcript' ? Devsvg() :
+          project.service === 'upgrade' ? Devsvg() : 
+          project.service === 'contract' ? HandShakeSvg() : Bugsvg()
+        }{FirstCase(project.service)}</span>
+        <span>{ResourcesSvg()} {project.sector}</span>
+        <p><span style={{ color: '#4f46e5'}}>{date}</span> <span className={style[project.status]}>{HistorySvg()}{project.status}</span></p>
       </div>
-      <p style={{justifyContent: 'flex-end'}}>
-        <Link href={'/projects/'+project._id}>{Linksvg()}</Link>
-        <Link href={"/payments/"+project._id} className={style.pay}> {TagSvg('p-0.5')} Make payment</Link>
-      </p>
+      <div style={{justifyContent: 'flex-end'}}>
+        {project.reason && <span className={style[project.status]}>{SupportSvg()}{project.reason}</span>}
+        <span className={`${style.signed} ${project.signed ? 'text-[var(--success)]' : 'text-[var(--error)]'}`}> <svg ></svg>{project.signed ? 'Signed' : 'Not signed'}</span>
+
+        <span style={{ alignItems: 'center', justifyContent: 'flex-end'}}>{provider === 'github' ? Githubsvg('BIG') : provider === 'domain' ? GlobeSvg() : provider === 'vercel' ? Vercelsvg('big') : ProjectSvg() } {FirstCase(provider)}</span>
+
+        <p>
+          <Link href={`/projects/${project.name.includes('/') || project.name.includes('.') ? project._id : project.name }`}>{Linksvg()}</Link>
+          <Link href={`/projects/${project._id}/stats`}>{MenuShortSvg()}</Link>
+          <Link href={"/payments/"+project._id} className={style.pay}> <span>{TagSvg('p-0.5')} Make payment</span></Link>
+        </p>
+      </div>
     </div>
   )
 }
@@ -65,7 +74,9 @@ const ProjectPack = () => {
         h2: 'Could not get projects',
         text: 'Try restoring internet connection or refreshing the page',
       }}/>)
-    else return result ? result : (
+    else return result ? <section className={style.projects}>
+      {result}
+    </section> : (
       <Defaultbg props={{
         styles: styles,
         img: '/homehero.png',

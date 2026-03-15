@@ -1,17 +1,18 @@
 import bcrypt from 'bcrypt'
 import validator from 'validator'
-import { format } from 'date-fns'
 import connect from '@/src/utils/db'
 import User from '../../../models/User'
 import { getToken } from 'next-auth/jwt'
 import sendMail from '@/src/utils/mailer'
-import { NextResponse } from 'next/server'
 import History from '../../../models/History'
-import { onTime } from '@/src/utils/apiTools'
+import { newDate, onTime } from '@/src/utils/apiTools'
+import { NextRequest, NextResponse } from 'next/server'
 import Notification from '../../../models/Notification'
 import { generateOTP, validateOTP } from '@/src/utils/Otp'
 
-export const GET = async (req) => {
+type Question = {question: string , answer: string }
+
+export const GET = async (req: NextRequest) => {
   await connect()
 
   try {
@@ -24,7 +25,7 @@ export const GET = async (req) => {
 
     if (!userDetails) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
-    if (userDetails.requestLogout) return NextResponse({ email: null }, { status: 200 })
+    if (userDetails.requestLogout) return NextResponse.json({ email: null }, { status: 200 })
 
     return NextResponse.json({
       _id: userDetails._id,
@@ -35,14 +36,14 @@ export const GET = async (req) => {
       provider: userDetails.provider,
       exclusive: userDetails.exclusive,
       backupEmail: userDetails.backupEmail,
-      recoveryQuestions: [...userDetails.recoveryQuestions.map((set) => set.question)],
+      recoveryQuestions: [...userDetails.recoveryQuestions.map((set: Question) => set.question)],
     }, { status: 200 })
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 400 })
+    if ( err instanceof Error ) return NextResponse.json({ error: err.message }, { status: 400 })
   }
 }
 
-export const POST = async (req) => {
+export const POST = async (req: NextRequest) => {
   const { name , email , password , backup , newPassword , recoveryQuestions } = await req.json()
   await connect()
 
@@ -56,7 +57,7 @@ export const POST = async (req) => {
   try {
     if (!user) return NextResponse.json({ error: 'Could not find user account' }, { status: 400 })
 
-    if (user.requestLogout) return NextResponse({ error: 'Could not update settings' }, { status: 400 })
+    if (user.requestLogout) return NextResponse.json({ error: 'Could not update settings' }, { status: 400 })
 
     const passCorrect = await bcrypt.compare(
       password,
@@ -100,9 +101,9 @@ export const POST = async (req) => {
         type: 'Profile',
         class: 'update',
         userId: user._id,
-        target: updatedUser.name,
+        target: user.name,
         title: `Credential update failed`,
-        message: `Backup-email change for ${updatedUser.name} failed due to invalid address`})
+        message: `Backup-email change for ${user.name} failed due to invalid address`})
       await sendMail({
         link: null,
         to: user.email ,
@@ -115,7 +116,7 @@ export const POST = async (req) => {
       })
       return NextResponse.json({ error: 'Invalid backup-email address' }, { status: 400 })
     }
-    if (email && User.find({  $or: [{ backupEmail: email }, { email }]  }).length > 1) {
+    if (email && (await User.find({  $or: [{ backupEmail: email }, { email }]  })).length > 1) {
       await sendMail({
         link: null,
         to: user.email ,
@@ -161,9 +162,9 @@ export const POST = async (req) => {
         type: 'Profile',
         class: 'update',
         userId: user._id,
-        target: updatedUser.name,
+        target: user.name,
         title: `Credential update failed`,
-        message: `Password change for ${updatedUser.name} failed. Password does not satisfy requirements.`})
+        message: `Password change for ${user.name} failed. Password does not satisfy requirements.`})
       await sendMail({
         link: null,
         to: user.email ,
@@ -210,11 +211,11 @@ export const POST = async (req) => {
     const r = recoveryQuestions ? [ ...user.recoveryQuestions,
     ...(await Promise.all(
       recoveryQuestions
-        .filter((set) => set.question?.trim() && set.answer?.trim())
-        .filter((set, i, self) => i === self.findIndex((s) =>
+        .filter((set: Question) => set.question?.trim() && set.answer?.trim())
+        .filter((set: Question, i: number, self: Question[]) => i === self.findIndex((s) =>
           s.question.trim().toLowerCase() === set.question.trim().toLowerCase())
         )
-        .map(async (set) => {
+        .map(async (set: Question) => {
           const hashedAnswer = await bcrypt.hash(set.answer.toLocaleLowerCase().trim(), 10);
           return {
             question: set.question.trim(),
@@ -232,7 +233,7 @@ export const POST = async (req) => {
       status: 'Successful',
       target: updatedUser.name,
       title: 'Successful update',
-      message: `Successful credential update at ${format(new Date.now(), "do MMMM, yyyy")}.`})
+      message: `Successful credential update at ${newDate()}.`})
     await Notification.create({
       read: false,
       important: true,
@@ -257,11 +258,11 @@ export const POST = async (req) => {
       email: e,
       backupEmail: b,
       provider: updatedUser.provider,
-      recoveryQuestions: [...r.map((set) => set.question)],
+      recoveryQuestions: [...r.map((set: Question) => set.question)],
     },
     { status: 201 }
     )
-  } catch (error) {
+  } catch {
     if (user) {
       await sendMail({
         link: null,
@@ -286,7 +287,7 @@ export const POST = async (req) => {
   }
 }
 
-export const PATCH = async (req) => {
+export const PATCH = async (req: NextRequest) => {
   try {
     const { i , password } = await req.json();
     await connect();
@@ -337,7 +338,7 @@ export const PATCH = async (req) => {
           'Kindly recover account to continue with Cod-en'
         ],
       })
-      return NextResponse({ error: 'Could not update settings' }, { status: 400 })
+      return NextResponse.json({ error: 'Could not update settings' }, { status: 400 })
     }
 
     if (typeof i !== 'number') return NextResponse.json({ error: 'Number should be a figurative value' }, { status: 400 })
@@ -371,7 +372,7 @@ export const PATCH = async (req) => {
         userId: user._id,
         target: user.name,
         title: `Successful credential update for ${user.name}`,
-        message: `Recovery question deleted successfully at ${format(new Date.now(), "do MMMM, yyyy")}`,
+        message: `Recovery question deleted successfully at ${newDate()}`,
       });
 
       await sendMail({
@@ -380,7 +381,7 @@ export const PATCH = async (req) => {
         text: `Successful credential update for ${user.name}` ,
         subject : `Successful credential update for ${user.name}`,
         messages: [
-          `Recovery question deleted successfully at ${format(new Date.now(), "do MMMM, yyyy")}`,
+          `Recovery question deleted successfully at ${newDate()}`,
           'If this was not you, log into your account and change log-in details and request logout immediately'
         ],
       })
@@ -397,7 +398,7 @@ export const PATCH = async (req) => {
         text: `Successful credential update for ${user.name}` ,
         subject : `Successful credential update for ${user.name}`,
         messages: [
-          `Recovery question deleted successfully at ${format(new Date.now(), "do MMMM, yyyy")}`,
+          `Recovery question deleted successfully at ${newDate()}`,
           'If this was not you, log into your account and change log-in details and request logout immediately'
         ],
       })
@@ -408,16 +409,16 @@ export const PATCH = async (req) => {
     }
   }
   catch (error) {
-    return NextResponse.json(
+    if (error instanceof Error ) return NextResponse.json(
       { error: error.message || "Something went wrong. Please try again." },
       { status: 500 }
     );
   }
 };
 
-export const DELETE = async ( req ) => {
+export const DELETE = async ( req: NextRequest ) => {
   try {
-    const { password } = await req.json();
+    const { password , code } = await req.json();
     await connect();
 
     if (!password)
@@ -462,9 +463,9 @@ export const DELETE = async ( req ) => {
   
       await sendMail({
         code,
-        to: email,
-        text: `Logout request OTP for ${email}` ,
-        subject : `Logout request OTP for ${email}`,
+        to: user.email,
+        text: `Logout request OTP for ${user.email}` ,
+        subject : `Logout request OTP for ${user.email}`,
         link: {cap: 'For more information on Cod-en logout request process, view ', address: '/help/account', title: 'account help page'},
         messages: [
           `Your Logout request one-time-password is shown above`,
@@ -489,7 +490,7 @@ export const DELETE = async ( req ) => {
       target: user.name,
       status: 'Successful',
       title: 'Request-logout success',
-      message: `User requested logout successfully at ${format(new Date.now(), "do MMMM, yyyy")}. Your account is now inaccessible. Recover account to continue to Cod-en`})
+      message: `User requested logout successfully at ${newDate()}. Your account is now inaccessible. Recover account to continue to Cod-en`})
 
     await Notification.create({
       read: false,
@@ -499,8 +500,8 @@ export const DELETE = async ( req ) => {
       userId: user._id,
       target: user.name,
       link: `/history/${history._id.toString()}`,
-      title: `${user.name} requested logout successfully at ${format(new Date.now(), "do MMMM, yyyy")}. Your account is now inaccessible. Recover account to continue to Cod-en`,
-      message: `Successful credential updates. User updated ${updateArr.join(', ')} successfully`})
+      title: `You have been logged out from Cod-en services successfully`,
+      message: `${user.name} requested logout successfully at ${newDate()}. Your account is now inaccessible. Recover account to continue to Cod-en`})
 
     await sendMail({
       to: user.email ,
@@ -518,7 +519,7 @@ export const DELETE = async ( req ) => {
     return NextResponse.json({ status: 200 })
 
   } catch (error) {
-    return NextResponse.json(
+    if (error instanceof Error ) return NextResponse.json(
       { error: error.message.includes('OTP') ? error.message : "Something went wrong. Please try again." },
       { status: 500 }
     );

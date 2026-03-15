@@ -36,15 +36,17 @@ export type Inboxes = {
   receiverId: string
 }
 
-type process = {
-  _id: string
+export type Phase = {
+  title: string,
+  completed: boolean
+}
+
+export type Process = {
+  _id?: string
   title: string
-  createdAt: string
-  updatedAt: string
-  phase: {
-    type: string,
-    completed: boolean
-  }
+  phase: Phase[]
+  createdAt?: string
+  updatedAt?: string
 }
 
 export type Projects = {
@@ -63,11 +65,12 @@ export type Projects = {
   service: string
   signed: boolean
   concept: string
+  currency: string
   provider: string
   createdAt: string
   updatedAt: string
   langFrom: string[]
-  process: process[]
+  process: Process[]
   features: string[]
   ico: string | null
   link: string | null

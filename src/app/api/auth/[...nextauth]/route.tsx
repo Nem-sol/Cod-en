@@ -1,34 +1,51 @@
 import bcrypt from "bcrypt";
 import NextAuth from "next-auth";
-import { format } from "date-fns";
 import connect from "@/src/utils/db";
+import { cookies } from "next/headers";
 import sendMail from "@/src/utils/mailer"
 import User from "../../../../models/User";
 import { NextResponse } from "next/server";
+import { newDate } from "@/src/utils/apiTools";
 import Github from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
 import History from "../../../../models/History";
+import { NextApiRequest, NextApiResponse } from "next";
 import Credentials from "next-auth/providers/credentials";
 import Notification from "../../../../models/Notification";
 
-const authHandler = (req, res) =>
-  NextAuth(req, res, {
+const authHandler = async ( req: NextApiRequest , res: NextApiResponse ) => {
+
+  const cookie = await cookies()
+  // Check for recovery or login mode cookie
+  const isLogin = cookie.get("login")?.value === 'true';
+  const isRecovery = cookie.get("recovery_mode")?.value === 'true';
+
+  return NextAuth( req , res, {
     providers: [
       Google({
         id: "google",
-        clientId: process.env.GOOGLE_ID,
-        clientSecret: process.env.GOOGLE_SECRET,
+        clientId: process.env.GOOGLE_ID!,
+        clientSecret: process.env.GOOGLE_SECRET!,
       }),
       Github({
-        clientId: process.env.GITHUB_ID,
-        clientSecret: process.env.GITHUB_SECRET,
+        clientId: process.env.GITHUB_ID!,
+        clientSecret: process.env.GITHUB_SECRET!,
       }),
       Credentials({
         id: "credentials",
         name: "credentials",
+        credentials: {
+          email: { label: 'Email', type: 'text' },
+          password: { label: 'Password', type: 'password' },
+        },
         async authorize(credentials) {
           await connect();
+
+          if ( !credentials?.email ) throw new Error('Missing email credential')
+          if ( !credentials?.password ) throw new Error('Missing password credential')
+          
           const { email, password } = credentials;
+
           const user = await User.findOne({ email });
           if (!user) throw new Error("Incorrect email");
           if (user.provider !== "custom")
@@ -45,7 +62,7 @@ const authHandler = (req, res) =>
             target: user.name,
             userId: user._id.toString(),
             title: `Successful log in for ${user.name}`,
-            message: `Successful Log in to your account at ${format(new Date(), "do MMMM, yyyy")}`,
+            message: `Successful Log in to your account at ${newDate()}`,
           });
 
           await sendMail({
@@ -54,7 +71,7 @@ const authHandler = (req, res) =>
             text: `Successful log in for ${user.name}` ,
             subject : `Successful log in for ${user.name}`,
             messages: [
-              `Account was logged into at ${format(new Date(), "do MMMM, yyyy")}.`,
+              `Account was logged into at ${newDate()}.`,
               'If this was not you, log into your account and change log-in details and request logout immediately'
             ],
           })
@@ -73,11 +90,8 @@ const authHandler = (req, res) =>
 
     callbacks: {
       async signIn({ user, account }) {
-        // Check for recovery mode cookie
-        const cookies = req.headers.cookie || req.headers.get("cookie") || "";
-        const isRecovery = cookies.includes("recovery_mode=true");
 
-        if (account.provider !== "credentials") {
+        if (account?.provider !== "credentials") {
           await connect();
           const existingUser = await User.findOne({ email: user.email });
 
@@ -97,11 +111,10 @@ const authHandler = (req, res) =>
               ]
             });
             
-            if (!userClient)
-              throw new Error(`Incorrect backup email "${user.email}"`);
+            if (!userClient) throw new Error(`Incorrect backup email "${user.email}"`);
 
             const hashedPass = await bcrypt.hash(
-              user.email.split("@")[0],
+              user!.email!.split("@")[0],
               10
             );
             const oldEmail = userClient.email;
@@ -111,7 +124,7 @@ const authHandler = (req, res) =>
             userClient.requestLogout = false;
             userClient.password = hashedPass;
             userClient.recoveryQuestions = [];
-            userClient.provider = account.provider;
+            userClient.provider = account?.provider;
             await userClient.save();
 
             user.id = userClient._id.toString();
@@ -123,7 +136,7 @@ const authHandler = (req, res) =>
               userId: userClient._id,
               target: userClient.name,
               title: "Successful account recovery",
-              message: `Account was recovered and password was changed successfully at ${format(new Date(), "do MMMM, yyyy")}.`,
+              message: `Account was recovered and password was changed successfully at ${newDate()}.`,
             });
 
             await Notification.create({
@@ -134,7 +147,7 @@ const authHandler = (req, res) =>
               target: userClient.name,
               link: `/history/${history._id}`,
               title: `Successful account recovery for ${userClient.name}`,
-              message: `Account was recovered and password was changed successfully at ${format(new Date(), "do MMMM, yyyy")}.`,
+              message: `Account was recovered and password was changed successfully at ${newDate()}.`,
             });
 
             await sendMail({
@@ -142,7 +155,7 @@ const authHandler = (req, res) =>
               text: "Successful account recovery",
               subject: "Successful account recovery",
               messages: [
-                `Account was recovered and password was changed successfully at ${format(new Date(), "do MMMM, yyyy")}.`
+                `Account was recovered and password was changed successfully at ${newDate()}.`
               ],
               link: {cap: 'For more information, view ', address: `/history/${history._id}`, title: 'recovery history'}
             });
@@ -152,14 +165,24 @@ const authHandler = (req, res) =>
               text: "Successful account recovery",
               subject: "Successful account recovery",
               messages: [
-                `Account was recovered and password was changed successfully at ${format(new Date(), "do MMMM, yyyy")}.`
+                `Account was recovered and password was changed successfully at ${newDate()}.`
               ],
               link: {cap: 'For more information, view ', address: `/history/${history._id}`, title: 'recovery history'}
             });
 
             return true;
-          } else if (existingUser) {
-            if (existingUser.provider !== account.provider) throw new Error(
+          } else if (isLogin) {
+            // Clear the recovery cookie after reading it
+            const response = NextResponse.json({ success: true });
+
+            response.cookies.set("login", "", {
+              maxAge: 0,
+              path: "/"
+            });
+
+            if (!existingUser) throw new Error(`${user?.email} is not registered with Cod-en. Sign up instead`)
+
+            if (existingUser.provider !== account?.provider) throw new Error(
                 `This email is already registered with ${existingUser.provider}. Please log in with ${existingUser.provider}.`
               );
 
@@ -170,11 +193,11 @@ const authHandler = (req, res) =>
                 status: "Failed",
                 userId: existingUser._id,
                 target: existingUser.name,
-                title: `Failed account log in at ${format(new Date(), "do MMMM, yyyy")}`,
+                title: `Failed account log in at ${newDate()}`,
                 message: `OAuth failure. Could not log into account due to user settings.`,
               });
               await sendMail({
-                to: user.email ,
+                to: existingUser.email ,
                 text: `Log in failure for ${existingUser.name}`,
                 subject : `Log in failure  in for ${existingUser.name}`,
                 link: {cap: 'If you need to regain account access, kindly visit our', address: `/recovery`, title: 'recovery page'},
@@ -195,7 +218,7 @@ const authHandler = (req, res) =>
               userId: existingUser._id,
               target: existingUser.name,
               title: `Successful log in for ${existingUser.name}`,
-              message: `Successful Log in to your account at ${format(new Date(), "do MMMM, yyyy")}`,
+              message: `Successful Log in to your account at ${newDate()}`,
             });
 
             await sendMail({
@@ -204,15 +227,18 @@ const authHandler = (req, res) =>
               text: `Successful log in for ${existingUser.name}`,
               subject: `Successful log in for ${existingUser.name}`,
               messages: [
-                `Account was logged into at ${format(new Date(), "do MMMM, yyyy")}.`,
+                `Account was logged into at ${newDate()}.`,
                 'If this was not you, log into your account and change log-in details and request logout immediately'
               ],
             });
             
             return true;
           } else {
+
+            if (existingUser) throw new Error(`${user?.email} is registered with Cod-en. Sign in instead`)
+
             const hashedPass = await bcrypt.hash(
-              user.email.split("@")[0],
+              user!.email!.split("@")[0],
               10
             );
 
@@ -220,7 +246,7 @@ const authHandler = (req, res) =>
               name: user.name,
               email: user.email,
               password: hashedPass,
-              provider: account.provider,
+              provider: account?.provider,
             });
 
             user.id = newUser._id.toString();
@@ -232,7 +258,7 @@ const authHandler = (req, res) =>
               userId: newUser._id,
               target: newUser.name,
               title: "Successful sign up",
-              message: `Successful sign up to Cod-en at ${format(new Date(), "do MMMM, yyyy")}.`,
+              message: `Successful sign up to Cod-en at ${newDate()}.`,
             });
 
             await Notification.create({
@@ -254,7 +280,7 @@ const authHandler = (req, res) =>
               subject: `Successful sign up for ${newUser.name}`,
               messages: [
                 "Welcome to Cod-en - Future of web development",
-                `You signed up to cod-en at ${format(new Date(), "do MMMM, yyyy")}.`,
+                `You signed up to cod-en at ${newDate()}.`,
                 `Next up? Create Project\n Get a tutorial pack\n Read Coden Blogs!`
               ],
               link: {cap: 'For more information, view ', address: `/history/${history._id}`, title: 'sign up history'}
@@ -268,21 +294,27 @@ const authHandler = (req, res) =>
       async jwt({ token, account, user }) {
         if (user) {
           token.email = user.email;
-          token.id = user.id || user._id?.toString();
+          token.id = user.id || user.id?.toString();
           token.provider =
-            !account || account.provider === "credentials"
+            !account || account?.provider === "credentials"
               ? "custom"
-              : account.provider;
+              : account?.provider;
         }
         return token;
       },
 
       async session({ session, token }) {
-        if (token?.id) {
-          session.user.id = token.id;
-          session.user.email = token.email;
-          session.user.provider = token.provider;
-        }
+
+        if (!session.user) session.user = {} as {
+          id: string
+          email: string
+          provider: string
+        };
+
+        session.user.id = token.id;
+        session.user.email = token.email;
+        session.user.provider = token.provider;
+
         return session;
       },
     },
@@ -290,6 +322,7 @@ const authHandler = (req, res) =>
     pages: {
       error: "/signin",
     },
-  });
+  })
+}
 
 export { authHandler as GET, authHandler as POST };

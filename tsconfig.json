@@ -30,13 +30,13 @@
     "src/utils/mailer.tsx",
     "socket-server/socket.ts",
     "src/components/ChatBox.tsx",
-    "src/app/api/users/route.jsx",
-    "src/app/api/inbox/route.jsx",
+    "src/app/api/users/route.tsx",
+    "src/app/api/inbox/route.tsx",
     "src/context/UserProvider.tsx",
     "src/app/api/messages/route.tsx",
     "src/context/HistoryContext.jsx",
-    "src/app/api/auth/signup/route.jsx",
-    "src/app/api/notifications/route.jsx",
+    "src/app/api/auth/signup/route.tsx",
+    "src/app/api/notifications/route.tsx",
     "src/context/NotificationContext.jsx"
 , "src/utils/Otp.tsx", "src/components/LoadingBar.tsx"    ],
   "exclude": ["node_modules"]

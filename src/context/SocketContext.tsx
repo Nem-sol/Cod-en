@@ -34,6 +34,7 @@ export const SocketProvider: React.FC<{children: React.ReactNode}> = ({ children
         });
 
         s.on("connect_error", (err) => {
+          setReady(false)
           console.warn("Socket connection failed:", err.message);
         });
 
@@ -49,7 +50,6 @@ export const SocketProvider: React.FC<{children: React.ReactNode}> = ({ children
           console.warn("Disconnected from Socket.IO");
         });
 
-        s.on("connect_error", () => setReady(false))
       } catch (err) {
         console.error("Failed to initialize socket:", err);
       }

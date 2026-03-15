@@ -1,11 +1,15 @@
 @import "tailwindcss";
 
+*{
+  position: relative;
+}
 body{
   --black: rgb(0, 0, 0);
   --soft: rgb(138, 94, 31);
   --error: rgb(252, 82, 82);
   --strong: rgb(87, 49, 24);
   --noti: rgb(250, 234, 204);
+  --pending: rgb(241 200 89);
   --input: rgb(247, 246, 219);
   --success: rgb(149, 206, 52);
   --natural: rgb(215, 186, 150);
@@ -23,6 +27,7 @@ body{
   --notifications: rgb(255, 240, 226);
   --changingPurple: rgb(151, 89, 152);
   --deepSweetPurple: rgb(151, 89, 152);
+  --background-opaque: rgba(255, 255, 218, 0.9);
 }
 body.dark{
   --error: rgb(222, 72, 72);
@@ -31,6 +36,7 @@ body.dark{
   --strong: rgb(87, 49, 24);
   --black: rgb(123, 108, 44);
   --natural: rgb(81, 67, 63);
+  --pending: rgb(187 154 64);
   --input: rgb(195, 190, 142);
   --sweetRed: rgb(155 129 112);
   --primary: rgb(202, 185, 110);
@@ -43,7 +49,51 @@ body.dark{
   --translucent: rgb(247, 239, 189);
   --notifications: rgb(201, 173, 147);
   --changingPurple: rgb(219, 180, 220);
+  --background-opaque: rgba(50, 50, 50, 0.9);
   color: rgb(246, 240, 209);
+}
+body.portfolio{
+  --error: rgb(255, 106, 106);
+  --primary: rgb(139 94 161);
+  --translucent: rgb(36 14 78);
+  --pageNav: rgb(245, 226, 255);
+  --compliment: rgb(100, 15, 82);
+  --background: rgb(224, 218, 255);
+  --notifications: rgb(203, 196, 157);
+  --background-opaque: rgba(224, 218, 255 , 0.9);
+}
+body.dark.portfolio{
+  --black: rgb(186, 147, 206);
+  --background: rgb(34, 24, 52);
+  --pageNav: rgb(211, 196, 219);
+  --loadingBar: rgb(231, 188, 255);
+  --translucent: rgb(224, 205, 255);
+  --notifications: rgb(219, 194, 196);
+  --background-opaque: rgba(34, 24, 52, 0.9);
+  color: rgb(242, 235, 255);
+}
+body{
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 15px;
+  min-width: 285px;
+  transition: 0.5s;
+  min-height: 100vh;
+  font-family: "Poppins";
+  flex-direction: column;
+  background-color: var(--background);
+}
+body::selection{
+  color: rgb(41, 34, 34);
+  background-color: rgb(231, 216, 164, 0.7);
+}
+body.dark::selection{
+  color: rgb(62, 50, 50);
+  background-color: rgba(201, 191, 156, 0.7);
+}
+body.portfolio::selection{
+  color: rgb(67, 13, 55);
+  background-color: rgb(238, 196, 229);
 }
 .root{
   flex: 1;
@@ -58,27 +108,6 @@ main{
   width: 100%;
   flex-direction: column;
   padding-block: 60px 20px;
-}
-body{
-  display: flex;
-  flex-wrap: wrap;
-  font-size: 15px;
-  min-width: 285px;
-  transition: 0.5s;
-  min-height: 100vh;
-  flex-direction: column;
-  background-color: var(--background);
-}
-body::selection{
-  color: rgb(41, 34, 34);
-  background-color: rgb(231, 216, 164, 0.7);
-}
-body.dark::selection{
-  color: rgb(62, 50, 50);
-  background-color: rgba(201, 191, 156, 0.7);
-}
-*{
-  position: relative;
 }
 .big{padding: 3px}
 .BIG{padding: 1.5px;}
@@ -96,13 +125,17 @@ a{
 svg{
   width: 23px;
   height: 23px;
-  min-width: 23px;
   aspect-ratio: 1;
-  min-height: 23px;
   fill: currentColor;
   pointer-events: none;
   display: inline-block;
   transition: 0.3s width, 0.3s height;
+}
+video{
+  flex: 1;
+  opacity: 1;
+  width: 100%;
+  height: 100%;
 }
 menu, span{
   transition: 0.5s;
@@ -133,6 +166,7 @@ input,
 textArea{
   min-width: 0;
   outline: none;
+  font-size: inherit;
   border-radius: inherit;
 }
 input:autofill,
@@ -229,8 +263,11 @@ header{
   transition: 0.5s;
   inset-inline: auto;
   justify-content: center;
-  background-color: var(--background);
   box-shadow: 0 8px 12px var(--background);
+  background-color: var(--background-opaque);
+}
+header:hover {
+  background-color: var(--background);
 }
 .header{
   gap: 10px;
@@ -276,19 +313,19 @@ header{
   color: var(--compliment);
 }
 .footer{
-  gap: 15px;
+  gap: 25px;
   width: 100%;
   display: flex;
   row-gap: 10px;
+  padding: 30px;
+  flex-wrap: wrap;
   min-height: 60px;
   font-weight: 600;
   transition: 0.5s;
   margin-top: auto;
   max-width: 1200px;
   align-self: center;
-  align-items: center;
-  padding-inline: 10px;
-  padding-block: 30px 0;
+  padding-right: 10px;
   justify-content: space-between;
 }
 .footer a{
@@ -305,6 +342,22 @@ header{
   align-items: center;
   color: var(--translucent);
   flex-direction: row-reverse;
+}
+.footer section{
+  flex: 1;
+  display: flex;
+  padding: 10px;
+  gap: 30px 50px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+.footer section div{
+  flex: 1;
+  gap: 10px;
+  display: flex;
+  min-width: 200px;
+  align-items: start;
+  flex-direction: column;
 }
 .footer span{
   padding-left: 10px;
@@ -327,9 +380,10 @@ header{
   background-image: linear-gradient(to right,rgb(230, 199, 113), rgb(216, 174, 56), var(--strong));
 }
 .link_pack{
-  flex: 0.4;
+  flex: 0.8;
   gap: 5px 10px;
   display: flex;
+  max-width: 525px;
   align-items: center;
   justify-content: space-around;
 }
@@ -436,6 +490,14 @@ header{
   background-color: rgb(58, 151, 58);
   background-image: linear-gradient(to right, var(--mild-dark), transparent);
 }
+#theme span{
+  top: 5px;
+  right: -60px;
+  opacity: 0.75;
+  font-weight: 600;
+  position: absolute;
+  color: rgb( 50, 50, 50);
+}
 nav{
   flex: 0;
   display: flex;
@@ -443,7 +505,6 @@ nav{
   transition: 0.5s;
   align-items: center;
   justify-content: right;
-  background-color: var(--background);
 }
 nav .mask{
   inset: 0;
@@ -469,6 +530,7 @@ nav .links{
   align-items: center;
   flex-direction: column;
   color: var(--translucent);
+  background-color: var(--background-opaque);
   transition: 0.5s background-color, 0.5s box-shadow;
   box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.38), 0px 15px 15px var(--background);
 }
@@ -489,6 +551,7 @@ nav .links a{
 nav .links a:hover{
   color: var(--primary);
   background-color: var(--mild-dark);
+  background-image: linear-gradient( to bottom left, transparent, rgba(0, 0, 0, 0.3));
 }
 nav .links svg{
   flex: 1;
@@ -510,8 +573,8 @@ nav .pagenav{
   max-height: calc(100vh - 60px);
   background-color: var(--pageNav);
   border-bottom-right-radius: 15px;
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.28), 0 0 15px var(--background);
   background-image: linear-gradient(to right, #0000001f, transparent);
+  box-shadow: rgba(0, 0, 0, 0.1) 3px 0px 15px -3px, rgba(0, 0, 0, 0.05) 10px 0px 6px -2px;
 }
 nav .pagenav .holdr{
   gap: 10px;
@@ -520,6 +583,7 @@ nav .pagenav .holdr{
   min-width: 300%;
   transition: 0.5s;
   padding-inline: 5px;
+  max-height: calc( 100% );
   grid-template-columns: 1fr 1fr 1fr;
 }
 nav.inb .holdr{
@@ -534,11 +598,12 @@ nav .pagenav .hidden{
   z-index: 2;
   border: none;
   display: flex;
-  padding: 10px 0;
+  padding: 10px;
   font-size: 14px;
   min-width: 165px;
   transition: 0.5s;
   max-width: 700px;
+  align-items: start;
   width: fit-content;
   position: absolute;
   border-radius: 10px;
@@ -550,6 +615,13 @@ nav .pagenav .hidden{
   background-image: linear-gradient(to right, rgba(0, 0, 0, 0.15), transparent);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.282), 0 0px 3px rgba(0, 0, 0, 0.282);
 }
+nav .pagenav .hidden span{
+  width: 100%;
+  overflow: hidden;
+  text-align: start;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
 nav .pagenav .hidden.inView{
   opacity: 1;
   z-index: 4;
@@ -558,10 +630,11 @@ nav .pagenav .hidden.inView{
 }
 nav .pagenav .inbox{
   opacity: 0;
+  height: 100%;
   display: grid;
+  min-height: 0;
   transition: 1s;
   padding-block: 5px 15px;
-  max-height: calc(100vh - 60px);
 }
 nav.inb .pagenav .inbox{
   opacity: 1;
@@ -625,14 +698,10 @@ nav .pagenav .inbox .input{
   background-color: rgba(245, 225, 215, 0.526);
 }
 nav .pagenav .inbox .section{
-  gap: 3px;
-  height: 100%;
-  display: flex;
   overflow-y: auto;
   overflow-x: hidden;
   padding-block: 20px;
   scrollbar-width: 7px;
-  flex-direction: column;
   scrollbar-color: rgba(0, 0, 0, 0.15);
   &::-webkit-scrollbar {
     width: 7px;
@@ -652,8 +721,23 @@ nav .pagenav .inbox .section{
     background-color: rgb(129, 91, 65); 
   }
 }
+nav .section .chats{
+  gap: 3px;
+  display: flex;
+  flex-direction: column;
+}
+
 nav .input button{
-  max-height: 29px;
+  height: 32px;
+  display: flex;
+  min-width: 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 15px !important;
+}
+.input svg{
+  width: 20px;
+  height: 20px;
 }
 nav .pagenav .inbox textarea{
   width: 100%;
@@ -709,7 +793,6 @@ nav .contact textArea{
   max-height: 350px;
   padding: 10px 15px;
   border-radius: 27px;
-  color: var(--translucent);
   border-bottom-left-radius: 5px;
   border: solid var(--deepSweetPurple) 2px;
   background-color: rgba(255, 252, 222, 0.075);
@@ -802,6 +885,7 @@ nav .contact .button:hover svg{
     z-index: 2;
     position: fixed;
     transition: 0.5s;
+    max-height: none;
     height: calc(100% - 60px);
   }
   nav.inView .pagenav{
@@ -814,6 +898,11 @@ nav .contact .button:hover svg{
   nav.inView .mask{
     opacity: 1;
     pointer-events: all;
+  }
+}
+@media screen and (max-width: 750px) {
+  .footer{
+    flex-direction: column;
   }
 }
 @media screen and (max-width: 650px) {
@@ -854,12 +943,6 @@ nav .contact .button:hover svg{
   }
   .header div button:first-child{
     display: initial;
-  }
-  .footer .l{
-    width: 0;
-    padding: 0;
-    overflow: hidden;
-    pointer-events: none;
   }
 }
 @media screen and (max-width: 500px) {
@@ -911,8 +994,6 @@ nav .contact .button:hover svg{
   svg, nav .links svg{
     width: 22px;
     height: 22px;
-    min-width: 22px;
-    min-height: 22px;
   }
   .footer h1{
     font-size: 1.3em;
@@ -920,6 +1001,12 @@ nav .contact .button:hover svg{
   .footer span{
     width: 100%;
     border: none;
+  }
+  .footer .l{
+    width: 0;
+    padding: 0;
+    overflow: hidden;
+    pointer-events: none;
   }
 }
 @media screen and (max-width: 375px) {
@@ -932,12 +1019,6 @@ nav .contact .button:hover svg{
   svg, nav .links svg{
     width: 21px;
     height: 21px;
-    min-width: 21px;
-    min-height: 21px;
-  }
-  .footer{
-    flex-direction: column;
-    align-items: flex-start;
   }
   .footer span{
     text-align: start;

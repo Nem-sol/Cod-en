@@ -32,7 +32,7 @@ const History = () => {
           <p>{history.status}</p>
         </div>
         <div>
-          <Link href={'/history/'+history._id}>{Linksvg()}</Link>
+          <Link href={'/history/'+history._id}>{Linksvg('isBig')}</Link>
           <Copier props={{text: history._id}}/>
         </div>
       </div>
@@ -49,8 +49,8 @@ const History = () => {
     if (!history) result = null
     else if (filter.trim() === '') filtered = history
     else if (filter === 'payment') filtered = filtered.filter(( hist: Histories )=> hist.class.toLocaleLowerCase() === 'payment')
-    else if(filter === 'pending' || filter === 'failed' || filter === 'successful') filtered = filtered.filter(( hist: Histories )=> hist.status === filter)
-    else if (filter === 'profile' || filter === 'project' || filter === 'subscription') filtered = filtered.filter((hist: Histories)=> hist.type === filters)
+    else if(filter === 'pending' || filter === 'failed' || filter === 'successful') filtered = filtered.filter(( hist: Histories )=> hist.status.toLocaleLowerCase() === filter)
+    else if (filter === 'profile' || filter === 'project' || filter === 'subscription') filtered = filtered.filter((hist: Histories)=> hist.type.toLocaleLowerCase() === filter )
     else filtered = filtered.filter(( hist: Histories )=> hist.title.toLocaleLowerCase().includes(filter))
 
     if (filtered && filtered.length > 0) result = filtered.map((hist: Histories, i: number)=> <HistoryPacks key={i} history={hist}/>)

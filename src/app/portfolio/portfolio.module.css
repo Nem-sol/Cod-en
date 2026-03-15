@@ -1,0 +1,101 @@
+/* Animations */
+@keyframes fadeInUp {
+  from {
+  opacity: 0;
+  transform: translateY(20px);
+  }
+  to {
+  opacity: 1;
+  transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+  transform: translateY(0);
+  }
+  50% {
+  transform: translateY(-10px);
+  }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Gradient text */
+.gradient-text {
+  color: transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
+  background: linear-gradient(90deg, var(--primary), var(--compliment));
+}
+
+/* Custom button */
+.btn-primary {
+  display: flex;
+  font-weight: 600;
+  padding: 12px 28px;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+  color: rgb(255, 255, 255);
+  background: linear-gradient(90deg, var(--primary), var(--compliment));
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(58, 134, 255, 0.2);
+}
+
+/* Card hover effect */
+.service-card {
+  transition: all 0.3s ease;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.service-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Tech stack icons */
+.tech-icon {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.tech-icon:hover {
+  transform: scale(1.1);
+}
+
+/* Section spacing */
+section {
+  padding: 80px 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  section {
+      padding: 50px 0;
+  }
+  
+  h1 {
+      font-size: 2.5rem !important;
+  }
+  
+  h2 {
+      font-size: 2rem !important;
+  }
+}

@@ -13,7 +13,7 @@ import { useContact } from '@/src/context/MessageContext'
 import ChatInput, { PasswordInput } from '@/src/components/ChatBox'
 import { FirstCase, RemoveLikeClass, Toggle } from '@/src/components/functions'
 import { Defaultbg, NewDropSets, NewFilterSets , Notify } from '@/src/components/pageParts'
-import { AddSvg, Bugsvg, cancelSvg, checkmarkSvg, FolderSvg, Helpsvg, Inboxsvg, Leftsvg, loaderCircleSvg, Mailsvg, Refreshsvg, Searchsvg, SupportSvg } from '@/src/components/svgPack'
+import { AddSvg, Bugsvg, callSvg, cancelSvg, checkmarkSvg, Feedbacksvg, HandShakeSvg, Helpsvg, Leftsvg, loaderCircleSvg, Mailsvg, PortfolioSvg, Refreshsvg, Searchsvg, SupportSvg } from '@/src/components/svgPack'
 
 const Contact = () => {
   const { socket , ready } = useSocket()
@@ -99,7 +99,7 @@ const Contact = () => {
           <section className={styles.form}>
             <input name='name' value={name} type="text" autoComplete='true' autoCorrect='true' placeholder={ user?.name || 'John Michael'} onChange={(e)=> setName( user?.name || e.target.value)} onKeyDown={()=> setName((prev: string) => user?.name || prev)}/>
             <input name='email' value={email} type="text" autoComplete='true' autoCorrect='true' placeholder={ user?.email || 'you@example.com'} onChange={(e)=> setEmail( user?.email || e.target.value)} onKeyDown={()=> setEmail((prev: string)=> user?.email || prev)}/>
-            <textarea name='message' value={msg} autoComplete='true' autoCorrect='true' placeholder='Start your message...' onChange={(e)=> setMsg(e.target.value)}/>
+            <ChatInput maxHeight='500px'  placeholder='Start your message...' value={msg} onChange={(e)=> setMsg(e.target.value)}/>
             {!user && <span>Access convenient comunication when you <Link href='/signup' style={{color: 'var(--compliment)', fontWeight: '700', whiteSpace: 'nowrap'}}>sign up</Link></span>}
             {error && <p className='text-[var(--error)] font-medium' style={success ? {color: 'var(--success)'} : {}}>{error}</p>}
             <div className='flex gap-x-2.5'>
@@ -109,13 +109,13 @@ const Contact = () => {
                 class: styles.inView,
                 buttons: user ? [
                     {svg: Helpsvg(), txt: 'Enquiry', query: 'enquiry', func: ()=>setType('enquiry')},
-                    {svg: FolderSvg(), txt: 'Deals', query: 'deals', func: ()=>setType('deals')},
+                    {svg: HandShakeSvg(), txt: 'Deals', query: 'deals', func: ()=>setType('deals')},
                     {svg: SupportSvg('isBig'), txt: 'Message', query: 'message', func: ()=>setType('message')},
                     {svg: Bugsvg(), txt: 'Report', query: 'report', func: ()=>setType('report')},
-                    {svg: SupportSvg('isBig'), txt: 'Feedback', query: 'feeds', func: ()=>setType('feeds')}
+                    {svg: Feedbacksvg(), txt: 'Feedback', query: 'feeds', func: ()=>setType('feeds')}
                   ] : [
                   {svg: Helpsvg(), txt: 'Enquiry', query: 'enquiry', func: ()=>setType('enquiry')},
-                  {svg: FolderSvg(), txt: 'Business deals', query: 'deals', func: ()=>setType('deals')},
+                  {svg: HandShakeSvg(), txt: 'Business deals', query: 'deals', func: ()=>setType('deals')},
                   {svg: SupportSvg('BIG'), txt: 'Message', query: 'message', func: ()=>setType('message')}
                 ]
               }}/></div>
@@ -124,12 +124,9 @@ const Contact = () => {
           </section>
           <h3 className={styles.h3}>
             <p><span>Or</span></p>
-            <div className={styles.caller}>Reach out to us: 
-              <div>
-                <a href={`mailto:${ emails }`}>{Mailsvg()} <span>{ emails}</span></a>
-                <a href={`tel:${ tels }`}>{Mailsvg()} <span> { tels } </span></a>
-                <Link href=''>{Mailsvg()} <span>codendevs@gmail.com</span></Link>
-              </div>
+            <div className={styles.caller}>
+              <a href={`mailto:${ emails }`}>{Mailsvg()} <span>{ emails}</span></a>
+              <a href={`tel:${ tels.trim() }`}>{callSvg()} <span> { tels.split(' ').map(( part: string) => <b className='ml-1.5 font-[600]'>{part}</b>) } </span></a>
             </div>
           </h3>
         </form>
@@ -251,10 +248,10 @@ const Contact = () => {
           <p className='font-[600] gap-2.5'>
             <span title={message.name} style={{ overflow: 'hidden',  whiteSpace: 'nowrap', textOverflow: 'ellipsis'}}>{message.name}</span>
             <span className='flex gap-2.5 items-center font-[500]'>{
-            type === 'deals' ? FolderSvg() :
+            type === 'deals' ? HandShakeSvg() :
             type === 'report' ? Bugsvg() :
             type === 'enquiry' ? Helpsvg() :
-            type === 'feedback' ? SupportSvg() : SupportSvg()
+            type === 'feedback' ? Feedbacksvg() : SupportSvg()
             }
             {FirstCase(type)}</span></p>
           <p>{message.content}</p>
@@ -330,7 +327,7 @@ const Contact = () => {
         <div className={style.main}>
           <h2 className={style.title}>{} Admin contact page</h2>
           <div className={style.quick}>
-            <Link href="/Contact" className={style.second}>{Inboxsvg('BIG')} Contact</Link>
+            <Link href="/portfolio" className={style.second}>{PortfolioSvg()} Portfolio</Link>
             <button onClick={() => sendAll(true)}>{SupportSvg('BIG')} Send mass email</button>
           </div>
           <div id={style.searchbar}>

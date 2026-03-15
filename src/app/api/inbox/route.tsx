@@ -1,10 +1,10 @@
 import connect from '@/src/utils/db'
 import { getToken } from 'next-auth/jwt'
 import User from  '../../../models/User'
-import { NextResponse } from 'next/server'
 import Inbox from  '../../../models/Inbox'
+import { NextRequest, NextResponse } from 'next/server'
 
-export const GET = async (req) => {
+export const GET = async (req: NextRequest) => {
   
   await connect()
 
@@ -22,6 +22,6 @@ export const GET = async (req) => {
     return NextResponse.json(inbox, {status: 200})
   }
   catch(err){
-    return NextResponse.json({error: err}, {status: 400})
+    if (err instanceof Error ) return NextResponse.json({error: err}, {status: 400})
   }
 }

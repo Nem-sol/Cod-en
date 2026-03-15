@@ -5,9 +5,9 @@ import styles from '../main.module.css'
 import React, { ReactNode } from 'react'
 import Footer from '@/src/components/Footer'
 import { DashboardSection } from '@/src/components/pageParts'
-import { useProjectContext } from '@/src/context/ProjectContext'
-import { Blogsvg, Booksvg, Buildsvg, Devsvg, Helpsvg, HomeSvg, Packssvg, Rocketsvg } from '@/src/components/svgPack'
 import { useUserContext } from '@/src/context/UserProvider'
+import { useProjectContext } from '@/src/context/ProjectContext'
+import { Blogsvg, Booksvg, Buildsvg, Devsvg, HandShakeSvg, Helpsvg, HomeSvg, Packssvg, Rocketsvg } from '@/src/components/svgPack'
 
 type Blogs = {
   props: { 
@@ -124,7 +124,7 @@ const Dashboard = () => {
               link: 'Boost your developer skills with flexible subscription patterns',
             }}/>
             <DashboardBlogs props={{
-              svg: Devsvg(),
+              svg: HandShakeSvg(),
               title: 'Partners',
               address: '/portfolio/partners',
               link: 'See our works and completed client projects',

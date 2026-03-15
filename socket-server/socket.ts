@@ -1,14 +1,17 @@
+import fs from 'fs'
 import dotenv from "dotenv"
 import bcrypt from "bcrypt"
-import { Msg } from "../types.js"
 import { Server } from "socket.io"
 import { createServer } from "node:http"
 import User from "../src/models/User.js"
 import connect from "../src/utils/db.js"
+import { Msg, Process } from "../types.js"
 import Inbox from "../src/models/Inbox.js"
 import sendMail from "../src/utils/mailer.js"
 import Message from "../src/models/Message.js"
 import Project from "../src/models/Project.js"
+import { FirstCase } from '@/src/components/functions.jsx'
+import ProjectInstance from "../src/models/ProjectInstance.js"
 
 dotenv.config()
 
@@ -19,7 +22,18 @@ const port = parseInt(process.env.PORT || "4000", 10)
 const app = async () => {
   await connect()
 
-  const httpServer = createServer()
+  const httpServer = createServer(( req , res )=>{ // send favicon.ico  
+    if (req.url === "/favicon.ico") {
+      try {
+        const favicon = fs.readFileSync("./favicon.ico");
+        res.writeHead(200, { "Content-Type": "image/x-icon" });
+        return res.end(favicon);
+      } catch {
+        res.writeHead(404)
+        return res.end()
+      }
+    }
+  })
   const io = new Server(httpServer, {
     cors: {
       origin: [ url || ""],
@@ -102,7 +116,7 @@ const app = async () => {
       socket.on("create-project", async (project) => {
         try {
           const existsByName = await Project.findOne({ name: project.name })
-          if (user.role === 'admin') return socket.emit("project-error", {message: "You are not allowed to create projects"})
+          // if (user.role === 'admin') return socket.emit("project-error", {message: "You are not allowed to create projects"})
 
           if (existsByName)
             return socket.emit("project-error", { message: "Project name already exists" })
@@ -174,22 +188,149 @@ const app = async () => {
 
           io.to('admin').emit('inbox-created', newInbox )
           io.to('admin').emit('project-created', newProject )
-        } catch (err) {
-          console.log(err)
+        } catch {
           socket.emit("project-error", { message: "Failed to create project" })
         }
       })
 
-      socket.on("update-project", async ({ projectId, update }) => {
+      socket.on("update-project:editor", async ({ projectId , update }) => {
         try {
           if (!socket.rooms.has(`project:${projectId}`))
-            return socket.emit("project-error", { message: "Unauthorized project" })
+            return socket.emit("project-error:editor", { projectId , message: "Unauthorized project update attempt" })
 
-          const project = await Project.findByIdAndUpdate(projectId, update, { new: true })
+          const project = await Project.findByIdAndUpdate( projectId , update , { new: true })
 
+          if (project) socket.emit("project-updated:editor")
           if (project) io.to(`project:${projectId}`).emit("project-updated", project)
         } catch {
-          socket.emit("project-error", { message: "Failed to update project" })
+          socket.emit("project-error:editor", { message: "Failed to update project" })
+        }
+      })
+
+      socket.on("update-project:editting", async ({ projectId , aboutProj , conceptProj , currencyProj  }) => {
+        try {
+          if (!socket.rooms.has(`project:${projectId}`))
+            return socket.emit("project-error:editting", { projectId , message: "Unauthorized project update attempt" })
+
+          const project = await Project.findById( projectId )
+
+          if ( String(user?._id) !== project.userId ) return socket.emit("project-error:onEdit", { projectId , message: "Unauthorized project update attempt" })
+
+          const about = aboutProj?.replaceAll('  ', ' ') || project.about
+          const concept = conceptProj?.replaceAll('  ', ' ') || project.concept
+          const currency = currencyProj.trim() || project.currency
+
+          const updatedProject = await Project.findByIdAndUpdate( projectId , { about , concept , currency })
+
+          await ProjectInstance.create({
+            about ,
+            concept ,
+            currency ,
+            projectId ,
+            userId: project.userId,
+            reason: project.reason ,
+            status: project.status })
+
+          if (updatedProject) socket.emit("project-updated:editting")
+          if (updatedProject) io.to(`project:${projectId}`).emit("project-updated", updatedProject )
+        } catch {
+          socket.emit("project-error:editting", { message: "Failed to update project" })
+        }
+      })
+
+      socket.on("update-project:onEdit", async ({ projectId , reasonProj , statusProj }) => {
+        try {
+          if (!socket.rooms.has(`project:${projectId}`))
+            return socket.emit("project-error:onEdit", { projectId , message: "Unauthorized project update attempt" })
+
+          if ( user?.role !== 'admin' ) return socket.emit("project-error:onEdit", { projectId , message: "Unauthorized project update attempt" })
+
+          if (!['waiting', 'active'].includes(statusProj) ) return socket.emit("project-error:onEdit", { projectId , message: 'Status can only be hard-coded to waiting or active.'})
+
+          const project = await Project.findByIdAndUpdate( projectId , { reason: reasonProj , status: statusProj })
+
+          const { about , concept , userId , currency } = project
+
+          await ProjectInstance.create({
+            about ,
+            userId ,
+            concept ,
+            currency ,
+            projectId ,
+            reason: project.reason ,
+            status: project.status })
+
+          if (project) socket.emit("project-updated:onEdit")
+          if (project) io.to(`project:${projectId}`).emit("project-updated", project )
+        } catch {
+          socket.emit("project-error:onEdit", { message: "Failed to update project" })
+        }
+      })
+
+      socket.on("update-project:isEditting", async ({ projectId , name , url , link }) => {
+        try {
+          if (!socket.rooms.has(`project:${projectId}`)) return socket.emit("project-error:isEditting", { projectId , message: "Unauthorized project update attempt" })
+
+          if (!name.trim()) return socket.emit("project-error:isEditting", { projectId , message: "Unauthorized project update attempt" })
+
+          const exists = await Project.findOne({ name: name.replaceAll('  ',' ') })
+
+          if ( exists && exists._id !== projectId ) return socket.emit("project-error:isEditting", { projectId , message: `${FirstCase(name.replaceAll('  ',' '))} already exists on Cod-en+` })
+
+          const project = await Project.findByIdAndUpdate( projectId , { name: name.replaceAll('  ',' ') , link , url })
+
+          await ProjectInstance.create({
+            userId ,
+            projectId ,
+            about: project.about ,
+            reason: project.reason ,
+            concept: project.concept ,
+            currency: project.currency ,
+            status: project.status })
+
+          if (project) socket.emit("project-updated:isEditting")
+          if (project) io.to(`project:${projectId}`).emit("project-updated", project)
+        } catch {
+          socket.emit("project-error:isEditting", { message: "Failed to update project" })
+        }
+      })
+
+      socket.on("update-project:process", async ({ projectId , processProj }) => {
+        try {
+          if (!socket.rooms.has(`project:${projectId}`))
+            return socket.emit("project-error:process", { projectId , message: "Unauthorized project update attempt" })
+
+          const process = processProj.map(( pro: Process ) => {
+              return { ...pro , phase: pro.phase.filter( phase => phase.title.trim())}
+            }
+          ).filter(( pro: Process ) => pro.phase.length > 0 )
+
+          const noTitle = process.filter((  pro: Process ) => pro.title.trim() && pro.phase.filter( phase => phase.title.trim()))
+
+          if (process.length < 1 ) return socket.emit("project-error:process", { projectId , message: 'The returned process has no valid string content' })
+
+          if (noTitle.length < 1 ) return socket.emit("project-error:process", { projectId , message: 'The returned process has no valid title content' })
+
+          const project = await Project.findByIdAndUpdate( projectId , { process })
+
+          if (project) socket.emit("project-updated:process")
+          if (project) io.to(`project:${projectId}`).emit("project-updated", project)
+        } catch {
+          socket.emit("project-error:process", { message: "Failed to update project" })
+        }
+      })
+
+      socket.on('update-project:stgComplete', async ({ projectId , process }) => {
+        try {
+          if (!socket.rooms.has(`project:${projectId}`))
+            return socket.emit("project-error:stgComplete", { projectId , message: "Unauthorized project update attempt" })
+          
+          const project = await Project.findByIdAndUpdate( projectId , { process })
+
+          if (project) socket.emit("project-updated:stgComplete")
+          if (project) io.to(`project:${projectId}`).emit("project-updated", project)
+        } catch {
+          socket.emit("project-error:stgComplete", { message: "Failed to complete stage" })
         }
       })
 
@@ -267,7 +408,7 @@ const app = async () => {
           }
 
           socket.emit("mailed-to-all")
-        } catch (error) {
+        } catch {
           socket.emit("failed-to-mail", { message: "Could not send reply. Try again later"})
         }
   
@@ -290,7 +431,7 @@ const app = async () => {
           socket.emit("contact-success", { message: `${type[0].toLocaleUpperCase()}${type.toLocaleLowerCase().slice(1)} sent successfully. Cod-en will get back to you shortly.`})
 
           io.to("admin").emit("new-contact", message )
-        } catch (error) {
+        } catch {
           socket.emit("contact-error", {message: 'Error occured in the process'})
         }
       })

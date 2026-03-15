@@ -2,9 +2,9 @@
 import Link from 'next/link'
 import styles from '../page.module.css'
 import { signIn } from 'next-auth/react'
-import Footer from '@/src/components/Footer'
 import style from '../../settings/page.module.css'
 import React, { useEffect, useState } from 'react'
+import { ShortFooter } from '@/src/components/Footer'
 import { PasswordInput } from '@/src/components/ChatBox'
 import { useEmail } from '@/src/context/ProtectionProvider'
 import { Githubsvg, GoogleG, loaderCircleSvg } from '@/src/components/svgPack'
@@ -166,7 +166,7 @@ const Signup = () => {
           <button onClick={handleSubmit} disabled={loading}>{ done ? 'Sign up success' : 'Resend Otp'}</button>
         </div>
       </>}
-      <Footer />
+      <ShortFooter />
     </main>
   )
 }

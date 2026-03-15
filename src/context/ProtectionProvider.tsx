@@ -1,6 +1,7 @@
 "use client"
 import { useHelp } from './HelpProvider'
 import Navbar from "../components/Navbar"
+import Footer from '../components/Footer'
 import Heading from "../components/Header"
 import styles from '../app/main.module.css'
 import { useSocket } from './SocketContext'
@@ -20,7 +21,7 @@ import stylez from '../app/projects/new/page.module.css'
 import { Helps, Inboxes, Message, Projects } from '@/types'
 import { useParams, usePathname , useRouter } from 'next/navigation'
 import { createContext , Dispatch , SetStateAction , useContext, useEffect, useState } from "react"
-import { CheckIncludes, FirstCase, RemoveAllClass, translateText } from '../components/functions'
+import { CheckIncludes, classAdd, classRemove, FirstCase, pick, RemoveAllClass, translateText } from '../components/functions'
 
 interface EmailSet {
   email: string,
@@ -53,13 +54,13 @@ export const ProtectorProvider: React.FC<{children: React.ReactNode}> = ({childr
   const universalPaths = ['help', 'portfolio', 'blogs', 'contact', 'recovery']
   const authenticatedPaths = ['dashboard', 'notifications', 'tutorial', 'settings', 'projects', 'inbox', 'history']
 
+  const hardCodedHelpPages = user?.role === 'admin' ? ['routing', 'faq' , 'new' , 'resources' ] : ['routing', 'faq' , 'resources' ]
+
   useEffect(()=>{
     router.prefetch('/')
     router.prefetch('/signin')
     router.prefetch('/dashboard')
   }, [])
-  
-
 
   useEffect(()=>{
     if ( !user ) return
@@ -110,6 +111,9 @@ export const ProtectorProvider: React.FC<{children: React.ReactNode}> = ({childr
 
   useEffect(() => {
     const parts = [...path.split('/')]
+    const bodyClass = pick('body').classList
+    if (parts[1] === 'portfolio' && !bodyClass.contains('portfolio')) classAdd('body', 'portfolio')
+    else if (parts[1] !== 'portfolio' && bodyClass.contains('portfolio')) classRemove('body', 'portfolio')
 
     if (!universalPaths.includes(parts[1]) && status !== 'loading') {
       if (unauthenticatedPaths.includes(path) && status === 'authenticated') router.push('/dashboard')
@@ -123,9 +127,10 @@ export const ProtectorProvider: React.FC<{children: React.ReactNode}> = ({childr
     else if (parts[2]) {
       const sub =  (
         parts[1] === 'history' ? 'Details' : 
-        parts[1] === 'help' ? (help.length > 0 ? help[0].title : 'Not found') : 
+        parts[1] === 'help' ? hardCodedHelpPages.includes(parts[2]) ? FirstCase(parts[2]) : ( help.length > 0 ? help[0].title : 'Not found') : 
         parts[1] === 'projects' ? (parts[2] === 'new' ? 'New' : 
           project ? project.name : 'Not found') : 
+        parts[1] === 'portfolio' ? FirstCase(parts[2]) :
         'Not found'
       )
       translateText(`Cod-en | ${FirstCase(parts[1])} - ${sub}`, 'title')
@@ -159,8 +164,9 @@ export const ProtectorProvider: React.FC<{children: React.ReactNode}> = ({childr
           <main id={styles.main} style={{alignSelf: 'center'}}>
             <div className={`${styles.main} ${styles.default_bg}`}>
               <section className={style.background}></section>
-              <h2 className='flex items-center gap-5 scale-[1.2]'>{loaderCircleSvg()} Loading Cod-en+ ... </h2>
+              <h2 className='flex items-center gap-5 scale-[1.2]' style={{fontSize: '15px' , minHeight: '90vh'}}>{loaderCircleSvg()} Loading Cod-en+ ... </h2>
             </div>
+            <Footer />
           </main>
         ) : 
         children}

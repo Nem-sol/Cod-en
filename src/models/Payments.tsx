@@ -2,9 +2,6 @@ import mongoose from "mongoose"
 
 const { Schema } = mongoose
 
-enum Providers {'Flutterwave' , 'Paystack'}
-enum Status {'Pending' , 'Success', 'Failure'}
-
 const PaymentSchema = new Schema({
   email: {
     type: String,

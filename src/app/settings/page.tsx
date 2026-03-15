@@ -45,17 +45,19 @@ const Settings = () => {
 
   const requestLogout = async ( not = false ) => {
     setErr('')
+    if (!user) return
     if ( !logout ) return setLogOut( true )
     if ( !password.trim() ) return setErr('Please enter password')
     if ( password.length < 6 ) return setErr('Incorrect password')
     setLoading(true)
+    const set = require && !not
     const res = await fetch('/api/users',{
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
         'authorization': `Bearer ${user?.id}`
       },
-      body: JSON.stringify({ code: require && !not ? code : null ,  password })
+      body: JSON.stringify({ code: set ? code : null ,  password })
     })
     const contentType = res.headers.get('content-type')
 
@@ -127,10 +129,7 @@ const Settings = () => {
     setRecovery(( prev: sets[] ) => [...prev.filter((f: sets)=> f.question.trim() !== '' && f.answer.trim() !== '')])
     if (recovery.length < 1 || !user) return
     if (ready){
-      if (!password.trim()){
-        setEr('Password is required for updates')
-        return
-      }
+      if (!password.trim()) return setEr('Password is required for updates')
       setEr('')
       setLoading(true)
       const res = await fetch('/api/users',{
@@ -166,6 +165,7 @@ const Settings = () => {
     if (!ready && recovery.find((f: sets)=> f.question.trim() !== '' && f.answer.trim() !== '')) setReady(true)
   }
   const handleSubmit = async (e: React.FormEvent) => {
+    if (!user) return
     setChangeArr([])
     e.preventDefault()
     const n = name.trim()
@@ -238,7 +238,7 @@ const Settings = () => {
         <h2 className={styles.title}>{SettingSvg()} Settings</h2>
         <div className={styles.quick}>
           <button onClick={()=>setDisclose((prev: boolean) => !prev)}>{!disclose ? Eyesvg('min-w-8') : EyeClosedSvg('min-w-8')}{!disclose ? 'View' : 'Hide'} credentials</button>
-          { user && user?.provider === 'custom' && <button className={styles.second} onClick={()=> setUpdate(true)}>{Editsvg()} Update credentials</button>}
+          { user && user?.provider === 'custom' && <button className={styles.second} onClick={()=> user && setUpdate(true)}>{Editsvg()} Update credentials</button>}
           <Link href='/recovery' className={user && user?.provider === 'custom' ? styles.third : styles.second}>{Padlocksvg('isBig')} Account recovery</Link>
         </div>
         <div className='flex gap-y-12 flex-col mt-5'>
@@ -252,7 +252,7 @@ const Settings = () => {
           <div className={style.setts}>
             <span>Back-up email</span>
             <p>{user && user?.backupEmail ? disclose ? user?.backupEmail : '*****' : 'Not set'}</p>
-            <p className='flex justify-end'>{<button className={style.button} onClick={()=>setUpdate(true)}>{Editsvg('isBig')} {user?.backupEmail ? 'Change' : 'Add'}</button>}</p>
+            <p className='flex justify-end'>{<button className={style.button} onClick={()=> user && setUpdate(true)}>{Editsvg('isBig')} {user?.backupEmail ? 'Change' : 'Add'}</button>}</p>
           </div>
           <div className='flex font-medium gap-2.5 text-[1em] text-[var(--changingPurple)] border-t-[#9f76a0] border-t-2 mx-5 flex-col'>
             <p className='flex gap-2.5 items-center p-2 transition-[0.5s]'>{Packssvg('BIG')} Subscriptions <span>{user && user?.exclusive ? 'Active' : 'Inactive'}</span></p>
@@ -299,7 +299,7 @@ const Settings = () => {
           </p>
         </div>
         {update && <>
-          <div className={style.mask} onClick={()=>{setUpdate(false); setVerify(false) ;setPassword(''); setErr('')}}></div>
+          <div className={style.mask} onClick={()=>{ if ( loading) return; setUpdate(false); setVerify(false) ;setPassword(''); setErr('')}}></div>
           <form className={style.updator} onClick={handleClick}>
             <div className={style.finish} style={{position: 'absolute', top: '-12px', insetInline: 0, zIndex: 1}}> <hr style={{rotate: '180deg'}}/> </div>
             <div className={style.holder} style={{translate:  verify ? '-50%' : 0}}>

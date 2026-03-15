@@ -1,71 +1,87 @@
-.project{
-  gap: 10px;
+.projects{
   display: flex;
+  gap: 30px 20px;
+  flex-wrap: wrap;
   cursor: default;
-  max-width: 900px;
   transition: 0.3s;
   font-weight: 600;
-  min-height: 200px;
-  padding: 10px 20px;
-  border-radius: 30px;
-  flex-direction: column;
-  justify-content: space-between;
+  border-radius: 20px;
+  padding-block: 5px 20px;
+  color: rgba(0, 0, 0, 0.9);
   border-bottom-left-radius: 8px;
-  background-color: var(--pageNav);
+  background-color: rgb(255 248 242);
   box-shadow: 0 5px 10px var(--mild-dark)
 }
-.project svg{
-  width: 22px;
-  height: 22px;
-}
-.active{ color: rgb(118, 157, 51); }
-.complete{ color: rgb(118, 157, 51); }
-.terminated{ color: var(--error) }
-.waiting{ color: rgb(200, 138, 24) }
-.project h2{
-  gap: 15px;
+.project{
+  flex: 1;
   display: flex;
-  font-weight: 700;
-  font-size: 1.25em;
-  border-bottom: solid 2px;
-  justify-content: space-between;
+  min-width: 325px;
+  transition: 0.5s;
+  flex-direction: column;
 }
-.project p{
-  gap: 20px;
-  opacity: 0.8;
+.project:hover {
+  transform: translateY(-2px);
+  animation: 0.5s ease-out 0s 1 normal none running fadeIn;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px;
+}
+.project svg{
+  min-width: 22px;
+  min-height: 22px;
+}
+.terminated{ color: var(--error) }
+.active{ color: rgb(118, 157, 51); }
+.waiting{ color: rgb(200, 138, 24) }
+.complete{ color: rgb(118, 157, 51); }
+.project h2{
+  font-weight: 700;
+  font-size: 1.4em;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: rgb(55, 23, 115);
+}
+.project h2::after{
+  width: 80%;
+  content: '';
+  display: block;
+  padding-top: 3px;
+  border-bottom: solid 2px rgb(79, 70, 229);
+}
+.project span{
+  gap: 10px;
   display: flex;
   transition: 0.5s;
-  color: var(--black);
-  justify-content: space-between;
+}
+.project p, .project div{
+  gap: 20px;
+  display: flex;
 }
 .project div{
-  gap: 5px;
-  display: flex;
+  padding: 10px 15px;
   flex-direction: column;
   justify-content: space-between;
 }
+.project p :last-child{
+  margin-left: auto;
+}
 .project a{
-  padding: 3px;
+  padding: 5px;
   font-size: 14px;
   border-radius: 15px;
 }
 .project a:hover{
   background-color: var(--mild-dark);
 }
-.project a.pay{
-  gap: 7px;
-  display: flex;
+.project .pay{
   padding-inline: 10px;
   color: var(--translucent);
   background-color: var(--noti);
+  border-bottom-right-radius: 5px;
   background-image: linear-gradient( to top right, var(--mild-dark), transparent);
 }
 .project .signed{
-  gap: 10px;
   opacity: 0.8;
-  display: flex;
   cursor: pointer;
-  transition: 0.5s;
   padding: 5px 10px;
   width: fit-content;
   border-radius: 20px;
@@ -78,9 +94,13 @@
 .project .signed svg{
   width: 19px;
   height: 19px;
+  min-width: 16px;
+  min-height: 16px;
   border: solid 7px;
   border-radius: 100%;
 }
-.project:last-child{
-  margin-bottom: 40px;
+@media screen and (max-width: 500px) {
+  .project{
+    min-width: 250px;
+  }
 }

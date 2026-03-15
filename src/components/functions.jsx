@@ -13,6 +13,7 @@ export const Toggle = (e, focus) => e.target.classList.toggle(focus)
 export const pickAll = focus => document.querySelectorAll(focus)
 
 export function FirstCase(focus){
+  if (!focus) return ''
   const a = typeof(focus[0]) === 'string' ? focus[0].toLocaleUpperCase() : focus[0] || ''
   const b = focus.toLocaleLowerCase().slice(1)
   return `${a}${b}`
@@ -127,10 +128,10 @@ export function revAnimationTimeline(factor, focusclass, top = 0, bottom = top ,
     }
 }
 
-export const scrollCheck = (focus, parent, ancestor = parent) => {
+export const scrollCheck = (focus, parent, ancestor = parent, permit = 0 ) => {
   const par = pick(`.${parent}`)
-  const anc = pick(`#${ancestor}`)
   const focal = pick(`.${focus}`)
+  const anc = pick(`#${ancestor}`) || pick(`.${ancestor}`)
   if (!anc || !par || !focal) return
   const b = par.offsetTop
   const a = anc.offsetTop
@@ -145,9 +146,9 @@ export const scrollCheck = (focus, parent, ancestor = parent) => {
   const parpadDown = parseInt(parstyles.paddingBottom)
   const excess = ( padTop + padDown ) / 2 + parpadDown
   const spacing = Math.abs(window.innerHeight - focusH) / 2
-  const top = scrollH - topH - spacing - focusH + excess + window.innerHeight
-  if ( top > 0 && top <= parentH - focusH - excess){
+  const top = scrollH - topH - spacing - focusH + excess + window.innerHeight - permit
+  if ( top > 0 && top + permit <= parentH - focusH - excess ){
     focal.style.top = `${top}px`
     focal.style.position = 'relative'
-  } else  top < 0 ? focal.style.top = '0px' : focal.style.top = `${parentH - focusH - excess}px`
+  } else  top < 0 ? focal.style.top = '0px' : focal.style.top = `${parentH - focusH - excess - permit }px`
 }

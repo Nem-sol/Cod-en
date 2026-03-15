@@ -10,7 +10,7 @@ import React, { ReactNode, useEffect, useState } from 'react'
 import { NewDropSets, Notify } from '@/src/components/pageParts'
 import { useProjectContext } from '@/src/context/ProjectContext'
 import { classAdd, classRemove, classToggle, Click, FirstCase, pick, RemoveOtherClass } from '@/src/components/functions'
-import { AddProjectsvg, AddSvg, Buildsvg, GlobeSvg, Devsvg, FolderSvg, Githubsvg, Helpsvg, HTMLsvg, Leftsvg, loaderCircleSvg, Nextsvg, Nodesvg, ProjectSvg, Reactsvg, Rocketsvg, Rustsvg, TagSvg, Vercelsvg } from '../../../components/svgPack'
+import { AddProjectsvg, AddSvg, Buildsvg, GlobeSvg, Devsvg, FolderSvg, Githubsvg, Helpsvg, HTMLsvg, Leftsvg, loaderCircleSvg, Nextsvg, Nodesvg, ProjectSvg, Reactsvg, Rocketsvg, Rustsvg, TagSvg, Vercelsvg, Bugsvg, HandShakeSvg, AppSvg } from '../../../components/svgPack'
 
 type Blogs = {
   props: {
@@ -109,6 +109,17 @@ const NewProject = () => {
     if ( fill === 'quality') return
     setNotify(true); setReason('complete')
   }
+  
+  const handleUrl = () => {
+    const start: string = provider === 'github' ? 'https://github' : provider === 'domain' ? 'www.' : 'https://'
+
+    const routeEnd = provider === 'vercel' ? '.vercel.app' : '.com'
+    
+    const restUrl = url.split('/').filter(( _ ) => _.trim())
+
+    const modifiedUrl = url ?  provider === 'github' ?`${start}${routeEnd}${restUrl.length > 0 ? '/' : ''}${restUrl.join('/')}` : `${start}${restUrl.join('')}${routeEnd}` : null
+    return modifiedUrl || null
+  }
 
   const save = () => {
     setErr('')
@@ -132,11 +143,11 @@ const NewProject = () => {
       service !== 'transcript' && mode === 'assist' ? Click(`.${style.auto}`) : setErr('Preferrred language is required')
     }
     else if (service === 'transcript' && langFrom.length < 1 ) setErr('Origin language required')
-    else if (loop.length > 0) setErr(`Code file "${loop.slice(0, -1).join(', ')}${loop.length > 1 ? ' and ' : ''}${loop.slice(-1)[0]}" cannot be transcripted to origin file language. Try quality-assurance testing for code improvement.`)
-    else if (bLoop.length > 0 && bNot.length < 1) setErr(`No alternatve back-end language found for "${bLoop.slice(0, -1).join(', ')}${bLoop.length > 1 ? ' and ' : ''}${bLoop.slice(-1)[0]}"`)
-    else if (fLoop.length > 0 && fNot.length < 1) setErr(`No alternatve front-end language found for "${fLoop.slice(0, -1).join(', ')}${fLoop.length > 1 ? ' and ' : ''}${fLoop.slice(-1)[0]}"`)
-    else if (bLoop.length < 1 && bNot.length > 0) setErr(`No alternatve back-end language found for "${bNot.slice(0, -1).join(', ')}${bNot.length > 1 ? ' and ' : ''}${bNot.slice(-1)[0]}"`)
-    else if (fLoop.length < 1 && fNot.length > 0) setErr(`No alternatve front-end language found for "${fNot.slice(0, -1).join(', ')}${fNot.length > 1 ? ' and ' : ''}${fNot.slice(-1)[0]}"`)
+    else if (loop.length > 0 && service === 'trranscript' ) setErr(`Code file "${loop.slice(0, -1).join(', ')}${loop.length > 1 ? ' and ' : ''}${loop.slice(-1)[0]}" cannot be transcripted to origin file language. Try quality-assurance testing for code improvement.`)
+    else if (bLoop.length > 0 && bNot.length < 1 && service === 'trranscript' ) setErr(`No alternatve back-end language found for "${bLoop.slice(0, -1).join(', ')}${bLoop.length > 1 ? ' and ' : ''}${bLoop.slice(-1)[0]}"`)
+    else if (fLoop.length > 0 && fNot.length < 1 && service === 'trranscript' ) setErr(`No alternatve front-end language found for "${fLoop.slice(0, -1).join(', ')}${fLoop.length > 1 ? ' and ' : ''}${fLoop.slice(-1)[0]}"`)
+    else if (bLoop.length < 1 && bNot.length > 0 && service === 'trranscript' ) setErr(`No alternatve back-end language found for "${bNot.slice(0, -1).join(', ')}${bNot.length > 1 ? ' and ' : ''}${bNot.slice(-1)[0]}"`)
+    else if (fLoop.length < 1 && fNot.length > 0 && service === 'trranscript' ) setErr(`No alternatve front-end language found for "${fNot.slice(0, -1).join(', ')}${fNot.length > 1 ? ' and ' : ''}${fNot.slice(-1)[0]}"`)
     else if (!request) setRequest(true)
     else if (!ready) { setNotify(true); setReason('failed'); setError('Could not submit project details')}
     else {
@@ -153,11 +164,11 @@ const NewProject = () => {
         features,
         provider,
         class: classes,
+        url: handleUrl(),
         rate: rate || null,
         pages: pages || null,
         scale: scale || null,
         langFrom: langFrom || null,
-        url: `${provider === 'github' ? 'https://github/' : provider === 'domain' ? 'www.' : 'https://'}${url}${provider === 'vercel' ? '.vercel.app' : '.com'}` || null,
       })
     }
     return
@@ -284,7 +295,7 @@ const NewProject = () => {
         <div className={style.holder}>
           <form className={style.typeSelector}>
             <TypeSects props={{
-              svg: Devsvg(),
+              svg: GlobeSvg(),
               title: 'Create website, web pages or blogs with your custom or free domain',
               type: 'web application'
             }}/>
@@ -294,12 +305,12 @@ const NewProject = () => {
               type: 'transcript'
             }}/>
             <TypeSects props={{
-              svg: Devsvg(),
+              svg: Bugsvg(),
               title: 'Proofguard your code from production and development bugs',
               type: 'quality-assurance testing'
             }}/>
             <TypeSects props={{
-              svg: Devsvg(),
+              svg: HandShakeSvg(),
               title: 'Secure long-term/ re-occuring programming services for efficient software management',
               type: 'contract'
             }}/>
@@ -309,7 +320,7 @@ const NewProject = () => {
               type: 'upgrade'
             }}/>
             <TypeSects props={{
-              svg: Devsvg(),
+              svg: AppSvg(),
               title: 'Create your desired project functionality for different devices',
               type: 'software application'
             }}/>
@@ -761,7 +772,7 @@ const NewProject = () => {
               <div>Project name<span className={style.auto}>{name}</span></div>
               <div>Project type<span className={style.auto}>{FirstCase(type)} project</span></div>
               <div>Project provider<span className={style.auto}>{FirstCase(provider)}</span></div>
-              <div>Preferred url<span className={style.auto}>{provider === 'github' ? 'https://github/' : provider === 'domain' ? 'www.' : 'https://'}{FirstCase(url)}{provider === 'vercel' ? `.vercel.app` : '.com'}</span></div>
+              <div>Preferred url<span className={style.auto}>{handleUrl()}</span></div>
               <div>About project<span className={style.auto}>{FirstCase(about)}</span></div>
               {service !== 'transcript' && <div>Project sector<span className={style.auto}>{FirstCase(sector)}</span></div>}
               {scale && <div>Project size<span className={style.auto}>{FirstCase(scale)}</span></div>}

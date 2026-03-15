@@ -1,23 +1,293 @@
-.helps{
-  width: 100%;
-  max-width: 900px;
-  flex-wrap: nowrap;
+.project{
+  gap: 5px;
+  display: flex;
+  flex-wrap: wrap;
+  transition: 0.3s;
+  font-weight: 600;
+  color: var(--black);
+  border-radius: 1rem;
+  padding-bottom: 10px;
+  border-image: initial;
+  border: solid 1px rgb(226, 232, 240);
+  background: rgba(252, 252, 252, 0.95);
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px;
 }
-.level{
-  flex: 1;
+.payment{
+  gap: 5px;
+  display: flex;
+  flex-wrap: wrap;
+  transition: 0.3s;
+}
+.payment span{
+  font-size: 0.6em;
+  padding: 5px 10px;
+  border-radius: 25px;
+  color: rgb(255, 255, 255);
+  background-color: rgb(124, 58, 237);
+}
+.payment menu{
+  gap: 5px;
   width: 100%;
   display: flex;
-  padding: 6px 5px;
-  transition: 0.5s;
-  background-color: var(--input);
-  border-radius: 5px 25px 25px 5px;
-  box-shadow: 0 3px 8px 2px rgb(0, 0, 0 ,0.15);
+  flex-wrap: wrap;
+  transition: 0.3s;
+  font-weight: 600;
+  padding-left: 20px;
 }
-.level p{
-  width: 50px;
-  padding: 10px;
-  transition: 0.5s;
-  border-radius: 50px;
-  box-shadow: 0 3px 5px rgb(0, 0, 0 ,0.15);
-  background-image: linear-gradient(to top right, rgba(0, 0, 0, 0.15), rgba(255, 239, 239, 0.9));
+.payment menu p{
+  display: flex;
+  min-width: 100%;
+  border-radius: 10px;
+}
+.payment menu p span{
+  max-width: 90%;
+  padding: 5px 10px;
+  border-radius: inherit;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 15px;
+  background-image: linear-gradient( to bottom right , #0000001a ,transparent);
+}
+.payment menu p::before{
+  top: 0;
+  width: 90%;
+  content: '';
+  height: 100%;
+  position: absolute;
+  border-radius: inherit;
+  background-color: var(--mild-dark);
+}
+.payment a, .payment button{
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 25px;
+  color: rgb(124, 58, 237);
+  border: 2px solid rgb(226, 232, 240);
+  background-color: rgba(252, 252, 252, 0.9);
+}
+.project h1, .payment h1{
+  min-width: 100%;
+  font-weight: 700;
+  padding: 5px 25px;
+  font-size: 1.75rem;
+  color: rgb(79, 70, 229);
+}
+.details{
+  flex: 1;
+  gap: 2rem;
+  display: flex;
+  padding: 1.5rem;
+  min-width: 375px;
+  transition: 0.3s;
+  margin-bottom: 15px;
+  flex-direction: column;
+}
+.details:hover {
+  transform: translateY(-2px);
+  animation: 0.5s ease-out 0s 1 normal none running fadeIn;
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px;
+}
+.span{
+  padding-right: 25px;
+}
+.details span,.span{
+  gap: 10px;
+  display: flex;
+}
+.details button{
+  padding: 5px 15px;
+  border-radius: 25px;
+  color: rgb(79, 70, 229); 
+  border: 2px solid rgb(79, 70, 229); 
+}
+.details:first-of-type span{
+  width: 100%;
+}
+.details:first-of-type span::after{
+  right: 0;
+  top: 3px;
+  content: '';
+  height: 20px;
+  position: absolute;
+  border-right: solid 2px var(--deepSweetPurple)
+}
+.details p{
+  color: rgb(36, 14, 78);
+}
+.span textarea, .span input{
+  width: 100%;
+}
+.span.editting::after{
+  left: 10%;
+  width: 80%;
+  content: '';
+  bottom: -10px;
+  position: absolute;
+  border-bottom: solid 2px rgba(124, 58, 237, 0.5);
+}
+.details .rev.span.editting::after{
+  left: 0;
+}
+.details span svg, .span svg{
+  min-width: 22px;
+  min-height: 22px;
+}
+.details h2 {
+  gap: 1rem;
+  display: flex;
+  font-size: 1.2em;
+  align-items: center;
+  padding-bottom: 10px;
+  color: rgb(36, 14, 78);
+  border-bottom: 2px solid rgb(226, 232, 240);
+}
+.error{
+  color: rgba(206, 56, 56, 1) !important;
+}
+.end{
+  gap: 10px 0;
+  display: flex;
+  min-width: 100%;
+  padding: 0 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.end a, .end button{
+  gap: 10px;
+  display: flex;
+  padding: 8px 20px;
+  align-items: center;
+}
+.end a{
+  padding-block: 3px;
+  border-right: 2px solid  rgb(79, 70, 229);
+}
+.end button{
+  border-radius: 18px;
+}
+.end button:hover{
+  margin-left: 10px;
+  background-color: var(--mild-dark);
+  text-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px;
+}
+.processHolder{
+  gap: 30px;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  padding: 50px 10px;
+  justify-content: center;
+}
+.process{
+  flex: 1;
+  gap: 40px;
+  display: flex;
+  flex-wrap: wrap;
+  font-weight: 600;
+  min-height: 200px;
+  align-items: flex-end;
+  justify-content: center;
+}
+.phase{
+  flex: 1;
+  gap: 5px;
+  width: 100%;
+  display: flex;
+  min-width: 325px;
+  flex-direction: column;
+}
+.phase::after{
+  width: 95%;
+  content: '';
+  height: 5px;
+  align-self: center;
+  border-radius: 20px;
+  background-color: rgb(79, 70, 229);
+}
+.phase:last-of-type::after{
+  content: none;
+}
+.stage.h2{
+  font-weight: 700;
+  font-size: 1.15em;
+  border-radius: 12px;
+  color: rgb(36, 14, 78);
+  border-bottom-left-radius: 3px;
+}
+.stage.editting.h2{
+  margin-bottom: 10px;
+}
+.stage svg{
+  min-width: fit-content;
+  min-height: fit-content;
+}
+.stage{
+  gap: 10px;
+  padding: 5px;
+  display: flex;
+  font-size: 14px;
+  padding-left: 10px;
+  align-items: center;
+  border-radius: 17px;
+  color: rgb(79, 70, 229);
+  flex-direction: row-reverse;
+}
+.stage.editting{
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px;
+  background-color: rgba(255, 255, 255, 0.75);
+}
+.stage span{
+  flex: 1;
+  gap: 35px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+.stage menu{
+  left: -10px;
+  padding: 0 10px;
+  aspect-ratio: 1;
+  border: solid 5px;
+  margin-right: 5px;
+  border-radius: 20px;
+}
+.stage span::before{
+  content: '';
+  width: 15px;
+  border: solid 3px;
+  border-bottom-right-radius: 3px;
+}
+.stage.h2 span::before{
+  content: none;
+}
+.stage input, .stage textarea{
+  width: 100%;
+  font-size: inherit !important;
+}
+.stage button{
+  border-radius: 12px;
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+  background-color: rgb(226, 232, 240);
+  box-shadow: rgba(0, 0, 0, 0.15) 0px 4px 6px;
+}
+.last{
+  gap: 15px;
+  display: flex;
+  justify-content: flex-end;
+}
+.last button{
+  display: flex;
+  padding: 5px 15px;
+  border-radius: 15px;
+  color: rgb(255, 255, 255);
+  border-bottom-right-radius: 3px;
+  background-color: rgb(124, 58, 237);
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 6px;
+}
+@media screen and ( max-width: 500px ) {
+  .details{
+    min-width: 275px;
+  }
+  .stage menu{
+    left: 0;
+  }
 }
